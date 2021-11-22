@@ -13,11 +13,14 @@ class Objects
 private:
 	string name;
 	string loadingpath;
-	coords postion;
+	coords position;
 	coords velocity;
 	float mass;
 
 public:
+	Objects(string n, string path, float m);
+	Objects(string n, string path,coords pos,coords v, float m);
+	void initialise();
 	string get_name();
 	string get_loadingpath();
 	coords get_position();

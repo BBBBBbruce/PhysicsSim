@@ -8,6 +8,14 @@ struct coords
 	float y;
 	float z;
 
+	coords& operator =(const coords& a)
+	{
+		x = a.x;
+		y = a.y;
+		z = a.z;
+		return *this;
+	}
+
 };
 
 // checking git 
