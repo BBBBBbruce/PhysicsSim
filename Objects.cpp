@@ -1,21 +1,9 @@
 #include "Objects.h"
 
-Objects::Objects(string n, string path, float m)
-{
-	name = n;
-	loadingpath = path;
-	position = coords{ 0.,0.,0. };
-	velocity = coords{ 0.,0.,0. };
-	mass = m;
-}
 
-Objects::Objects(string n, string path, coords pos, coords v, float m)
+Objects::Objects()
 {
-	name = n;
-	loadingpath = path;
-	position = pos;
-	velocity = v;
-	mass = m;
+	throw std::runtime_error(std::string("Failed: how do you know base class? ") );
 }
 
 void Objects::initialise()
@@ -38,12 +26,3 @@ coords Objects::get_position()
 	return position;
 }
 
-coords Objects::get_velocity()
-{
-	return velocity;
-}
-
-float Objects::get_mass()
-{
-	return mass;
-}
