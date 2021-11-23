@@ -1,4 +1,4 @@
-#pragma once
+
 #ifndef DYNAMICOBJ_H
 #define DYNAMICOBJ_H
 

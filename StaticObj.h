@@ -1,4 +1,4 @@
-#pragma once
+
 #ifndef STATICOBJ_H
 #define STATICOBJ_H
 

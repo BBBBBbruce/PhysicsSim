@@ -1,6 +1,10 @@
-#pragma once
+
 #ifndef COORDS_H
 #define COORDS_H
+
+#include<iostream>
+#include<string>
+using namespace std;
 
 struct coords
 {

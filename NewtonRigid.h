@@ -1,4 +1,4 @@
-#pragma once
+
 #ifndef NEWTONRIGID_H
 #define NEWTONRIGID_H
 
