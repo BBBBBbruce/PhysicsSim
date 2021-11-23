@@ -34,3 +34,9 @@ void DynamicObj::initialise()
 {
 
 }
+
+void DynamicObj::updatestate(coords pos, coords v)
+{
+	position = pos;
+	velocity = v;
+}

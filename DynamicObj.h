@@ -17,6 +17,7 @@ public:
     coords get_velocity();
 	float get_mass();
     void initialise();
+    void updatestate(coords pos, coords v);
 };
 
 #endif

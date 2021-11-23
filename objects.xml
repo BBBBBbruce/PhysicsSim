@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<worldobject>
+	
+	<object category ="static">
+		<name lang ="en">GrassPlane</name>
+		<path>D:\BlenderResource\plane.obj</path>
+	</object>
+
+	<object category ="dynamic">
+		<name lang ="en">LeatherBall</name>
+		<path>D:\BlenderResource\sphere.obj</path>
+		<position>0,0,10</position>
+		<velocity>0,0,0</velocity>
+		<mass>10</mass>
+	</object>
+
+	<object category ="dynamic">
+		<name lang ="en">Brick</name>
+		<path>D:\BlenderResource\square.obj</path>
+		<position>10,0,10</position>
+		<velocity>0,0,0</velocity>
+		<mass>5</mass>
+	</object>
+
+</worldobject>
+	
+	

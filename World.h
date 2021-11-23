@@ -16,6 +16,7 @@ private:
 public:
 
 	World();
+	World(string filepath);
 	void LoadingWorld();
 	void PhysicsRender();
 	void GraphicsRender();
