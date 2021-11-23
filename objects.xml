@@ -4,6 +4,7 @@
 	<object category ="static">
 		<name lang ="en">GrassPlane</name>
 		<path>D:\BlenderResource\plane.obj</path>
+		<position>0,0,0</position>
 	</object>
 
 	<object category ="dynamic">
