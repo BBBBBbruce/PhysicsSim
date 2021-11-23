@@ -24,13 +24,19 @@ void World::LoadingWorld()
 	}
 	std::cout << "reading config" << std::endl;
 
+	pugi::xml_document doc;
+	currentconfig = doc.load_file(configfilepath.c_str());
 
-
-	currentconfig = string("bin/currentfig.xml");
 }
 
 void World::PhysicsRender()
 {
+	//add augments
+	NewtonRigid PhyEngine;
+	PhyEngine.ParseWorld(currentconfig);
+	PhyEngine.run(1);
+	outputconfig = PhyEngine.ExportWorld();
+	outputconfigfile();
 }
 
 void World::GraphicsRender()
@@ -39,6 +45,7 @@ void World::GraphicsRender()
 
 void World::outputconfigfile()
 {
+	//save tree to xml
 }
 
 

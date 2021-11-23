@@ -3,15 +3,20 @@
 #define WORLD_H
 
 #include"NewtonRigid.h"
+#include"ExternalLib/pugixml/pugixml.hpp"
 
 
 class World
 {
 private:
 	string configfilepath;
-	string currentconfig;
-	string outputconfig;
+	pugi::xml_parse_result currentconfig;
+	pugi::xml_parse_result outputconfig;
 	string PhysicsEngine;
+
+	
+
+
 
 public:
 

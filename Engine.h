@@ -2,6 +2,7 @@
 #ifndef ENGINE_H
 #define ENGINE_H
 
+#include"ExternalLib/pugixml/pugixml.hpp"
 #include"StaticObj.h"
 #include"DynamicObj.h"
 #include <vector>
