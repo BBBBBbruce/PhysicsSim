@@ -39,6 +39,9 @@
     <ClCompile Include="ExternalLib\pugixml\pugixml.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="test.json">
+      <Filter>Resource Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Objects.h">
@@ -71,6 +74,9 @@
     <ClInclude Include="ExternalLib\pugixml\pugixml.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="json.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Xml Include="objects.xml">
@@ -79,5 +85,11 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="README.md" />
+    <None Include="object.json">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="output.json">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

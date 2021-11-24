@@ -21,7 +21,7 @@ public:
     void run(float time);// in seconds
     bool collision_detection();
 
-    void ParseWorld(xml objectstree);
+    void ParseWorld();
     xml ExportWorld();
 };
 

@@ -5537,7 +5537,7 @@ namespace pugi
 		//std::cout << "heee" << std::endl;
 		for (xml_node_struct* i = _root->first_child; i; i = i->next_sibling)
 		{
-			std::cout << "1" << std::endl;
+			//std::cout << "1" << std::endl;
 			while(i!=NULL)
 				if (i->name && impl::strequal(name_, i->name)) return xml_node(i);
 		}

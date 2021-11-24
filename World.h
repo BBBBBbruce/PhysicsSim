@@ -14,7 +14,7 @@ private:
 	string configfilepath;
 	xml currentconfig;
 	xml outputconfig;
-	string PhysicsEngine;
+	NewtonRigid PhyEngine;
 
 public:
 	~World();

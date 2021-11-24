@@ -1,6 +1,8 @@
 
 
 #include <iostream>
+#include <fstream>
+#include <ostream>
 
 #include"Engine.h"
 #include<assimp/Importer.hpp>
@@ -9,8 +11,14 @@
 #include"World.h"
 #include"test.h"
 
+#include"json.hpp"
 
 string setup = "objects.xml";
+string jsonfile = "object.json";
+string outjson = "output.json";
+//string testfile = "test.json";
+using json = nlohmann::json;
+using namespace std;
 
 int main()
 
@@ -19,10 +27,83 @@ int main()
     std::cout << "===================\n";
     std::cout << "\n";
 
-    test(setup);
-    World testwrld(setup);
-    testwrld.LoadingWorld();
-    testwrld.PhysicsRender();
+    std::ifstream ifs(jsonfile);
+    cout << "hello" << endl;
+    json j;
+
+    try
+    {
+        j = json::parse(ifs);
+    }
+    catch (json::parse_error& ex)
+    {
+        std::cerr << "parse error at byte " << ex.byte << std::endl;
+    }
+
+    json objectlist = j["Objects"];
+
+    cout << "maybe here" << endl;
+    vector<StaticObj> svec;
+    vector<DynamicObj> dvec;
+    cout << "not here" << endl;
+
+    for (auto it = objectlist.begin(); it != objectlist.end(); ++it)
+    {
+
+        std::cout << it.key() << " : " << it.value() << std::endl;
+        if (it.value()["type"] == "dynamic") {
+            cout << "ddd\n";
+            DynamicObj dtmp(
+                it.key(),
+                it.value()["path"],
+                coords{ it.value()["position.x"],it.value()["position.y"],it.value()["position.z"] },
+                coords{ it.value()["velocity.x"],it.value()["velocity.y"],it.value()["velocity.z"] },
+                it.value()["mass"]
+            );
+            dvec.push_back(dtmp);
+            cout << "pushed dynamic" << endl;
+
+        }
+        else if (it.value()["type"] == "static"){
+            cout << "sss\n";
+            StaticObj stmp(
+                it.key(),
+                it.value()["path"],
+                coords{ it.value()["position.x"],it.value()["position.y"],it.value()["position.z"] }
+            );
+            svec.push_back(stmp);
+            cout << "pushed static" << endl;
+
+        }
+    }
+    json jout;
+    for (auto i = 0; i < svec.size(); i++) {
+        jout["Objects"][svec[i].get_name()] = svec[i].tojson();
+
+    }
+    for (auto i = 0; i < dvec.size(); i++) {
+        jout["Objects"][dvec[i].get_name()] = dvec[i].tojson();
+
+    }
+
+    std::ofstream o(outjson);
+    o << std::setw(4) << jout << std::endl;
+
+    //+++++++++++++++++++++++++++++++++++
+    // save for physics sim
+    //+++++++++++++++++++++++++++++++++++
+
+
+    
+    
+    // cout << svec.size() << " " << dvec.size() << endl;
+    //svec[0].displayinfo();
+
+
+    //test(setup);
+    //World testwrld(setup);
+    //testwrld.LoadingWorld();
+    //testwrld.PhysicsRender();
 
     std::cout << "\n";
     std::cout << "===================\n";

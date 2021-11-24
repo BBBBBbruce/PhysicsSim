@@ -152,6 +152,7 @@
     <ClCompile Include="NewtonRigid.cpp" />
     <ClCompile Include="Objects.cpp" />
     <ClCompile Include="PhysicsSim.cpp" />
+    <ClCompile Include="test.json" />
     <ClCompile Include="StaticObj.cpp" />
     <ClCompile Include="World.cpp" />
   </ItemGroup>
@@ -161,6 +162,7 @@
     <ClInclude Include="Engine.h" />
     <ClInclude Include="ExternalLib\pugixml\pugiconfig.hpp" />
     <ClInclude Include="ExternalLib\pugixml\pugixml.hpp" />
+    <ClInclude Include="json.hpp" />
     <ClInclude Include="NewtonRigid.h" />
     <ClInclude Include="Objects.h" />
     <ClInclude Include="StaticObj.h" />
@@ -171,6 +173,8 @@
     <Xml Include="objects.xml" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="object.json" />
+    <None Include="output.json" />
     <None Include="README.md" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -3,7 +3,7 @@
 
 Objects::Objects()
 {
-	throw std::runtime_error(std::string("Failed: how do you know base class? ") );
+	//throw std::runtime_error(std::string("Failed: how do you know base class? ") );
 }
 
 void Objects::initialise()

@@ -13,7 +13,7 @@ NewtonRigid::NewtonRigid(xml currentconfig)
 {
     vector<StaticObj>StaticVec;
     vector<DynamicObj>DynamicVec;
-    node = currentconfig;
+    xml node = currentconfig;
     std::cout << "hello" << std::endl;
 }
 
@@ -32,11 +32,11 @@ xml NewtonRigid::ExportWorld()
     return xml();
 }
 
-void NewtonRigid::ParseWorld(xml objectstree)
+void NewtonRigid::ParseWorld()
 {
     // parse all the objects and push them into vectors
     cout << "parsing world" << endl;
-    cout << objectstree.child("object").attribute("category").value() << endl;
+    cout << node.child("object").attribute("category").value() << endl;
 
 
 

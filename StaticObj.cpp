@@ -1,5 +1,9 @@
 #include "StaticObj.h"
 
+StaticObj::StaticObj()
+{
+}
+
 StaticObj::StaticObj(string n, string path)
 {
 	name = n;
@@ -16,4 +20,22 @@ StaticObj::StaticObj(string n, string path, coords pos)
 void StaticObj::initialise()
 {
 
+}
+
+void StaticObj::displayinfo()
+{
+	cout << "name: " << name << endl;
+	cout << "path: " << loadingpath << endl;
+	cout << endl;
+}
+
+json StaticObj::tojson()
+{	
+	json j;
+	j["type"] = "static";
+	j["path"] = loadingpath;
+	j["position.x"] = position.x;
+	j["position.y"] = position.y;
+	j["position.z"] = position.z;
+	return j;
 }
