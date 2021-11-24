@@ -5,21 +5,19 @@
 #include"NewtonRigid.h"
 #include"ExternalLib/pugixml/pugixml.hpp"
 
+typedef pugi::xml_node xml;
 
 class World
 {
+
 private:
 	string configfilepath;
-	pugi::xml_parse_result currentconfig;
-	pugi::xml_parse_result outputconfig;
+	xml currentconfig;
+	xml outputconfig;
 	string PhysicsEngine;
 
-	
-
-
-
 public:
-
+	~World();
 	World();
 	World(string filepath);
 	void LoadingWorld();

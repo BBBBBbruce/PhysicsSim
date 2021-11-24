@@ -1,5 +1,22 @@
 #include "NewtonRigid.h"
 
+using namespace std;
+
+NewtonRigid::NewtonRigid()
+{
+    vector<StaticObj>StaticVec;
+    vector<DynamicObj>DynamicVec;
+    
+}
+
+NewtonRigid::NewtonRigid(xml currentconfig)
+{
+    vector<StaticObj>StaticVec;
+    vector<DynamicObj>DynamicVec;
+    node = currentconfig;
+    std::cout << "hello" << std::endl;
+}
+
 void NewtonRigid::run(float time)
 {
 }
@@ -9,13 +26,18 @@ bool NewtonRigid::collision_detection()
     return false;
 }
 
-pugi::xml_parse_result NewtonRigid::ExportWorld()
+xml NewtonRigid::ExportWorld()
 {
 
-    return pugi::xml_parse_result();
+    return xml();
 }
 
-void NewtonRigid::ParseWorld(pugi::xml_parse_result file)
+void NewtonRigid::ParseWorld(xml objectstree)
 {
     // parse all the objects and push them into vectors
+    cout << "parsing world" << endl;
+    cout << objectstree.child("object").attribute("category").value() << endl;
+
+
+
 }

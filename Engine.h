@@ -13,12 +13,12 @@ class Engine
 private: 
 	vector<StaticObj>StaticVec;
 	vector<DynamicObj>DynamicVec;
-	string Configfile;
+	//string Configfile;
 
 public:
 	Engine();
 	Engine(string filepath);
-	void ParseConfigFile(string filepath);
+	//void ParseConfigFile(string filepath);
 
 };
 

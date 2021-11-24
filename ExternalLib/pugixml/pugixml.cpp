@@ -15,7 +15,7 @@
 #define SOURCE_PUGIXML_CPP
 
 #include "pugixml.hpp"
-
+#include <iostream>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -5534,9 +5534,13 @@ namespace pugi
 	PUGI__FN xml_node xml_node::child(const char_t* name_) const
 	{
 		if (!_root) return xml_node();
-
+		//std::cout << "heee" << std::endl;
 		for (xml_node_struct* i = _root->first_child; i; i = i->next_sibling)
-			if (i->name && impl::strequal(name_, i->name)) return xml_node(i);
+		{
+			std::cout << "1" << std::endl;
+			while(i!=NULL)
+				if (i->name && impl::strequal(name_, i->name)) return xml_node(i);
+		}
 
 		return xml_node();
 	}

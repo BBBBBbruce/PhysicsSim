@@ -22,6 +22,7 @@ int main()
     test(setup);
     World testwrld(setup);
     testwrld.LoadingWorld();
+    testwrld.PhysicsRender();
 
     std::cout << "\n";
     std::cout << "===================\n";
