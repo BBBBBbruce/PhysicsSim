@@ -10,12 +10,12 @@ DynamicObj::DynamicObj(string n, string path, float m)
 	name = n;
 	loadingpath = path;
 	mass = m;
-	position = coords{ 0.,0.,0. };
-	velocity = coords{ 0.,0.,0. };
+	position = glm::vec3{ 0.,0.,0. };
+	velocity = glm::vec3{ 0.,0.,0. };
 	
 }
 
-DynamicObj::DynamicObj(string n, string path, coords pos, coords v, float m)
+DynamicObj::DynamicObj(string n, string path, glm::vec3 pos, glm::vec3 v, float m)
 {
 	name = n;
 	loadingpath = path;
@@ -24,7 +24,7 @@ DynamicObj::DynamicObj(string n, string path, coords pos, coords v, float m)
 	velocity = v;
 }
 
-coords DynamicObj::get_velocity()
+glm::vec3 DynamicObj::get_velocity()
 {
 	return velocity;
 }
@@ -39,10 +39,10 @@ void DynamicObj::initialise()
 
 }
 
-void DynamicObj::updatestate(coords pos, coords v)
+void DynamicObj::updatestate(glm::vec3 pos, glm::vec3 v)
 {
-	position = pos;
-	velocity = v;
+	position += pos;
+	velocity += v;
 }
 
 void DynamicObj::displayinfo()

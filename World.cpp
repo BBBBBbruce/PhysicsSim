@@ -1,5 +1,6 @@
 #include "World.h"
 #include <sys/stat.h>
+#include <fstream>
 #pragma warning (disable : 4996)
 //#include"ExternalLib/pugixml/pugixml.hpp"
 
@@ -11,25 +12,6 @@ inline bool checkfile(const std::string& name) {
 	return (stat(name.c_str(), &buffer) == 0);
 }
 
-coords string2coords(string input) {
-	cout << input << endl;
-	char* cstr = input.data();
-	char* token = strtok(cstr, ",");
-	vector<float> position;
-	int i = 0;
-
-	while (token != NULL)
-	{
-		cout << token << endl;
-		position.push_back(atof(token)) ;
-		i++;
-		token = strtok(NULL, ",");
-	}
-
-	coords output = {position[0],position[1],position[2]};
-	cout << output.x << output.y << output.z << endl;
-	return output;
-}
 
 World::~World()
 {
@@ -39,78 +21,37 @@ World::~World()
 
 World::World()
 {
-	//currentconfig = new xml();
-	//outputconfig = new xml();
 }
 
-World::World(string filepath)
+World::World(string inputpath, string outputpath)
 {
-	configfilepath = filepath;
-
-	//currentconfig = new xml();
-	//outputconfig = new xml();
+	configfilepath = inputpath;
+	targetpath = outputpath;
+	NewtonRigid PhyEngine;
 }
 
 void World::LoadingWorld()
 {
-	//loading objs
-	std::cout << "loading world" << std::endl;
-	if (!checkfile(configfilepath)){
-		throw std::runtime_error(std::string("Failed to load setup file "));
-	}
-	std::cout << "reading config" << std::endl;
+	std::ifstream ifs(configfilepath);
+	json j;
 
-	pugi::xml_document file;
-	pugi::xml_parse_result result;
-
-	result = file.load_file(configfilepath.c_str());
-	currentconfig = file.child("worldobject");
-	//NewtonRigid PhyEngine(this->currentconfig);
-	//cout << currentconfig.child("object").attribute("category").value() << endl;
-	vector<DynamicObj> dvec;
-	vector<StaticObj> svec;
-	// have to parse it here, no idea what is going on
-	
-	for (pugi::xml_node_iterator it = currentconfig.begin(); it != currentconfig.end(); ++it)
+	try
 	{
-		std::cout << "items:" << it->attribute("category").value() << endl;
-		if (string(it->attribute("category").value()) == "dynamic" ){
-
-		}
-		else if (string(it->attribute("category").value()) == "static") {
-			cout << "hello" << endl;
-			cout << it->child("name").child_value() << endl;
-			cout << "hello" << endl;
-			cout << it->child("position").child_value() << endl;
-			cout << "hello" << endl;
-			cout << it->child("path").child_value() << endl;
-
-			coords pos = string2coords(string(it->child("position").child_value()));
-
-			StaticObj statictmp(string(it->child("name").child_value()),
-				string(it->child("path").child_value()),
-				pos);
-		}
-
+		j = json::parse(ifs);
+	}
+	catch (json::parse_error& ex)
+	{
+		std::cerr << "parse error at byte " << ex.byte << std::endl;
 	}
 
+	currentconfig = j["Objects"];
 	
 }
 
-void World::PhysicsRender()
+void World::PhysicsRender(float time)
 {
-	//add augments
-	std::cout << configfilepath << endl;
-	//if(*this->currentconfig!=NULL)
-	//	NewtonRigid PhyEngine(*this->currentconfig);
-
-	//std::cout << "hello" << std::endl;
-	//while(this->currentconfig!=NULL)
-	//	cout << currentconfig.child("object").attribute("category").value() << endl;
-	//PhyEngine.ParseWorld();
-	//PhyEngine.run(1);
-	//outputconfig = PhyEngine.ExportWorld();
-	//outputconfigfile();
+	PhyEngine.ParseWorld(currentconfig);
+	PhyEngine.run(time);
 }
 
 void World::GraphicsRender()
@@ -119,8 +60,20 @@ void World::GraphicsRender()
 
 void World::outputconfigfile()
 {
-	//save tree to xml
-	//std::cout << "Saving result: " << outputconfig.save_file("bin/save_file_output.xml") << std::endl;
+	json jout;
+	vector<StaticObj> svec = PhyEngine.getStaticObjs();
+	vector<DynamicObj> dvec = PhyEngine.getDynamicObjs();
+	for (auto i = 0; i < svec.size(); i++) {
+		jout["Objects"][svec[i].get_name()] = svec[i].tojson();
+
+	}
+	for (auto i = 0; i < dvec.size(); i++) {
+		jout["Objects"][dvec[i].get_name()] = dvec[i].tojson();
+
+	}
+
+	std::ofstream o(targetpath);
+	o << std::setw(4) << jout << std::endl;
 }
 
 

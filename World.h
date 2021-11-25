@@ -6,22 +6,23 @@
 #include"ExternalLib/pugixml/pugixml.hpp"
 
 typedef pugi::xml_node xml;
-
+using json = nlohmann::json;
 class World
 {
 
 private:
 	string configfilepath;
-	xml currentconfig;
-	xml outputconfig;
+	string targetpath;
+	json currentconfig;
+	json outputconfig;
 	NewtonRigid PhyEngine;
 
 public:
 	~World();
 	World();
-	World(string filepath);
+	World(string inputpath, string outputpath);
 	void LoadingWorld();
-	void PhysicsRender();
+	void PhysicsRender(float time);
 	void GraphicsRender();
 	void outputconfigfile();
 

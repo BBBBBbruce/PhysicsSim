@@ -4,6 +4,7 @@
 
 #include<iostream>
 #include<string>
+#include<glm/vec3.hpp>
 #include"json.hpp"
 using namespace std;
 

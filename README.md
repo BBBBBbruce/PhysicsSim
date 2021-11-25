@@ -2,6 +2,7 @@
 # TODO:
 add translation, rotation, enlargement in xml file
 
+using glm vec
 # environment setup
 C++ 20\
 assimp 

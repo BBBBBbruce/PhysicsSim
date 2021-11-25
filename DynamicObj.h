@@ -9,19 +9,20 @@ class DynamicObj :
     public Objects
 {
 private:
-    coords velocity;
+    glm::vec3 velocity;
     float mass;
 
 public:
     DynamicObj();
     DynamicObj(string n, string path, float m);
-    DynamicObj(string n, string path, coords pos, coords v, float m);
-    coords get_velocity();
+    DynamicObj(string n, string path, glm::vec3 pos, glm::vec3 v, float m);
+    glm::vec3 get_velocity();
 	float get_mass();
     void initialise();
-    void updatestate(coords pos, coords v);
+    void updatestate(glm::vec3 pos, glm::vec3 v);
     void displayinfo();
     json tojson();
+    
     
 };
 

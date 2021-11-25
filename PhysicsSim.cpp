@@ -12,6 +12,7 @@
 #include"test.h"
 
 #include"json.hpp"
+#include<glm/vec3.hpp>
 
 string setup = "objects.xml";
 string jsonfile = "object.json";
@@ -26,7 +27,7 @@ int main()
     std::cout << "Simulation Starting\n";
     std::cout << "===================\n";
     std::cout << "\n";
-
+    /*
     std::ifstream ifs(jsonfile);
     cout << "hello" << endl;
     json j;
@@ -56,8 +57,8 @@ int main()
             DynamicObj dtmp(
                 it.key(),
                 it.value()["path"],
-                coords{ it.value()["position.x"],it.value()["position.y"],it.value()["position.z"] },
-                coords{ it.value()["velocity.x"],it.value()["velocity.y"],it.value()["velocity.z"] },
+                glm::vec3{ it.value()["position.x"],it.value()["position.y"],it.value()["position.z"] },
+                glm::vec3{ it.value()["velocity.x"],it.value()["velocity.y"],it.value()["velocity.z"] },
                 it.value()["mass"]
             );
             dvec.push_back(dtmp);
@@ -69,13 +70,30 @@ int main()
             StaticObj stmp(
                 it.key(),
                 it.value()["path"],
-                coords{ it.value()["position.x"],it.value()["position.y"],it.value()["position.z"] }
+                glm::vec3{ it.value()["position.x"],it.value()["position.y"],it.value()["position.z"] }
             );
             svec.push_back(stmp);
             cout << "pushed static" << endl;
 
         }
     }
+
+
+    //+++++++++++++++++++++++++++++++++++
+    // save for physics sim 
+    float timeinterval = 1;//seconds
+    glm::vec3 gravity(0,0,-9.8);
+    for (auto i = 0; i < dvec.size(); i++) {
+        glm::vec3 v = gravity * timeinterval;
+        glm::vec3 d = glm::vec3(0.5 * timeinterval * timeinterval)* gravity;
+        dvec[i].updatestate(d,v);
+        //update position
+    }
+
+
+ 
+    //+++++++++++++++++++++++++++++++++++
+
     json jout;
     for (auto i = 0; i < svec.size(); i++) {
         jout["Objects"][svec[i].get_name()] = svec[i].tojson();
@@ -88,22 +106,18 @@ int main()
 
     std::ofstream o(outjson);
     o << std::setw(4) << jout << std::endl;
-
-    //+++++++++++++++++++++++++++++++++++
-    // save for physics sim
-    //+++++++++++++++++++++++++++++++++++
-
-
     
-    
+    */
     // cout << svec.size() << " " << dvec.size() << endl;
     //svec[0].displayinfo();
 
 
     //test(setup);
-    //World testwrld(setup);
-    //testwrld.LoadingWorld();
-    //testwrld.PhysicsRender();
+    float runningtime = 1.0;
+    World testwrld(jsonfile,outjson);
+    testwrld.LoadingWorld();
+    testwrld.PhysicsRender(runningtime);
+    testwrld.outputconfigfile();
 
     std::cout << "\n";
     std::cout << "===================\n";

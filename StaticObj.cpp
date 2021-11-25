@@ -10,7 +10,7 @@ StaticObj::StaticObj(string n, string path)
 	loadingpath = path;
 }
 
-StaticObj::StaticObj(string n, string path, coords pos)
+StaticObj::StaticObj(string n, string path, glm::vec3 pos)
 {
 	name = n;
 	loadingpath = path;

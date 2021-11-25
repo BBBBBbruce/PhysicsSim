@@ -14,14 +14,14 @@ class Objects
 protected:
 	string name;
 	string loadingpath;
-	coords position;
+	glm::vec3 position;
 
 public:
 	Objects();
 	virtual void initialise() = 0;
 	string get_name();
 	string get_loadingpath();
-	coords get_position();
+	glm::vec3 get_position();
 
 };
 

@@ -21,7 +21,7 @@ string Objects::get_loadingpath()
 	return loadingpath;
 }
 
-coords Objects::get_position()
+glm::vec3 Objects::get_position()
 {
 	return position;
 }
