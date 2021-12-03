@@ -1,28 +1,19 @@
 
-# TODO:
-add translation, rotation, enlargement in xml file
+# Environment Setup
+C++ 14\
+libigl 2.3.0\
+glfw 3.35 WINx64 vc2015\
+glad Opengl 3.3 core\
+Eigen: check consistence with libigl\
+json.h: https://github.com/nlohmann/json
 
-using glm vec
-# environment setup
-C++ 20\
-assimp 
+# Mesh Generation
+1. create *.obj in Blender.
+2. Then using https://github.com/wildmeshing/fTetWild to generate tetrahedral mesh in *.msh
 
-# world set up
+*.msh is format define in Gmsh: https://gmsh.info/doc/texinfo/gmsh.html
 
-OpenGL xyz: shading using opengl
-up: +y
-right: +x
-towards user(outwards of screen): +z
-
-Blender xyz: more intuitive
-up: +z
-right: +x
-out of screen: +y
-
-programming and defining using Blender system,
-using coordinates translation function in Graphics Renderer class(swap y,z)
-
-# class documentation
+# Class Documentation
 
 ### Objects
 
@@ -55,6 +46,6 @@ FEM, PBD, PD, etc: adding later
 
 pasring files, calling engines to simulate, export setup for the current state, etc
 
-### GracphisRenderer
+### visulisation
 
 render the world and display.
