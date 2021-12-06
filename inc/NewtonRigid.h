@@ -20,6 +20,7 @@ public:
     void ParseWorld(json objectlist);
     vector<StaticObj> getStaticObjs();
     vector<DynamicObj> getDynamicObjs();
+    void ShowObjectsInfo();
 };
 
 #endif 

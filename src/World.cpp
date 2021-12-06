@@ -43,14 +43,20 @@ void World::LoadingWorld()
 	{
 		std::cerr << "parse error at byte " << ex.byte << std::endl;
 	}
-
 	currentconfig = j["Objects"];
 	
 }
 
-void World::PhysicsRender(float time)
+void World::init()
 {
 	PhyEngine.ParseWorld(currentconfig);
+	//cout << "aaa" << endl;
+	PhyEngine.ShowObjectsInfo();
+}
+
+void World::PhysicsRender(float time)
+{
+
 	PhyEngine.run(time);
 }
 

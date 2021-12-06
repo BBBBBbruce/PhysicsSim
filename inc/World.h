@@ -20,6 +20,7 @@ public:
 	World();
 	World(string inputpath, string outputpath);
 	void LoadingWorld();
+	void init();
 	void PhysicsRender(float time);
 	void GraphicsRender();
 	void outputconfigfile();

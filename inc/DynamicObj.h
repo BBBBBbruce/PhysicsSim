@@ -15,7 +15,7 @@ private:
 public:
     DynamicObj();
     DynamicObj(string n, string path, float m);
-    DynamicObj(string n, string path, glm::vec3 pos, glm::vec3 v, float m);
+    DynamicObj(string n, string path, glm::vec3 pos, glm::vec3 sc, glm::vec3 rot, glm::vec3 vel, float m);
     glm::vec3 get_velocity();
 	float get_mass();
     void initialise();

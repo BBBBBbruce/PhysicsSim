@@ -11,7 +11,7 @@ class StaticObj :
 public:
     StaticObj();
     StaticObj(string n, string path);
-    StaticObj(string n, string path, glm::vec3 pos);
+    StaticObj(string n, string path, glm::vec3 pos, glm::vec3 sc, glm::vec3 rot);
     void initialise();
     void displayinfo();
     json tojson();
