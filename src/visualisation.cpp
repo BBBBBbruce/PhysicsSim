@@ -1,5 +1,7 @@
 #include "visualisation.h"
 
+
+
 void render(string path)
 {
     Eigen::MatrixXd X, B;

@@ -88,11 +88,11 @@ void NewtonRigid::ShowObjectsInfo()
 void NewtonRigid::load_scene(time_t t_stamp)
 {   
     //bug cannot read tpath?
-    cout << "loading" << tpath << endl;
+    //cout << "loading" << tpath << endl;
     string scene_in = tpath + to_string(t_stamp) + "/Scene.json";
-    cout << endl;
-    cout << scene_in << endl;
-    cout << endl;
+    //cout << endl;
+    //cout << scene_in << endl;
+    //cout << endl;
     std::ifstream ifs(scene_in);
     json j;
 

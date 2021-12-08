@@ -39,7 +39,7 @@
     <ClCompile Include="src\World.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="visualisation.cpp">
+    <ClCompile Include="src\visualisation.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

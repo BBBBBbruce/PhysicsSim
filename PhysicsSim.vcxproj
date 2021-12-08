@@ -159,8 +159,8 @@
     <ClCompile Include="src\Objects.cpp" />
     <ClCompile Include="src\PhysicsSim.cpp" />
     <ClCompile Include="src\StaticObj.cpp" />
+    <ClCompile Include="src\visualisation.cpp" />
     <ClCompile Include="src\World.cpp" />
-    <ClCompile Include="visualisation.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="configs\object.json" />

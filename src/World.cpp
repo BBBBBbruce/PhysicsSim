@@ -65,7 +65,8 @@ void World::init()
 time_t World::PhysicsRender(float runningtime, time_t pre_time)
 {	
 	time_t running_stamp;
-	running_stamp = time(0);
+	running_stamp = time(NULL);
+	cout << running_stamp << endl;
 	make_dir_win(targetpath, running_stamp);
 
 	PhyEngine.load_scene(pre_time);	
@@ -104,7 +105,8 @@ time_t World::InitConfigs()
 	// save the model to .msh, how to save velocity?
 
 	json jout;
-	time_t t_stamp = time(0);
+	time_t t_stamp = time(NULL);
+	cout << t_stamp << endl;
 	//_mkdir((targetpath + to_string(t_stamp)).c_str());
 	make_dir_win(targetpath, t_stamp);
 	Eigen::MatrixXd X;
