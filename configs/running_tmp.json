@@ -1,0 +1,21 @@
+{
+  "Objects": {
+    "table": {
+      "type": "static",
+      "position_path": "D:\\Bruce_Projects\\BBBBBbruce\\PhysicsSim\\assets\\table.msh"
+    },
+    "sphere": {
+      "type": "dynamic",
+      "position_path": "D:\\Bruce_Projects\\BBBBBbruce\\PhysicsSim\\assets\\sphere_p_0101.msh",
+      "velocity_path": "D:\\Bruce_Projects\\BBBBBbruce\\PhysicsSim\\assets\\sphere_v_0101.msh",
+      "mass": 10.0
+    },
+    "cube": {
+      "type": "dynamic",
+      "position_path": "D:\\Bruce_Projects\\BBBBBbruce\\PhysicsSim\\assets\\cube_p_0101.msh",
+      "velocity_path": "D:\\Bruce_Projects\\BBBBBbruce\\PhysicsSim\\assets\\cube_v_0101.msh",
+      "mass": 5.0
+    }
+  }
+}
+

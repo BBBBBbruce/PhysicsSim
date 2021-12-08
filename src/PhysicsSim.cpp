@@ -10,9 +10,7 @@
 #include"test.h"
 
 #include"json.hpp"
-#include"igl/readOBJ.h"
-#include"igl/opengl/glfw/Viewer.h"
-#include"visualisation.h"
+
 
 //string testfile = "test.json";
 using json = nlohmann::json;
@@ -27,17 +25,17 @@ int main()
 
     //PhysicsSim.exe input.json -t 0.1 -n 50 -o bin/output.json
     string InputScene = "configs/object.json";
-    string outjson = "bin/out/output.json";
+    string outjson = "bin/out/";
     float runningtime = 0.1;
-    int step = 10;
-
+    int step = 1;
+    time_t start_time;
 
     World testwrld(InputScene,outjson);
     testwrld.LoadingWorld();
-    testwrld.init();
+    start_time = testwrld.InitConfigs();
     for (auto i = 0; i < step; i++) {
         testwrld.PhysicsRender(runningtime);
-        testwrld.outputconfigfile();
+        //testwrld.outputconfigfile();
     }
     
 

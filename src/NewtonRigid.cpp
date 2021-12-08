@@ -1,8 +1,9 @@
 #include "NewtonRigid.h"
-#include <glm/gtc/type_ptr.hpp>
+
 using namespace std;
 
-glm::vec3 gravity(0.0, 0.0, -9.8);
+//glm::vec3 gravity(0.0, 0.0, -9.8);
+Eigen::Vector3f gravity(0.0, 0.0, -9.8);
 
 NewtonRigid::NewtonRigid()
 {
@@ -13,12 +14,13 @@ NewtonRigid::NewtonRigid()
 
 void NewtonRigid::run(float time)
 {
+    /*
     for (auto i = 0; i < DynamicVec.size(); i++) {
-        glm::vec3 v = gravity * time;
-        glm::vec3 d = glm::vec3(0.5 * time * time) * gravity;
+        Eigen::Vector3f v = gravity * time;
+        Eigen::Vector3f d = Eigen::Vector3f(0.5 * time * time) * gravity;
         DynamicVec[i].updatestate(d, v);
         //update position
-    }
+    }*/
 }
 
 bool NewtonRigid::collision_detection()
@@ -29,6 +31,7 @@ bool NewtonRigid::collision_detection()
 void NewtonRigid::ParseWorld(json objectlist)
 {
     //cout << "bbb" << endl;
+    
     for (auto it = objectlist.begin(); it != objectlist.end(); ++it)
     {
         //cout << "aaa" << endl;
@@ -38,10 +41,10 @@ void NewtonRigid::ParseWorld(json objectlist)
             DynamicObj dtmp(
                 it.key(),
                 it.value()["path"],
-                glm::vec3({ it.value()["position"][0],it.value()["position"][1], it.value()["position"][2] }),
-                glm::vec3({ it.value()["scale"][0],it.value()["scale"][1], it.value()["scale"][2] }),
-                glm::vec3({ it.value()["rotation"][0],it.value()["rotation"][1], it.value()["rotation"][2] }),
-                glm::vec3({ it.value()["velocity"][0],it.value()["velocity"][1], it.value()["velocity"][2] }),
+                Eigen::Vector3f({ it.value()["position"][0],it.value()["position"][1], it.value()["position"][2] }),
+                Eigen::Vector3f({ it.value()["scale"][0],it.value()["scale"][1], it.value()["scale"][2] }),
+                Eigen::Vector3f({ it.value()["rotation"][0],it.value()["rotation"][1], it.value()["rotation"][2] }),
+                Eigen::Vector3f({ it.value()["velocity"][0],it.value()["velocity"][1], it.value()["velocity"][2] }),
                 it.value()["mass"]
             );
             DynamicVec.push_back(dtmp);
@@ -52,9 +55,9 @@ void NewtonRigid::ParseWorld(json objectlist)
             StaticObj stmp(
                 it.key(),
                 it.value()["path"],
-                glm::vec3({ it.value()["position"][0],it.value()["position"][1], it.value()["position"][2] }),
-                glm::vec3({ it.value()["scale"][0],it.value()["scale"][1], it.value()["scale"][2] }),
-                glm::vec3({ it.value()["rotation"][0],it.value()["rotation"][1], it.value()["rotation"][2] })
+                Eigen::Vector3f({ it.value()["position"][0],it.value()["position"][1], it.value()["position"][2] }),
+                Eigen::Vector3f({ it.value()["scale"][0],it.value()["scale"][1], it.value()["scale"][2] }),
+                Eigen::Vector3f({ it.value()["rotation"][0],it.value()["rotation"][1], it.value()["rotation"][2] })
                 
             );
             StaticVec.push_back(stmp);

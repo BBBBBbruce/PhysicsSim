@@ -3,10 +3,12 @@
 #define COORDS_H
 
 #include<iostream>
-#include<string>
+
 #include<glm/vec3.hpp>
 #include"json.hpp"
+#include "visualisation.h"
 using namespace std;
+using json = nlohmann::json;
 
 struct coords
 {
@@ -25,4 +27,5 @@ struct coords
 };
 
 #endif
+
 

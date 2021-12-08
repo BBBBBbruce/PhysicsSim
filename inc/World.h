@@ -24,6 +24,7 @@ public:
 	void PhysicsRender(float time);
 	void GraphicsRender();
 	void outputconfigfile();
+	time_t InitConfigs();
 
 };
 

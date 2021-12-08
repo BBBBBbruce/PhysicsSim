@@ -5,12 +5,12 @@
 #include "Engine.h"
 
 using json = nlohmann::json;
-class NewtonRigid //:
-    //public Engine
+class NewtonRigid :
+   public Engine
 {
 private:
-    vector<StaticObj>StaticVec;
-    vector<DynamicObj>DynamicVec;
+    //vector<StaticObj>StaticVec;
+    //vector<DynamicObj>DynamicVec;
     
 
 public:

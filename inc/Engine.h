@@ -10,7 +10,7 @@
 using namespace std;
 class Engine
 {
-private: 
+protected: 
 	vector<StaticObj>StaticVec;
 	vector<DynamicObj>DynamicVec;
 	//string Configfile;

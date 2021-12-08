@@ -39,6 +39,9 @@
     <ClCompile Include="src\World.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="visualisation.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="README.md" />
@@ -85,10 +88,10 @@
     <ClInclude Include="inc\test.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="inc\visualisation.h">
+    <ClInclude Include="inc\World.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="inc\World.h">
+    <ClInclude Include="inc\visualisation.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

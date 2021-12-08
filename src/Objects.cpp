@@ -6,10 +6,7 @@ Objects::Objects()
 	//throw std::runtime_error(std::string("Failed: how do you know base class? ") );
 }
 
-void Objects::initialise()
-{
-	//: load model
-}
+
 
 string Objects::get_name()
 {
@@ -21,7 +18,7 @@ string Objects::get_loadingpath()
 	return loadingpath;
 }
 
-glm::vec3 Objects::get_position()
+Eigen::Vector3f Objects::get_position()
 {
 	return position;
 }

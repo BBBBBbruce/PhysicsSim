@@ -3,23 +3,22 @@
 #define DYNAMICOBJ_H
 
 #include "Objects.h"
-using json = nlohmann::json;
+
 
 class DynamicObj :
     public Objects
 {
 private:
-    glm::vec3 velocity;
+    Eigen::Vector3f velocity;
     float mass;
 
 public:
     DynamicObj();
     DynamicObj(string n, string path, float m);
-    DynamicObj(string n, string path, glm::vec3 pos, glm::vec3 sc, glm::vec3 rot, glm::vec3 vel, float m);
-    glm::vec3 get_velocity();
+    DynamicObj(string n, string path, Eigen::Vector3f pos, Eigen::Vector3f sc, Eigen::Vector3f rot, Eigen::Vector3f vel, float m);
+    Eigen::Vector3f get_velocity();
 	float get_mass();
-    void initialise();
-    void updatestate(glm::vec3 pos, glm::vec3 v);
+    void updatestate(Eigen::Vector3f pos, Eigen::Vector3f v);
     void displayinfo();
     json tojson();
     
