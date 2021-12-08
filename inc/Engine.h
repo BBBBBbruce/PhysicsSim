@@ -13,7 +13,7 @@ class Engine
 protected: 
 	vector<StaticObj>StaticVec;
 	vector<DynamicObj>DynamicVec;
-	//string Configfile;
+	
 
 public:
 	Engine();

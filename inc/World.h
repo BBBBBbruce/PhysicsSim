@@ -21,7 +21,7 @@ public:
 	World(string inputpath, string outputpath);
 	void LoadingWorld();
 	void init();
-	void PhysicsRender(float time);
+	time_t PhysicsRender(float time, time_t pre_time);
 	void GraphicsRender();
 	void outputconfigfile();
 	time_t InitConfigs();

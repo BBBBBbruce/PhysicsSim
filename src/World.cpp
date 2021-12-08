@@ -8,6 +8,9 @@
 
 using namespace std;
 
+void make_dir_win(string targetpath, time_t time) {
+	_mkdir((targetpath + to_string(time)).c_str());
+}
 
 inline bool checkfile(const std::string& name) {
 	struct stat buffer;
@@ -27,13 +30,16 @@ World::World()
 
 World::World(string inputpath, string outputpath)
 {
+
 	configfilepath = inputpath;
 	targetpath = outputpath;
+	//cout << configfilepath << "  " << targetpath << "  " << endl;
 	NewtonRigid PhyEngine;
 }
 
 void World::LoadingWorld()
 {
+	PhyEngine = NewtonRigid(targetpath);
 	std::ifstream ifs(configfilepath);
 	json j;
 
@@ -51,15 +57,22 @@ void World::LoadingWorld()
 
 void World::init()
 {
-	PhyEngine.ParseWorld(currentconfig);
+	//PhyEngine.ParseWorld(currentconfig);
 	//cout << "aaa" << endl;
 	PhyEngine.ShowObjectsInfo();
 }
 
-void World::PhysicsRender(float time)
-{
-	
-	PhyEngine.run(time);
+time_t World::PhysicsRender(float runningtime, time_t pre_time)
+{	
+	time_t running_stamp;
+	running_stamp = time(0);
+	make_dir_win(targetpath, running_stamp);
+
+	PhyEngine.load_scene(pre_time);	
+	PhyEngine.run(runningtime);
+	PhyEngine.save_scene(running_stamp);
+
+	return running_stamp;
 }
 
 void World::GraphicsRender()
@@ -92,8 +105,8 @@ time_t World::InitConfigs()
 
 	json jout;
 	time_t t_stamp = time(0);
-	_mkdir((targetpath + to_string(t_stamp)).c_str());
-
+	//_mkdir((targetpath + to_string(t_stamp)).c_str());
+	make_dir_win(targetpath, t_stamp);
 	Eigen::MatrixXd X;
 	Eigen::MatrixXi Tri,Tet;
 	Eigen::VectorXi TriTag, TetTag;
@@ -138,7 +151,7 @@ time_t World::InitConfigs()
 			string path_p = targetpath + to_string(t_stamp) + "/" + it.key() + "_p.msh";
 			string path_v = targetpath + to_string(t_stamp) + "/" + it.key() + "_v.msh";
 			igl::writeMSH(path_p, _X, Tri, Tet, TriTag, TetTag, XFields, XF, EFields, TriF, TetF);
-			igl::writeMSH(path_p, _V, Tri, Tet, TriTag, TetTag, XFields, XF, EFields, TriF, TetF);
+			igl::writeMSH(path_v, _V, Tri, Tet, TriTag, TetTag, XFields, XF, EFields, TriF, TetF);
 			
 			// TODO adding initial velocity with .msh file of a complete verision of velocity)
 

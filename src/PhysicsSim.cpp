@@ -29,12 +29,14 @@ int main()
     float runningtime = 0.1;
     int step = 1;
     time_t start_time;
+    time_t pre_time;
 
     World testwrld(InputScene,outjson);
     testwrld.LoadingWorld();
     start_time = testwrld.InitConfigs();
+    pre_time = start_time;
     for (auto i = 0; i < step; i++) {
-        testwrld.PhysicsRender(runningtime);
+        pre_time = testwrld.PhysicsRender(runningtime, pre_time);
         //testwrld.outputconfigfile();
     }
     

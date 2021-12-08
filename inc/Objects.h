@@ -12,17 +12,21 @@ using namespace std;
 class Objects
 {
 protected:
-	string name;
-	string loadingpath;
-	Eigen::Vector3f position;
-	Eigen::Vector3f scale;
-	Eigen::Vector3f rotation;
+	
+	Eigen::MatrixXd position;
+	Eigen::MatrixXi tetrahedral;
+	//other unnecessary stuff, might be useful later:
+	Eigen::MatrixXi Tri;
+	Eigen::VectorXi TriTag, TetTag;
+	std::vector<std::string> XFields, EFields;
+	std::vector<Eigen::MatrixXd> XF, TriF, TetF;
+
 
 public:
+	string name;
 	Objects();
 	string get_name();
-	string get_loadingpath();
-	Eigen::Vector3f get_position();
+	Eigen::MatrixXd get_position();
 
 };
 
