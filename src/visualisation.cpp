@@ -78,11 +78,17 @@ void render(string path)
     _V.col(0) = V.col(0);
     _V.col(1) = V.col(1);
     _V.col(2) = V.col(2);
-    viewer.data().clear();
+    
     viewer.data().set_mesh(_V, F);
 
 
     viewer.data().set_face_based(true);
 
     viewer.launch();
+}
+
+
+void SaveScene(string scene, string folder)
+{
+
 }

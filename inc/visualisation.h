@@ -15,6 +15,7 @@ using namespace std;
 
 
 void render(string path);
+void SaveScene(string scene, string folder);
 
 
 #endif // 

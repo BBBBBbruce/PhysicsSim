@@ -3,6 +3,7 @@
 #define DYNAMICOBJ_H
 
 #include "Objects.h"
+#include <tuple>
 
 
 class DynamicObj :
@@ -22,6 +23,8 @@ public:
     void displayinfo();
     json tojson();
     void writemsh(string p, string v);
+    void ToViewer(Eigen::MatrixXd& vertices, Eigen::MatrixXi& faces);
+    tuple<Eigen::MatrixXd, Eigen::MatrixXi> Get_ViewMatrix();
     
     
 };

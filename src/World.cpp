@@ -76,8 +76,9 @@ time_t World::PhysicsRender(float runningtime, time_t pre_time)
 	return running_stamp;
 }
 
-void World::GraphicsRender()
+void World::GraphicsRender(time_t start_time)
 {
+
 }
 
 void World::outputconfigfile()

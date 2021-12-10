@@ -22,7 +22,7 @@ public:
 	void LoadingWorld();
 	void init();
 	time_t PhysicsRender(float time, time_t pre_time);
-	void GraphicsRender();
+	void GraphicsRender(time_t start_time);
 	void outputconfigfile();
 	time_t InitConfigs();
 

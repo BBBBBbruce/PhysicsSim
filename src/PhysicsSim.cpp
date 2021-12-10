@@ -8,9 +8,15 @@
 
 #include"World.h"
 #include"test.h"
+#include"NewtonRigid.h"
+
 #include <direct.h>
+#include "GraphicsEngine.h"
+
 
 #include"json.hpp"
+#include<filesystem>
+namespace fs = std::filesystem;
 
 
 //string testfile = "test.json";
@@ -50,13 +56,12 @@ int main(int argc, char* argv[])
     //cout << runningtime << endl;
     //cout << outjson << endl;
 
-
+    /*
     time_t start_time = time(0);
     cout << start_time << endl;
     outjson += to_string(start_time)+"/";
     _mkdir(outjson.c_str());
     time_t pre_time;
-
     World testwrld(InputScene,outjson);
     testwrld.LoadingWorld();
     start_time = testwrld.InitConfigs();
@@ -65,6 +70,31 @@ int main(int argc, char* argv[])
         pre_time = testwrld.PhysicsRender(runningtime, pre_time);
         //testwrld.outputconfigfile();
     }
+    testwrld.GraphicsRender(start_time);
+    */
+
+    time_t start_time = 1638985169;
+    string project_folder = outjson + to_string(start_time);
+    string image_folder = project_folder + "\\images";
+    _mkdir(image_folder.c_str());
+
+    GraphicsEngine GraphicsRenderer;
+
+    short sequence = 0;
+    for (const auto& entry : fs::directory_iterator(project_folder)) {
+        string scenefolder = entry.path().string();
+        cout << "loading scene: " << scenefolder << endl;
+        GraphicsRenderer.load_scene(scenefolder);
+        GraphicsRenderer.save_scene(image_folder,sequence);
+        sequence++;
+        break;
+    }
+
+
+        
+
+    
+
     
 
     std::cout << "\n";

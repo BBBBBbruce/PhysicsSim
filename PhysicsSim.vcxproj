@@ -116,10 +116,10 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp14</LanguageStandard>
-      <AdditionalIncludeDirectories>D:\Bruce_Projects\BBBBBbruce\PhysicsSim\inc;D:\Bruce_Projects\BBBBBbruce\PhysicsSim\ExternalLib\glfw-3.3.5.bin.WIN64\include;D:\Bruce_Projects\BBBBBbruce\PhysicsSim\ExternalLib\external\eigen;D:\Bruce_Projects\BBBBBbruce\PhysicsSim\ExternalLib\glad\include;D:\Bruce_Projects\BBBBBbruce\PhysicsSim\ExternalLib\libigl\include;D:\VS_lib\glm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalIncludeDirectories>D:\Bruce_Projects\BBBBBbruce\PhysicsSim\ExternalLib\external\stb;D:\Bruce_Projects\BBBBBbruce\PhysicsSim\inc;D:\Bruce_Projects\BBBBBbruce\PhysicsSim\ExternalLib\glfw-3.3.5.bin.WIN64\include;D:\Bruce_Projects\BBBBBbruce\PhysicsSim\ExternalLib\external\eigen;D:\Bruce_Projects\BBBBBbruce\PhysicsSim\ExternalLib\glad\include;D:\Bruce_Projects\BBBBBbruce\PhysicsSim\ExternalLib\libigl\include;D:\VS_lib\glm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalUsingDirectories>%(AdditionalUsingDirectories)</AdditionalUsingDirectories>
       <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
@@ -136,10 +136,10 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>D:\Bruce_Projects\BBBBBbruce\PhysicsSim\inc;D:\Bruce_Projects\BBBBBbruce\PhysicsSim\ExternalLib\glfw-3.3.5.bin.WIN64\include;D:\Bruce_Projects\BBBBBbruce\PhysicsSim\ExternalLib\external\eigen;D:\Bruce_Projects\BBBBBbruce\PhysicsSim\ExternalLib\glad\include;D:\Bruce_Projects\BBBBBbruce\PhysicsSim\ExternalLib\libigl\include;D:\VS_lib\glm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpp14</LanguageStandard>
+      <AdditionalIncludeDirectories>D:\Bruce_Projects\BBBBBbruce\PhysicsSim\ExternalLib\external\stb;D:\Bruce_Projects\BBBBBbruce\PhysicsSim\inc;D:\Bruce_Projects\BBBBBbruce\PhysicsSim\ExternalLib\glfw-3.3.5.bin.WIN64\include;D:\Bruce_Projects\BBBBBbruce\PhysicsSim\ExternalLib\external\eigen;D:\Bruce_Projects\BBBBBbruce\PhysicsSim\ExternalLib\glad\include;D:\Bruce_Projects\BBBBBbruce\PhysicsSim\ExternalLib\libigl\include;D:\VS_lib\glm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
       <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
@@ -152,9 +152,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="ExternalLib\external\stb\igl_stb_image.cpp" />
     <ClCompile Include="ExternalLib\glad\src\glad.c" />
     <ClCompile Include="src\DynamicObj.cpp" />
     <ClCompile Include="src\Engine.cpp" />
+    <ClCompile Include="src\GraphicsEngine.cpp" />
     <ClCompile Include="src\NewtonRigid.cpp" />
     <ClCompile Include="src\Objects.cpp" />
     <ClCompile Include="src\PhysicsSim.cpp" />
@@ -176,6 +178,7 @@
     <ClInclude Include="inc\Coords.h" />
     <ClInclude Include="inc\DynamicObj.h" />
     <ClInclude Include="inc\Engine.h" />
+    <ClInclude Include="inc\GraphicsEngine.h" />
     <ClInclude Include="inc\json.hpp" />
     <ClInclude Include="inc\NewtonRigid.h" />
     <ClInclude Include="inc\Objects.h" />

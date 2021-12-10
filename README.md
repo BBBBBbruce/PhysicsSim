@@ -1,6 +1,6 @@
 
 # Environment Setup
-C++ 14\
+C++ 17\
 libigl 2.3.0\
 glfw 3.35 WINx64 vc2015\
 glad Opengl 3.3 core\

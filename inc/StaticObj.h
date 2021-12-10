@@ -19,7 +19,8 @@ public:
     void displayinfo();
     string get_loadingpath();
     json tojson();
-
+    void ToViewer(Eigen::MatrixXd& vertices, Eigen::MatrixXi& faces);
+    tuple<Eigen::MatrixXd, Eigen::MatrixXi> Get_ViewMatrix();
 };
 #endif
 
