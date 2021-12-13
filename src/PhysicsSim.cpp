@@ -16,6 +16,8 @@
 
 #include"json.hpp"
 #include<filesystem>
+#include<CGAL/Simple_cartesian.h>
+
 namespace fs = std::filesystem;
 
 

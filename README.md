@@ -5,7 +5,9 @@ libigl 2.3.0\
 glfw 3.35 WINx64 vc2015\
 glad Opengl 3.3 core\
 Eigen: check consistence with libigl\
-json.h: https://github.com/nlohmann/json
+json.h: https://github.com/nlohmann/json \
+CGAL 5.3\
+boost 1.78.0(the library is too large to be included, install and ref it seperately)
 
 # Mesh Generation
 1. create *.obj in Blender.
