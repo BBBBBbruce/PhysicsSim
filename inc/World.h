@@ -21,10 +21,10 @@ public:
 	World(string inputpath, string outputpath);
 	void LoadingWorld();
 	void init();
-	time_t PhysicsRender(float time, time_t pre_time);
+	void PhysicsRender(float time, int seq);
 	void GraphicsRender(time_t start_time);
 	void outputconfigfile();
-	time_t InitConfigs();
+	void InitConfigs();
 
 };
 

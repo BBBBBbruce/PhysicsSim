@@ -18,7 +18,8 @@ public:
     vector<StaticObj> getStaticObjs();
     vector<DynamicObj> getDynamicObjs();
     void load_scene(string folder);
-    void save_scene(string folder,short seq);
+    void save_scene(string t_folder,int seq);
+    void reset();
 };
 
 #endif

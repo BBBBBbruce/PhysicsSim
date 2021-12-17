@@ -3,7 +3,9 @@
 using namespace std;
 
 //glm::vec3 gravity(0.0, 0.0, -9.8);
-Eigen::Vector3f gravity(0.0, 0.0, -9.8);
+
+
+Eigen::Vector3d gravity(0.0, -10.0, 0.0);
 
 NewtonRigid::NewtonRigid()
 {
@@ -85,11 +87,11 @@ void NewtonRigid::ShowObjectsInfo()
         StaticVec[i].displayinfo();
 }
 
-void NewtonRigid::load_scene(time_t t_stamp)
+void NewtonRigid::load_scene(int pre_seq)
 {   
     //bug cannot read tpath?
     //cout << "loading" << tpath << endl;
-    string scene_in = tpath + to_string(t_stamp) + "/Scene.json";
+    string scene_in = tpath + padseq(pre_seq) + "/Scene.json";
     //cout << endl;
     //cout << scene_in << endl;
     //cout << endl;
@@ -141,24 +143,63 @@ void NewtonRigid::load_scene(time_t t_stamp)
     }
 }
 
-void NewtonRigid::run(float time)
-{
-    /*
-    for (auto i = 0; i < DynamicVec.size(); i++) {
-        Eigen::Vector3f v = gravity * time;
-        Eigen::Vector3f d = Eigen::Vector3f(0.5 * time * time) * gravity;
-        DynamicVec[i].updatestate(d, v);
-        //update position
-    }*/
+using namespace Eigen;
+
+bool collision_check(MatrixXd vertices, MatrixXi tets) {
+
+
+    for (auto i = 0; i < tets.rows(); i++) {
+        //inline double vertex1 = vertices(tets(i, 0), 1);
+        //inline double vertex2 = vertices(tets(i, 1), 1);
+        //inline double vertex3 = vertices(tets(i, 2), 1);
+        //inline double vertex4 = vertices(tets(i, 3), 1);
+
+
+        if (vertices(tets(i, 0), 1) <= 0.0) {
+            return true;
+        }
+        else if (vertices(tets(i, 1), 1) <= 0.0) {
+            return true;
+        }
+        else if (vertices(tets(i, 2), 1) <= 0.0) {
+            return true;
+        }
+        else if (vertices(tets(i, 3), 1) <= 0.0) {
+            return true;
+        }
+    }
+    return false;
 }
 
-void NewtonRigid::save_scene(time_t t_stamp)
+void NewtonRigid::run(float time,int seq)
+{
+    
+    for (auto i = 0; i < DynamicVec.size(); i++) {
+        Eigen::Vector3d v = gravity * time;
+        Eigen::Vector3d d = 0.5 * time * time * gravity;
+
+        MatrixXd vertices = DynamicVec[i].get_position();
+        MatrixXd vel = DynamicVec[i].get_velocity();
+        MatrixXi tets = DynamicVec[i].get_tetrahedrons();
+
+        vertices.rowwise() += d.transpose();
+        vertices += vel * time;
+
+        //assume dynamic objects wont collide with each other. 
+        //check colliding with plane z = 0;
+        bool collide = collision_check(vertices, tets);
+        DynamicVec[i].updatestate(d, v, collide, time, seq);
+        //update position
+    }
+}
+
+void NewtonRigid::save_scene(int seq)
 {   
     json jout;
 
     for (auto i = 0; i < DynamicVec.size(); i++) {
-        string path_p = tpath + to_string(t_stamp) + "/" + DynamicVec[i].name + "_p.msh";
-        string path_v = tpath + to_string(t_stamp) + "/" + DynamicVec[i].name + "_v.msh";
+        string path_p = tpath + padseq(seq) + "/" + DynamicVec[i].name + "_p.msh";
+        string path_v = tpath + padseq(seq) + "/" + DynamicVec[i].name + "_v.msh";
         DynamicVec[i].writemsh(path_p, path_v);
         json jtmp;
         jtmp["position_path"] = path_p;
@@ -174,10 +215,21 @@ void NewtonRigid::save_scene(time_t t_stamp)
         jout["Objects"][StaticVec[i].name] = jtmp;
     }
 
-    string path_scene = tpath + to_string(t_stamp) + "/" + "Scene.json";
+    string path_scene = tpath + padseq(seq) + "/" + "Scene.json";
     std::ofstream o(path_scene);
     o << std::setw(4) << jout << std::endl;
 
+}
+
+#include<cgal/IO/File_tetgen.h>
+void NewtonRigid::create_aabb_tree() {
+
+}
+
+void NewtonRigid::reset()
+{
+    DynamicVec.clear();
+    StaticVec.clear();
 }
 
 

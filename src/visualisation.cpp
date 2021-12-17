@@ -92,3 +92,14 @@ void SaveScene(string scene, string folder)
 {
 
 }
+
+string padseq(int seq) {
+    if (seq < 10)
+        return "000" + to_string(seq);
+    else if (seq < 100)
+        return "00" + to_string(seq);
+    else if (seq < 1000)
+        return "0" + to_string(seq);
+    else
+        return to_string(seq);
+}

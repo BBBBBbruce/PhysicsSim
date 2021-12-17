@@ -50,16 +50,31 @@ Eigen::MatrixXd DynamicObj::get_velocity()
 	return velocity;
 }
 
+Eigen::MatrixXi DynamicObj::get_tetrahedrons()
+{
+	return tetrahedral;
+}
+
 float DynamicObj::get_mass()
 {
 	return mass;
 }
-/*
-void DynamicObj::updatestate(Eigen::Vector3f pos, Eigen::Vector3f v)
+
+void DynamicObj::updatestate(Eigen::Vector3d pos, Eigen::Vector3d v, bool collide, float t, int seq)
 {
-	position += pos;
-	velocity += v;
-}*/
+	if (collide) {
+		velocity *= -0.8;
+		cout << seq <<endl;
+		//BUG: should update postion as well, for simplicity, stay the same
+	}
+	else {
+		
+		position.rowwise() += pos.transpose();
+		position += velocity * t;
+		velocity.rowwise() += v.transpose();
+		cout << seq <<endl;
+	}
+}
 
 void DynamicObj::displayinfo()
 {	

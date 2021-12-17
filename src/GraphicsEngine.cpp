@@ -1,5 +1,7 @@
 #include "GraphicsEngine.h"
 
+
+
 GraphicsEngine::GraphicsEngine()
 {
     vector<StaticObj>StaticVec;
@@ -41,14 +43,12 @@ void GraphicsEngine::load_scene(string folder)
 
     for (auto it = j["Objects"].begin(); it != j["Objects"].end(); ++it) {
         if (it.value()["type"] == "dynamic") {
-            Eigen::MatrixXd X, V;
+            Eigen::MatrixXd X,V;
             Eigen::MatrixXi Tri, Tet;
             Eigen::VectorXi TriTag, TetTag;
             std::vector<std::string> XFields, EFields;
             std::vector<Eigen::MatrixXd> XF, TriF, TetF;
-
             igl::readMSH(it.value()["position_path"], X, Tri, Tet, TriTag, TetTag, XFields, XF, EFields, TriF, TetF);
-            igl::readMSH(it.value()["velocity_path"], V, Tri, Tet, TriTag, TetTag, XFields, XF, EFields, TriF, TetF);
             DynamicObj dtmp(
                 it.key(),
                 X, Tet, Tri, TriTag, TetTag, XFields, EFields,
@@ -91,9 +91,11 @@ using namespace Eigen;
 
 
 
-void GraphicsEngine::save_scene(string folder,short seq)
+void GraphicsEngine::save_scene(string t_folder, int seq)
 {   
+
     igl::opengl::glfw::Viewer viewer;
+    viewer.data().clear();
     Eigen::MatrixXd V;
     Eigen::MatrixXi F;
     V.resize(NoChange, 3);
@@ -105,10 +107,6 @@ void GraphicsEngine::save_scene(string folder,short seq)
         //cout << "no dimension bugs so far" << endl;
         MatrixXd vtmp2 = V;
         MatrixXi ftmp2 = F;
-        //cout << "vtmp: " << vtmp.rows() << endl;
-        //cout << "V: " << V.rows() << endl;
-        //cout << "ftmp: " << ftmp.rows() << endl;
-        //cout << "F: " << F.rows() << endl;
 
         ftmp = ftmp.array() + V.rows();
         V.resize(vtmp.rows() + V.rows(), NoChange);
@@ -123,10 +121,7 @@ void GraphicsEngine::save_scene(string folder,short seq)
         //cout << "no dimension bugs so far" << endl;
         MatrixXd vtmp2 = V;
         MatrixXi ftmp2 = F;
-        //cout << "vtmp: " << vtmp.rows() << endl;
-        //cout << "V: " << V.rows() << endl;
-        //cout << "ftmp: " << ftmp.rows() << endl;
-        //cout << "F: " << F.rows() << endl;
+  
 
         ftmp = ftmp.array() + V.rows();
         V.resize(vtmp.rows() + V.rows(), 3);
@@ -155,15 +150,23 @@ void GraphicsEngine::save_scene(string folder,short seq)
     viewer.core().draw_buffer(viewer.data(), false, R, G, B, A);
 
     // Save it to a PNG
-    string outpng = folder + "\\Image" + to_string(seq) + ".png";
+    string outpng = t_folder + "\\Image" + padseq(seq) + ".png";
+
+    cout << outpng << endl;
     
     //missing header file.
     igl::png::writePNG(R, G, B, A, outpng);
-
-    viewer.launch_rendering(true);
+    //
+    viewer.launch_rendering(false);
     viewer.launch_shut();
 
 
+}
+
+void GraphicsEngine::reset()
+{
+    DynamicVec.clear();
+    StaticVec.clear();
 }
 
 

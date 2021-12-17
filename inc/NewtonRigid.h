@@ -12,19 +12,23 @@ private:
     //vector<StaticObj>StaticVec;
     //vector<DynamicObj>DynamicVec;
     string tpath;
+    Tree aabb_tree;
     
 
 public:
     NewtonRigid();
     NewtonRigid(string t_path);
-    void run(float time);// in seconds
+    void run(float time, int seq);// in seconds
     bool collision_detection();
     //void ParseWorld(json objectlist);
     vector<StaticObj> getStaticObjs();
     vector<DynamicObj> getDynamicObjs();
     void ShowObjectsInfo();
-    void load_scene(time_t t_stamp);
-    void save_scene(time_t t_stamp);
+    void load_scene(int pre_seq);
+    void save_scene(int seq);
+    void create_aabb_tree();
+    void reset();
+
 };
 
 #endif 

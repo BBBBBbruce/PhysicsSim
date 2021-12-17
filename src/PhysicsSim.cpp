@@ -52,32 +52,32 @@ int main(int argc, char* argv[])
     string InputScene = argv[2];
     float runningtime = atof(argv[4]);
     int step = atoi(argv[6]);
-    string outjson = argv[8];
+    string project_folder = argv[8];
     //cout << InputScene << endl;
     //cout << step << endl;
     //cout << runningtime << endl;
     //cout << outjson << endl;
 
-    /*
+    //time_t start_time = 1639740809;
     time_t start_time = time(0);
     cout << start_time << endl;
-    outjson += to_string(start_time)+"/";
-    _mkdir(outjson.c_str());
-    time_t pre_time;
-    World testwrld(InputScene,outjson);
+    project_folder += to_string(start_time)+"\\";
+  
+    _mkdir(project_folder.c_str());
+    auto seq = 1;
+    World testwrld(InputScene, project_folder);
     testwrld.LoadingWorld();
-    start_time = testwrld.InitConfigs();
-    pre_time = start_time;
-    for (auto i = 0; i < step; i++) {
-        pre_time = testwrld.PhysicsRender(runningtime, pre_time);
-        //testwrld.outputconfigfile();
-    }
-    testwrld.GraphicsRender(start_time);
-    */
+    testwrld.InitConfigs();
 
-    time_t start_time = 1638985169;
-    string project_folder = outjson + to_string(start_time);
-    string image_folder = project_folder + "\\images";
+    for (auto i = 0; i < step; i++) {
+
+        testwrld.PhysicsRender(runningtime, seq);
+        seq++;
+        
+    }
+    
+    
+    string image_folder = project_folder + "images";
     _mkdir(image_folder.c_str());
 
     GraphicsEngine GraphicsRenderer;
@@ -86,18 +86,17 @@ int main(int argc, char* argv[])
     for (const auto& entry : fs::directory_iterator(project_folder)) {
         string scenefolder = entry.path().string();
         cout << "loading scene: " << scenefolder << endl;
+        // pading function
+
+
         GraphicsRenderer.load_scene(scenefolder);
         GraphicsRenderer.save_scene(image_folder,sequence);
+        GraphicsRenderer.reset();
         sequence++;
-        break;
+        //break;
     }
 
 
-        
-
-    
-
-    
 
     std::cout << "\n";
     std::cout << "===================\n";

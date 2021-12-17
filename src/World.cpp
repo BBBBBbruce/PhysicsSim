@@ -8,8 +8,17 @@
 
 using namespace std;
 
-void make_dir_win(string targetpath, time_t time) {
-	_mkdir((targetpath + to_string(time)).c_str());
+
+
+void make_dir_win(string targetpath, int seq) {
+	if(seq<10)
+		_mkdir((targetpath + "000" + to_string(seq)).c_str());
+	else if(seq<100)
+		_mkdir((targetpath + "00" + to_string(seq)).c_str());
+	else if(seq<1000)
+		_mkdir((targetpath + "0" + to_string(seq)).c_str());
+	else
+		_mkdir((targetpath + to_string(seq)).c_str());
 }
 
 inline bool checkfile(const std::string& name) {
@@ -62,18 +71,18 @@ void World::init()
 	PhyEngine.ShowObjectsInfo();
 }
 
-time_t World::PhysicsRender(float runningtime, time_t pre_time)
+void World::PhysicsRender(float runningtime, int seq)
 {	
-	time_t running_stamp;
-	running_stamp = time(NULL);
-	cout << running_stamp << endl;
-	make_dir_win(targetpath, running_stamp);
+	//time_t running_stamp;
+	//running_stamp = time(NULL);
+	//cout << running_stamp << endl;
+	make_dir_win(targetpath, seq);
 
-	PhyEngine.load_scene(pre_time);	
-	PhyEngine.run(runningtime);
-	PhyEngine.save_scene(running_stamp);
+	PhyEngine.load_scene(seq-1);	
+	PhyEngine.run(runningtime,seq);
+	PhyEngine.save_scene(seq);
+	PhyEngine.reset();
 
-	return running_stamp;
 }
 
 void World::GraphicsRender(time_t start_time)
@@ -99,17 +108,18 @@ void World::outputconfigfile()
 	o << std::setw(4) << jout << std::endl;
 }
 
-time_t World::InitConfigs()
+void World::InitConfigs()
 {	
 	// load model, 
 	// transform with defined params
 	// save the model to .msh, how to save velocity?
 
 	json jout;
-	time_t t_stamp = time(NULL);
-	cout << t_stamp << endl;
+	//time_t t_stamp = time(NULL);
+	//cout << t_stamp << endl;
 	//_mkdir((targetpath + to_string(t_stamp)).c_str());
-	make_dir_win(targetpath, t_stamp);
+
+	make_dir_win(targetpath, 0);
 	Eigen::MatrixXd X;
 	Eigen::MatrixXi Tri,Tet;
 	Eigen::VectorXi TriTag, TetTag;
@@ -151,8 +161,8 @@ time_t World::InitConfigs()
 			_X.col(0) = X.col(0);
 			_X.col(1) = X.col(1);
 			_X.col(2) = X.col(2);
-			string path_p = targetpath + to_string(t_stamp) + "/" + it.key() + "_p.msh";
-			string path_v = targetpath + to_string(t_stamp) + "/" + it.key() + "_v.msh";
+			string path_p = targetpath + "0000" + "/" + it.key() + "_p.msh";
+			string path_v = targetpath + "0000" + "/" + it.key() + "_v.msh";
 			igl::writeMSH(path_p, _X, Tri, Tet, TriTag, TetTag, XFields, XF, EFields, TriF, TetF);
 			igl::writeMSH(path_v, _V, Tri, Tet, TriTag, TetTag, XFields, XF, EFields, TriF, TetF);
 			
@@ -191,7 +201,7 @@ time_t World::InitConfigs()
 			_X.col(0) = X.col(0);
 			_X.col(1) = X.col(1);
 			_X.col(2) = X.col(2);
-			string path_p = targetpath + to_string(t_stamp) + "/" + it.key() + "_s.msh"; 
+			string path_p = targetpath + "0000" + "/" + it.key() + "_s.msh"; 
 			igl::writeMSH(path_p, _X, Tri, Tet, TriTag, TetTag, XFields, XF, EFields, TriF, TetF);
 			json jtmp;
 			jtmp["position_path"] = path_p;
@@ -201,10 +211,9 @@ time_t World::InitConfigs()
 		}
 	}
 	
-	string path_scene = targetpath + to_string(t_stamp) + "/" + "Scene.json"; 
+	string path_scene = targetpath + "0000" + "/" + "Scene.json"; 
 	std::ofstream o(path_scene);
 	o << std::setw(4) << jout << std::endl;
-	return t_stamp;
 }
 
 
