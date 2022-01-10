@@ -5,16 +5,16 @@ StaticObj::StaticObj()
 }
 
 StaticObj::StaticObj(string n, 
-	Eigen::MatrixXd pos, 
+	Eigen::MatrixXf pos, 
 	Eigen::MatrixXi tet, 
 	Eigen::MatrixXi tri, 
 	Eigen::MatrixXi tritag, 
 	Eigen::MatrixXi tettag, 
 	std::vector<std::string> xfields, 
 	std::vector<std::string> efields, 
-	std::vector<Eigen::MatrixXd> xf, 
-	std::vector<Eigen::MatrixXd> trif, 
-	std::vector<Eigen::MatrixXd> tetf,
+	std::vector<Eigen::MatrixXf> xf, 
+	std::vector<Eigen::MatrixXf> trif, 
+	std::vector<Eigen::MatrixXf> tetf,
 	std::string path
 )
 {
@@ -33,40 +33,18 @@ StaticObj::StaticObj(string n,
 }
 
 
-void StaticObj::displayinfo()
-{
-	cout << endl;
-	cout << "name: " << name << endl;
-	//cout << "path: " << loadingpath << endl;
-	//cout << "position: " << glm::to_string(position) << endl;
-	//cout << "scale: " << glm::to_string(scale) << endl;
-	//cout << "rotation: " << glm::to_string(rotation) << endl;
-	cout << endl;
-}
-
 string StaticObj::get_loadingpath()
 {
 	return loadingpath;
 }
 
-json StaticObj::tojson()
-{	
-	json j;
-	j["type"] = "static";
-	//j["path"] = loadingpath;
-	//j["position"] = { position.x(),position.y(),position.z() };
-	//j["rotation"] = { rotation.x(), rotation.y(), rotation.z() };
-	//j["scale"] = { scale.x(),scale.y(),scale.z() };
-	return j;
-	
-}
 
-void StaticObj::ToViewer(Eigen::MatrixXd& vertices, Eigen::MatrixXi& faces)
+void StaticObj::ToViewer(Eigen::MatrixXf& vertices, Eigen::MatrixXi& faces)
 {
 	using namespace Eigen;
 	int row = tetrahedral.rows();
 
-	MatrixXd V(row * 4, 3);
+	MatrixXf V(row * 4, 3);
 	MatrixXi F(row * 4, 3);
 
 	// list the tetrahedrals
@@ -89,12 +67,12 @@ void StaticObj::ToViewer(Eigen::MatrixXd& vertices, Eigen::MatrixXi& faces)
 	faces << F;
 }
 
-tuple<Eigen::MatrixXd, Eigen::MatrixXi> StaticObj::Get_ViewMatrix()
+tuple<Eigen::MatrixXf, Eigen::MatrixXi> StaticObj::Get_ViewMatrix()
 {
 	using namespace Eigen;
 	int row = tetrahedral.rows();
 
-	MatrixXd V(row * 4, 3);
+	MatrixXf V(row * 4, 3);
 	MatrixXi F(row * 4, 3);
 
 	for (unsigned i = 0; i < row; ++i)

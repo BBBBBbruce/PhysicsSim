@@ -49,11 +49,12 @@ void GraphicsEngine::load_scene(string folder)
             std::vector<std::string> XFields, EFields;
             std::vector<Eigen::MatrixXd> XF, TriF, TetF;
             igl::readMSH(it.value()["position_path"], X, Tri, Tet, TriTag, TetTag, XFields, XF, EFields, TriF, TetF);
+
             DynamicObj dtmp(
                 it.key(),
-                X, Tet, Tri, TriTag, TetTag, XFields, EFields,
-                XF, TriF, TetF,
-                V, it.value()["mass"]
+                double2float(X), Tet, Tri, TriTag, TetTag, XFields, EFields,
+                cast2float(XF), cast2float(TriF), cast2float(TetF),
+                double2float(V), it.value()["mass"]
             );
             DynamicVec.push_back(dtmp);
         }
@@ -67,8 +68,8 @@ void GraphicsEngine::load_scene(string folder)
             igl::readMSH(it.value()["position_path"], X, Tri, Tet, TriTag, TetTag, XFields, XF, EFields, TriF, TetF);
             StaticObj stmp(
                 it.key(),
-                X, Tet, Tri, TriTag, TetTag, XFields, EFields,
-                XF, TriF, TetF, it.value()["position_path"]
+                double2float(X), Tet, Tri, TriTag, TetTag, XFields, EFields,
+                cast2float(XF), cast2float(TriF), cast2float(TetF), it.value()["position_path"]
             );
             StaticVec.push_back(stmp);
         }
@@ -96,7 +97,7 @@ void GraphicsEngine::save_scene(string t_folder, int seq)
 
     igl::opengl::glfw::Viewer viewer;
     viewer.data().clear();
-    Eigen::MatrixXd V;
+    Eigen::MatrixXf V;
     Eigen::MatrixXi F;
     V.resize(NoChange, 3);
     F.resize(NoChange, 3);
@@ -105,7 +106,7 @@ void GraphicsEngine::save_scene(string t_folder, int seq)
     for (auto i = 0; i < DynamicVec.size(); i++) {
         auto [vtmp, ftmp] = DynamicVec[i].Get_ViewMatrix();
         //cout << "no dimension bugs so far" << endl;
-        MatrixXd vtmp2 = V;
+        MatrixXf vtmp2 = V;
         MatrixXi ftmp2 = F;
 
         ftmp = ftmp.array() + V.rows();
@@ -119,7 +120,7 @@ void GraphicsEngine::save_scene(string t_folder, int seq)
 
         auto [vtmp, ftmp] = StaticVec[i].Get_ViewMatrix();
         //cout << "no dimension bugs so far" << endl;
-        MatrixXd vtmp2 = V;
+        MatrixXf vtmp2 = V;
         MatrixXi ftmp2 = F;
   
 
@@ -132,10 +133,10 @@ void GraphicsEngine::save_scene(string t_folder, int seq)
     
     //
 
-    viewer.data().set_mesh(V, F);
+    viewer.data().set_mesh(float2double(V), F);
     viewer.data().set_face_based(true);
 
-    viewer.core().camera_eye = Eigen::Vector3f(0.f, 0.f, 50.f);
+    viewer.core().camera_eye = Eigen::Vector3f(0.f, 0.f, 25.f);
 
     viewer.launch_init();
     viewer.draw();

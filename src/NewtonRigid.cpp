@@ -5,7 +5,7 @@ using namespace std;
 //glm::vec3 gravity(0.0, 0.0, -9.8);
 
 
-Eigen::Vector3d gravity(0.0, -10.0, 0.0);
+Eigen::Vector3f gravity(0.0, -10.0, 0.0);
 
 NewtonRigid::NewtonRigid()
 {
@@ -79,22 +79,11 @@ vector<DynamicObj> NewtonRigid::getDynamicObjs()
     return DynamicVec;
 }
 
-void NewtonRigid::ShowObjectsInfo()
-{
-    for (auto i = 0; i < DynamicVec.size(); i++)
-        DynamicVec[i].displayinfo();
-    for (auto i = 0; i < StaticVec.size(); i++)
-        StaticVec[i].displayinfo();
-}
 
 void NewtonRigid::load_scene(int pre_seq)
 {   
-    //bug cannot read tpath?
-    //cout << "loading" << tpath << endl;
+
     string scene_in = tpath + padseq(pre_seq) + "/Scene.json";
-    //cout << endl;
-    //cout << scene_in << endl;
-    //cout << endl;
     std::ifstream ifs(scene_in);
     json j;
 
@@ -119,9 +108,9 @@ void NewtonRigid::load_scene(int pre_seq)
             igl::readMSH(it.value()["velocity_path"], V, Tri, Tet, TriTag, TetTag, XFields, XF, EFields, TriF, TetF);
             DynamicObj dtmp(
                 it.key(),
-                X,Tet,Tri,TriTag,TetTag,XFields, EFields,
-                XF,TriF,TetF,
-                V,it.value()["mass"]
+                double2float(X), Tet, Tri, TriTag, TetTag, XFields, EFields,
+                cast2float(XF), cast2float(TriF), cast2float(TetF),
+                double2float(V), it.value()["mass"]
             );
             DynamicVec.push_back(dtmp);
         }
@@ -135,8 +124,8 @@ void NewtonRigid::load_scene(int pre_seq)
             igl::readMSH(it.value()["position_path"], X, Tri, Tet, TriTag, TetTag, XFields, XF, EFields, TriF, TetF);
             StaticObj stmp(
                 it.key(),
-                X, Tet, Tri, TriTag, TetTag, XFields, EFields,
-                XF, TriF, TetF, it.value()["position_path"]
+                double2float(X), Tet, Tri, TriTag, TetTag, XFields, EFields,
+                cast2float(XF), cast2float(TriF), cast2float(TetF), it.value()["position_path"]
             );
             StaticVec.push_back(stmp);
         }
@@ -145,7 +134,7 @@ void NewtonRigid::load_scene(int pre_seq)
 
 using namespace Eigen;
 
-bool collision_check(MatrixXd vertices, MatrixXi tets) {
+bool collision_check(MatrixXf vertices, MatrixXi tets) {
 
 
     for (auto i = 0; i < tets.rows(); i++) {
@@ -175,11 +164,11 @@ void NewtonRigid::run(float time,int seq)
 {
     
     for (auto i = 0; i < DynamicVec.size(); i++) {
-        Eigen::Vector3d v = gravity * time;
-        Eigen::Vector3d d = 0.5 * time * time * gravity;
+        Eigen::Vector3f v = gravity * time;
+        Eigen::Vector3f d = 0.5 * time * time * gravity;
 
-        MatrixXd vertices = DynamicVec[i].get_position();
-        MatrixXd vel = DynamicVec[i].get_velocity();
+        MatrixXf vertices = DynamicVec[i].get_position();
+        MatrixXf vel = DynamicVec[i].get_velocity();
         MatrixXi tets = DynamicVec[i].get_tetrahedrons();
 
         vertices.rowwise() += d.transpose();

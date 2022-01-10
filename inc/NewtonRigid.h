@@ -9,11 +9,8 @@ class NewtonRigid :
    public Engine
 {
 private:
-    //vector<StaticObj>StaticVec;
-    //vector<DynamicObj>DynamicVec;
+
     string tpath;
-    Tree aabb_tree;
-    
 
 public:
     NewtonRigid();
@@ -23,7 +20,6 @@ public:
     //void ParseWorld(json objectlist);
     vector<StaticObj> getStaticObjs();
     vector<DynamicObj> getDynamicObjs();
-    void ShowObjectsInfo();
     void load_scene(int pre_seq);
     void save_scene(int seq);
     void create_aabb_tree();
