@@ -3,7 +3,7 @@
 #define COORDS_H
 
 #include<iostream>
-
+#include <direct.h>
 #include<glm/vec3.hpp>
 #include"json.hpp"
 #include "visualisation.h"
