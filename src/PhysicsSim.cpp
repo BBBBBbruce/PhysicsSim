@@ -13,7 +13,7 @@
 
 #include"json.hpp"
 #include<filesystem>
-//#include<CGAL/Simple_cartesian.h>
+#include<CGAL/Simple_cartesian.h>
 
 namespace fs = std::filesystem;
 
@@ -39,44 +39,21 @@ int main(int argc, char* argv[])
     project_folder += to_string(start_time)+"\\";
   
     _mkdir(project_folder.c_str());
-
-    //================fully-auto ==================
-    /*World* wrld = new World(InputScene, project_folder, runningtime, step);
-    wrld->init();
-    wrld->Physics_run();
-    wrld->Graphics_run();
-    //wrld->run();
-    delete wrld;*/
-    //================fully-auto ==================
-    //============ dynamic method ======================
-    World* wrld = new World(InputScene, project_folder, runningtime, step);
-    wrld->init();
-    wrld->Physics_run();
-
-    delete wrld;
-
-    GraphicsEngine GraphicsRenderer;
-    GraphicsRenderer.run(project_folder);
-
-
-    //============ dynamic method ====================
-    
-    //============ old version ====================
-    /*World testwrld(InputScene, project_folder);
+    auto seq = 1;
+    World testwrld(InputScene, project_folder);
     testwrld.LoadingWorld();
     testwrld.InitConfigs();
-    auto seq = 1;
+
     for (auto i = 0; i < step; i++) {
         testwrld.PhysicsRender(runningtime, seq);
         seq++; 
-    }*/
+    }
     
-
-    /*string image_folder = project_folder + "images";
+    string image_folder = project_folder + "images";
     _mkdir(image_folder.c_str());
 
     GraphicsEngine GraphicsRenderer;
-    
+
     short sequence = 0;
     for (const auto& entry : fs::directory_iterator(project_folder)) {
         string scenefolder = entry.path().string();
@@ -85,10 +62,7 @@ int main(int argc, char* argv[])
         GraphicsRenderer.save_scene(image_folder,sequence);
         GraphicsRenderer.reset();
         sequence++;
-    }*/
-
-    //============ old version ====================
-
+    }
 
     std::cout << "\n";
     std::cout << "===================\n";

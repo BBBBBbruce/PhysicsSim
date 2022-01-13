@@ -2,7 +2,7 @@
 #include <sys/stat.h>
 #include <fstream>
 #include <ctime>
-
+#include <direct.h>
 #pragma warning (disable : 4996)
 
 using namespace std;
@@ -26,28 +26,24 @@ inline bool checkfile(const std::string& name) {
 
 World::~World()
 {
-	delete PhyEngine;
-	delete GraEngine;
+
 }
 
 World::World()
 {
-	PhyEngine = new NewtonRigid();
-	GraEngine = new GraphicsEngine();
 }
 
-World::World(string inputpath, string outputpath, float runningtime, int step)
+World::World(string inputpath, string outputpath)
 {
-	this->runningtime = runningtime;
-	this->step = step;
+
 	configfilepath = inputpath;
 	targetpath = outputpath;
-	PhyEngine = new NewtonRigid(targetpath);
-	GraEngine = new GraphicsEngine();
+	NewtonRigid PhyEngine;
 }
 
 void World::LoadingWorld()
 {
+	PhyEngine = NewtonRigid(targetpath);
 	std::ifstream ifs(configfilepath);
 	json j;
 
@@ -65,20 +61,25 @@ void World::LoadingWorld()
 
 void World::init()
 {
-	LoadingWorld();
-	InitConfigs();
+
 }
 
 void World::PhysicsRender(float runningtime, int seq)
 {	
 	make_dir_win(targetpath, seq);
 
-	PhyEngine->load_scene(seq-1);	
-	PhyEngine->run(runningtime,seq);
-	PhyEngine->save_scene(seq);
-	PhyEngine->reset();
+	PhyEngine.load_scene(seq-1);	
+	PhyEngine.run(runningtime,seq);
+	PhyEngine.save_scene(seq);
+	PhyEngine.reset();
 
 }
+
+void World::GraphicsRender(time_t start_time)
+{
+
+}
+
 
 void World::InitConfigs()
 {	
@@ -179,39 +180,6 @@ void World::InitConfigs()
 	string path_scene = targetpath + "0000" + "/" + "Scene.json"; 
 	std::ofstream o(path_scene);
 	o << std::setw(4) << jout << std::endl;
-}
-
-void World::Physics_run()
-{	
-	short seq = 1;
-	for (auto i = 0; i < step; i++) {
-		PhysicsRender(runningtime, seq);
-		seq++;
-	}
-}
-
-namespace fs = std::filesystem;
-
-void World::Graphics_run()
-{
-	string image_folder = targetpath + "images";
-	_mkdir(image_folder.c_str());
-	short sequence = 0;
-	for (const auto& entry : fs::directory_iterator(targetpath)) {
-		string scenefolder = entry.path().string();
-		cout << "loading scene: " << scenefolder << endl;
-		GraEngine->load_scene(scenefolder);
-		GraEngine->save_scene(image_folder, sequence);
-		GraEngine->reset();
-		sequence++;
-	}
-}
-
-void World::run()
-{
-	init();
-	Physics_run();
-	Graphics_run();
 }
 
 
