@@ -168,7 +168,7 @@ void NewtonRigid::run(float time,int seq)
         Eigen::Vector3f d = 0.5 * time * time * gravity;
 
         MatrixXf vertices = DynamicVec[i].get_position();
-        MatrixXf vel = DynamicVec[i].get_velocity();
+        MatrixXf vel = DynamicVec[i].get_linear_velocity();
         MatrixXi tets = DynamicVec[i].get_tetrahedrons();
 
         vertices.rowwise() += d.transpose();
@@ -210,7 +210,7 @@ void NewtonRigid::save_scene(int seq)
 
 }
 
-#include<cgal/IO/File_tetgen.h>
+//#include<cgal/IO/File_tetgen.h>
 void NewtonRigid::create_aabb_tree() {
 
 }

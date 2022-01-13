@@ -1,11 +1,18 @@
 #include "DynamicObj.h"
 
+using namespace Eigen;
+
+void rotate_eigen_api() {
+
+}
+
+void rotate() {
+
+}
 
 DynamicObj::DynamicObj()
 {
 }
-
-
 
 DynamicObj::DynamicObj(string n, 
 	Eigen::MatrixXf pos, 
@@ -32,13 +39,14 @@ DynamicObj::DynamicObj(string n,
 	XF = xf;
 	TriF = trif;
 	TetF = tetf;
-	velocity = vel;
+	linear_velocity = vel;
 	mass = m;
+	angular_velocity = Vector3f(0.0f, 0.0f, 0.0f);
 }
 
-Eigen::MatrixXf DynamicObj::get_velocity()
+Eigen::MatrixXf DynamicObj::get_linear_velocity()
 {
-	return velocity;
+	return linear_velocity;
 }
 
 Eigen::MatrixXi DynamicObj::get_tetrahedrons()
@@ -53,18 +61,38 @@ float DynamicObj::get_mass()
 
 void DynamicObj::updatestate(Eigen::Vector3f pos, Eigen::Vector3f v, bool collide, float t, int seq)
 {
+	//if (collide) {
+	//	linear_velocity *= -0.8;
+	//	cout << seq <<endl;
+	//	//BUG: should update postion as well, for simplicity, stay the same
+	//}
+	//else {
+	//	
+	//	position.rowwise() += pos.transpose();
+	//	position += linear_velocity * t;
+	//	linear_velocity.rowwise() += v.transpose();
+	//	cout << seq <<endl;
+	//}
+	simulate_linear(pos, v, collide, t);
+	simulate_angular();
+}
+
+void DynamicObj::simulate_linear(Eigen::Vector3f pos, Eigen::Vector3f v, bool collide, float t)
+{
 	if (collide) {
-		velocity *= -0.8;
-		cout << seq <<endl;
+		linear_velocity *= -0.8;
 		//BUG: should update postion as well, for simplicity, stay the same
 	}
 	else {
-		
+
 		position.rowwise() += pos.transpose();
-		position += velocity * t;
-		velocity.rowwise() += v.transpose();
-		cout << seq <<endl;
+		position += linear_velocity * t;
+		linear_velocity.rowwise() += v.transpose();
 	}
+}
+
+void DynamicObj::simulate_angular()
+{
 }
 
 void DynamicObj::writemsh(string p, string v)
@@ -74,7 +102,7 @@ void DynamicObj::writemsh(string p, string v)
 	trif = cast2double(TriF);
 	tetf = cast2double(TetF);
 	igl::writeMSH(p, float2double(position), Tri, tetrahedral, TriTag, TetTag, XFields, xf, EFields, trif, tetf);
-	igl::writeMSH(v, float2double(velocity), Tri, tetrahedral, TriTag, TetTag, XFields, xf, EFields, trif, tetf);
+	igl::writeMSH(v, float2double(linear_velocity), Tri, tetrahedral, TriTag, TetTag, XFields, xf, EFields, trif, tetf);
 }
 
 
