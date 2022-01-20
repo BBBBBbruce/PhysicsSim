@@ -1,5 +1,6 @@
 #include "GraphicsEngine.h"
-
+#include<filesystem>
+namespace fs = std::filesystem;
 
 
 GraphicsEngine::GraphicsEngine()
@@ -171,5 +172,20 @@ void GraphicsEngine::reset()
 }
 
 
+void GraphicsEngine::run(string project_folder)
+{
+    string image_folder = project_folder + "images";
+    _mkdir(image_folder.c_str());
+    short sequence = 0;
+    for (const auto& entry : fs::directory_iterator(project_folder)) {
+        string scenefolder = entry.path().string();
+        cout << "loading scene: " << scenefolder << endl;
+        load_scene(scenefolder);
+        save_scene(image_folder, sequence);
+        reset();
+        sequence++;
+    }
+
+}
 
 

@@ -26,24 +26,29 @@ inline bool checkfile(const std::string& name) {
 
 World::~World()
 {
-
+	delete PhyEngine;
+	delete GraEngine;
 }
 
 World::World()
 {
+	PhyEngine = new NewtonRigid();
+	GraEngine = new GraphicsEngine();
 }
 
-World::World(string inputpath, string outputpath)
+World::World(string inputpath, string outputpath, float runningtime, int step)
 {
 
+	this->runningtime = runningtime;
+	this->step = step;
 	configfilepath = inputpath;
 	targetpath = outputpath;
-	NewtonRigid PhyEngine;
+	PhyEngine = new NewtonRigid(targetpath);
+	GraEngine = new GraphicsEngine();
 }
 
 void World::LoadingWorld()
 {
-	PhyEngine = NewtonRigid(targetpath);
 	std::ifstream ifs(configfilepath);
 	json j;
 
@@ -61,22 +66,18 @@ void World::LoadingWorld()
 
 void World::init()
 {
-
+	LoadingWorld();
+	InitConfigs();
 }
 
 void World::PhysicsRender(float runningtime, int seq)
 {	
 	make_dir_win(targetpath, seq);
 
-	PhyEngine.load_scene(seq-1);	
-	PhyEngine.run(runningtime,seq);
-	PhyEngine.save_scene(seq);
-	PhyEngine.reset();
-
-}
-
-void World::GraphicsRender(time_t start_time)
-{
+	PhyEngine->load_scene(seq - 1);
+	PhyEngine->run(runningtime, seq);
+	PhyEngine->save_scene(seq);
+	PhyEngine->reset();
 
 }
 
@@ -119,24 +120,23 @@ void World::InitConfigs()
 			MatrixXd V_tmp = translation * rotationx * rotationy * rotationz * scale * X.transpose();
 			X = V_tmp.transpose();
 			MatrixXd _X(X.rows(), 3);
-			MatrixXd _V(X.rows(), 3);
-			//_V.col(0) = ...
-			_V.col(0).setConstant(it.value()["velocity"][0]);
-			_V.col(1).setConstant(it.value()["velocity"][1]);
-			_V.col(2).setConstant(it.value()["velocity"][2]);
 			_X.col(0) = X.col(0);
 			_X.col(1) = X.col(1);
 			_X.col(2) = X.col(2);
 			string path_p = targetpath + "0000" + "/" + it.key() + "_p.msh";
-			string path_v = targetpath + "0000" + "/" + it.key() + "_v.msh";
 			igl::writeMSH(path_p, _X, Tri, Tet, TriTag, TetTag, XFields, XF, EFields, TriF, TetF);
-			igl::writeMSH(path_v, _V, Tri, Tet, TriTag, TetTag, XFields, XF, EFields, TriF, TetF);
-			
+
+			Eigen::Vector3f cm = it.value()["mass_centre"];
+			Eigen::Vector4f cm_tmp = Vector4f(cm[0], cm[1], cm[2],1.0);
+			cm_tmp = translation * rotationx * rotationy * rotationz * scale * cm_tmp;
+			//cm = (translation* rotationx* rotationy* rotationz* scale* cm_tmp).head<3>();
 			// TODO adding initial velocity with .msh file of a complete verision of velocity)
 
 			json jtmp;
 			jtmp["position_path"] = path_p;
-			jtmp["velocity_path"] = path_v;
+			jtmp["linear_velocity"] = it.value()["linear_velocity"];
+			jtmp["angular_velocity"] = it.value()["angular_velocity"];
+			jtmp["mass_centre"] = { cm_tmp[0],cm_tmp[1],cm_tmp[2] };
 			jtmp["mass"] = it.value()["mass"];
 			jtmp["type"] = "dynamic";
 			jout["Objects"][it.key()] = jtmp;
@@ -182,4 +182,35 @@ void World::InitConfigs()
 	o << std::setw(4) << jout << std::endl;
 }
 
+void World::Physics_run()
+{
+	short seq = 1;
+	for (auto i = 0; i < step; i++) {
+		PhysicsRender(runningtime, seq);
+		seq++;
+	}
+}
 
+namespace fs = std::filesystem;
+
+void World::Graphics_run()
+{
+	string image_folder = targetpath + "images";
+	_mkdir(image_folder.c_str());
+	short sequence = 0;
+	for (const auto& entry : fs::directory_iterator(targetpath)) {
+		string scenefolder = entry.path().string();
+		cout << "loading scene: " << scenefolder << endl;
+		GraEngine->load_scene(scenefolder);
+		GraEngine->save_scene(image_folder, sequence);
+		GraEngine->reset();
+		sequence++;
+	}
+}
+
+void World::run()
+{
+	init();
+	Physics_run();
+	Graphics_run();
+}
