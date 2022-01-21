@@ -47,7 +47,9 @@ DynamicObj::DynamicObj(string n,
 	std::vector<Eigen::MatrixXf> xf, 
 	std::vector<Eigen::MatrixXf> trif, 
 	std::vector<Eigen::MatrixXf> tetf, 
-	Eigen::MatrixXf vel, 
+	Eigen::Vector3f vel, 
+	Eigen::Vector3f cm,
+	Eigen::Vector3f angular_vel,
 	float m)
 {
 	name = n;
@@ -62,8 +64,9 @@ DynamicObj::DynamicObj(string n,
 	TriF = trif;
 	TetF = tetf;
 	linear_velocity = vel;
+	mass_centre = cm;
 	mass = m;
-	angular_velocity = Vector3f(0.0f, 0.0f, 0.0f);
+	angular_velocity = angular_vel;
 }
 
 Eigen::Vector3f DynamicObj::get_linear_velocity()
@@ -118,14 +121,13 @@ void DynamicObj::update_state(Eigen::MatrixXf x, Eigen::Vector3f v, Eigen::Vecto
 	
 }
 
-void DynamicObj::writemsh(string p, string v)
+void DynamicObj::writemsh(string p)
 {	
 	vector<Eigen::MatrixXd> xf, trif, tetf;
 	xf   = cast2double(XF);
 	trif = cast2double(TriF);
 	tetf = cast2double(TetF);
 	igl::writeMSH(p, float2double(position), Tri, tetrahedral, TriTag, TetTag, XFields, xf, EFields, trif, tetf);
-	igl::writeMSH(v, float2double(linear_velocity), Tri, tetrahedral, TriTag, TetTag, XFields, xf, EFields, trif, tetf);
 }
 
 

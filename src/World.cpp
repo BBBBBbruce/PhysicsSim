@@ -126,8 +126,8 @@ void World::InitConfigs()
 			string path_p = targetpath + "0000" + "/" + it.key() + "_p.msh";
 			igl::writeMSH(path_p, _X, Tri, Tet, TriTag, TetTag, XFields, XF, EFields, TriF, TetF);
 
-			Eigen::Vector3f cm = it.value()["mass_centre"];
-			Eigen::Vector4f cm_tmp = Vector4f(cm[0], cm[1], cm[2],1.0);
+			Eigen::Vector3d cm = Eigen::Vector3d( it.value()["mass_centre"][0],it.value()["mass_centre"][1],it.value()["mass_centre"][2] );
+			Eigen::Vector4d cm_tmp = Vector4d(cm[0], cm[1], cm[2],1.0);
 			cm_tmp = translation * rotationx * rotationy * rotationz * scale * cm_tmp;
 			//cm = (translation* rotationx* rotationy* rotationz* scale* cm_tmp).head<3>();
 			// TODO adding initial velocity with .msh file of a complete verision of velocity)
@@ -136,12 +136,14 @@ void World::InitConfigs()
 			jtmp["position_path"] = path_p;
 			jtmp["linear_velocity"] = it.value()["linear_velocity"];
 			jtmp["angular_velocity"] = it.value()["angular_velocity"];
-			jtmp["mass_centre"] = { cm_tmp[0],cm_tmp[1],cm_tmp[2] };
+			jtmp["mass_centre"] = { cm_tmp[0],cm_tmp[1], cm_tmp[2] };
 			jtmp["mass"] = it.value()["mass"];
 			jtmp["type"] = "dynamic";
 			jout["Objects"][it.key()] = jtmp;
 
 		}
+
+
 		else if (it.value()["type"] == "static") {
 
 			igl::readMSH(it.value()["path"], X, Tri, Tet, TriTag, TetTag, XFields, XF, EFields, TriF, TetF);

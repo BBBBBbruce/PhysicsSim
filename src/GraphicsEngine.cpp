@@ -55,7 +55,10 @@ void GraphicsEngine::load_scene(string folder)
                 it.key(),
                 double2float(X), Tet, Tri, TriTag, TetTag, XFields, EFields,
                 cast2float(XF), cast2float(TriF), cast2float(TetF),
-                double2float(V), it.value()["mass"]
+                Eigen::Vector3f(),
+                Eigen::Vector3f(),
+                Eigen::Vector3f(),
+                it.value()["mass"]
             );
             DynamicVec.push_back(dtmp);
         }

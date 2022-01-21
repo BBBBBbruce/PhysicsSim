@@ -1,8 +1,7 @@
 #include "NewtonRigid.h"
-#include <execution>
 
 using namespace std;
-
+using namespace Eigen;
 //glm::vec3 gravity(0.0, 0.0, -9.8);
 
 
@@ -99,19 +98,22 @@ void NewtonRigid::load_scene(int pre_seq)
 
     for (auto it = j["Objects"].begin(); it != j["Objects"].end(); ++it) {
         if (it.value()["type"] == "dynamic") {
-            Eigen::MatrixXd X, V;
+            Eigen::MatrixXd X;
             Eigen::MatrixXi Tri, Tet;
             Eigen::VectorXi TriTag, TetTag;
             std::vector<std::string> XFields, EFields;
             std::vector<Eigen::MatrixXd> XF, TriF, TetF;
 
             igl::readMSH(it.value()["position_path"], X, Tri, Tet, TriTag, TetTag, XFields, XF, EFields, TriF, TetF);
-            igl::readMSH(it.value()["velocity_path"], V, Tri, Tet, TriTag, TetTag, XFields, XF, EFields, TriF, TetF);
+            
             DynamicObj dtmp(
                 it.key(),
                 double2float(X), Tet, Tri, TriTag, TetTag, XFields, EFields,
                 cast2float(XF), cast2float(TriF), cast2float(TetF),
-                double2float(V), it.value()["mass"]
+                Eigen::Vector3f(it.value()["linear_velocity"][0], it.value()["linear_velocity"][1], it.value()["linear_velocity"][2]),
+                Eigen::Vector3f(it.value()["mass_centre"][0], it.value()["mass_centre"][1], it.value()["mass_centre"][2]),
+                Eigen::Vector3f(it.value()["angular_velocity"][0], it.value()["angular_velocity"][1], it.value()["angular_velocity"][2]),
+                it.value()["mass"]
             );
             DynamicVec.push_back(dtmp);
         }
@@ -133,7 +135,7 @@ void NewtonRigid::load_scene(int pre_seq)
     }
 }
 
-using namespace Eigen;
+
 
 bool collision_check(MatrixXf vertices, MatrixXi tets) {
 
@@ -161,6 +163,9 @@ bool collision_check(MatrixXf vertices, MatrixXi tets) {
     return false;
 }
 
+
+//+++++++++++++++++++++++++++++++++++++++++++
+
 tuple<bool, Vector3f> CD_bowl(MatrixXf vertices) {
 
     // calculate for 2D case: xy plane, z stays constant
@@ -169,28 +174,28 @@ tuple<bool, Vector3f> CD_bowl(MatrixXf vertices) {
     // -2 <= x <  2, y =  0
     //  2 <= x <  4, y =  4x - 8
     float distance = 0;
-    Vector3f contact_p = { 0.0,0.0,0.0}; 
+    Vector3f contact_p = { 0.0,0.0,0.0 };
     bool collide = false;
     for (auto i = 0; i < vertices.rows(); i++) {
         float x = vertices(i, 0);// x
         float y = vertices(i, 1);// y
-        float z = vertices(i, 2);// z
+        //float z = vertices(i, 2);// z
 
-        if (-4 <= x < -2) {
-            if (4 * x + y + 8 <= 0 && abs(4 * x + y + 8)/ sqrt(17)>distance) {//land on LHS
+        if (-4 <= x && x < -2) {
+            if (4 * x + y + 8 <= 0 && abs(4 * x + y + 8) / sqrt(17) > distance) {//land on LHS
                 collide = true;
                 distance = abs(4 * x + y + 8) / sqrt(17);
                 contact_p = vertices.row(i);
             }
         }
-        else if (-2 <= x < 2) {
+        else if (-2 <= x && x < 2) {
             if (y <= 0 && abs(y) > distance) {
                 collide = true;
                 distance = abs(y);
                 contact_p = vertices.row(i);
             }
         }
-        else if (2 <= x < 4) {
+        else if (2 <= x && x < 4) {
             if (4 * x - y - 8 >= 0 && abs(4 * x - y - 8) / sqrt(17) > distance) {//land on RHS
                 collide = true;
                 distance = abs(4 * x - y - 8) / sqrt(17);
@@ -199,7 +204,7 @@ tuple<bool, Vector3f> CD_bowl(MatrixXf vertices) {
         }
     }
 
-    return{collide, contact_p};
+    return{ collide, contact_p };
 
 }
 
@@ -257,35 +262,14 @@ Eigen::Vector3f project_sin(Eigen::Vector3f vec, Eigen::Vector3f dir_vec) {
 }
 
 void NewtonRigid::run(float delta_t,int seq)
-{
-    
+{   
+    float e = 0.4; // restitution coefficient
+    float tc = 0.002; // collision time
+    float r = 1; // radius of sphere
+    float u = 0.8; // friction coefficient
     for (auto i = 0; i < DynamicVec.size(); i++) {
-        /*
-        //float time = delta_t;
-        //Eigen::Vector3f v = gravity * time;
-        //Eigen::Vector3f d = 0.5 * time * time * gravity;
-
-        //MatrixXf vertices = DynamicVec[i].get_position();
-        //MatrixXf vel = DynamicVec[i].get_linear_velocity();
-        //MatrixXi tets = DynamicVec[i].get_tetrahedrons();
-
-        //vertices.rowwise() += d.transpose();
-        //vertices += vel * time;
-
-        ////assume dynamic objects wont collide with each other. 
-        ////check colliding with plane z = 0;
-        //bool collide = collision_check(vertices, tets);
-
-
-        //DynamicVec[i].updatestate(d, v, collide, time, seq);
-        //update position
-        */
 
         // pre-defined parameters
-        float e = 0.4; // restitution coefficient
-        float tc = 0.002; // collision time
-        float r = 1; // radius of sphere
-        float u = 0.8; // friction coefficient
         float mass = DynamicVec[i].get_mass();
         MatrixXf x0 = DynamicVec[i].get_position();
         Vector3f v0 = DynamicVec[i].get_linear_velocity();
@@ -293,11 +277,11 @@ void NewtonRigid::run(float delta_t,int seq)
         MatrixXi tets = DynamicVec[i].get_tetrahedrons();
         Vector3f cm = DynamicVec[i].get_cm();
 
-        MatrixXf x = x0.rowwise() + v0 * delta_t + 0.5 * gravity * delta_t * delta_t;
+        MatrixXf x = x0.rowwise() + (v0 * delta_t + 0.5 * gravity * delta_t * delta_t).transpose();
         //bool collide = collision_check(x, tets);
         auto [collide, contact_p] = CD_bowl(x);
 
-        if (collide) {
+        if (!collide) {
             cm = cm + v0 * delta_t + 0.5 * gravity * delta_t * delta_t;
             // assume velocity is all same;
             // in deformable, cm need to be delt with properly
@@ -305,15 +289,16 @@ void NewtonRigid::run(float delta_t,int seq)
             Vector3f theta = w0 * delta_t;
             rotate(x, theta, cm);
             DynamicVec[i].update_state(x, v, w0, cm);// in sphere case, due to rotation
+            
         }
         else {
 
             Vector3f r_dir = contact_p - cm;
             Vector3f vf1 = e * project_cos(v0, r_dir);
-            Vector3f N_impact =  mass / tc * (vf1 - project_cos(v0, r_dir)) + mass * project_cos(gravity, r_dir);
+            Vector3f N_impact = mass / tc * (vf1 - project_cos(v0, r_dir)) + mass * project_cos(gravity, r_dir);
 
             Vector3f vel_dir = project_sin(v0, r_dir).normalized();
-            Vector3f fs = u * N_impact.norm()* (project_sin(v0, r_dir)- w0.norm() * vel_dir).normalized();
+            Vector3f fs = u * N_impact.norm() * (project_sin(v0, r_dir) - w0.norm() * vel_dir).normalized();
             //check fs's direction
             Vector3f vf2 = (mass * project_sin(gravity, r_dir) - fs) * tc / mass + project_sin(v0, r_dir);
             Vector3f v = vf1 + vf2;
@@ -321,21 +306,31 @@ void NewtonRigid::run(float delta_t,int seq)
             float I = 0.4 * mass * r * r;
             Vector3f wf = fs.cross(r_dir) * tc / I + w0;
             DynamicVec[i].update_state(x0, v, wf, cm);
+            
         }
     }
+
 }
 
+
+//++++++++++++++++++++
 void NewtonRigid::save_scene(int seq)
 {   
     json jout;
 
     for (auto i = 0; i < DynamicVec.size(); i++) {
         string path_p = tpath + padseq(seq) + "/" + DynamicVec[i].name + "_p.msh";
-        string path_v = tpath + padseq(seq) + "/" + DynamicVec[i].name + "_v.msh";
-        DynamicVec[i].writemsh(path_p, path_v);
+        DynamicVec[i].writemsh(path_p);
+
+        Eigen::Vector3f lv = DynamicVec[i].get_linear_velocity();
+        Eigen::Vector3f av = DynamicVec[i].get_angular_velocity();
+        Eigen::Vector3f cm = DynamicVec[i].get_cm();
+
         json jtmp;
         jtmp["position_path"] = path_p;
-        jtmp["velocity_path"] = path_v;
+        jtmp["linear_velocity"] = {lv[0],lv[1],lv[2]};
+        jtmp["angular_velocity"] = {av[0],av[1],av[2]};
+        jtmp["mass_centre"] = {cm[0],cm[1],cm[2]};
         jtmp["mass"] = DynamicVec[i].get_mass();
         jtmp["type"] = "dynamic";
         jout["Objects"][DynamicVec[i].name] = jtmp;
@@ -363,7 +358,5 @@ void NewtonRigid::reset()
     DynamicVec.clear();
     StaticVec.clear();
 }
-
-
 
 
