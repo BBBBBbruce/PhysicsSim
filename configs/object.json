@@ -5,7 +5,7 @@
     "cube": {
       "type": "dynamic",
       "path": "D:\\Bruce_Projects\\BBBBBbruce\\PhysicsSim\\assets\\sphere1.msh",
-      "position": [ -2.0, 10.0, 0.0 ],
+      "position": [ -3.0, 10.0, 0.0 ],
       "scale": [ 0.5, 0.5, 0.5 ],
       "linear_velocity": [ 0.0, 0.0, 0.0 ],
       "angular_velocity": [0.0,0.0,0.0],
