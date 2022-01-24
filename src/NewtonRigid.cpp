@@ -261,6 +261,10 @@ Eigen::Vector3f project_sin(Eigen::Vector3f vec, Eigen::Vector3f dir_vec) {
     return vec - output;
 }
 
+void restore_contact(Eigen::Vector3f &contact) {
+    
+}
+
 void NewtonRigid::run(float delta_t,int seq)
 {   
  
@@ -268,6 +272,11 @@ void NewtonRigid::run(float delta_t,int seq)
     for (auto i = 0; i < DynamicVec.size(); i++) {
 
         // pre-defined parameters
+        MatrixXf xf;
+        Vector3f vf;
+        Vector3f wf;
+        Vector3f cmf;
+
         float mass = DynamicVec[i].get_mass();
         MatrixXf x0 = DynamicVec[i].get_position();
         Vector3f v0 = DynamicVec[i].get_linear_velocity();
@@ -278,7 +287,7 @@ void NewtonRigid::run(float delta_t,int seq)
         MatrixXf x = x0.rowwise() + (v0 * delta_t + 0.5 * gravity * delta_t * delta_t).transpose();
         //bool collide = collision_check(x, tets);
         auto [collide, contact_p] = CD_bowl(x);
-
+        //collide = false;
         if (!collide) {
             cm = cm + v0 * delta_t + 0.5 * gravity * delta_t * delta_t;
             // assume velocity is all same;
@@ -291,8 +300,10 @@ void NewtonRigid::run(float delta_t,int seq)
         }
         else {
 
-            Vector3f r_dir = contact_p - cm;
-            Vector3f vf1 = e * project_cos(v0, r_dir);
+            contact_p = contact_p - (v0 * delta_t + 0.5 * gravity * delta_t * delta_t);
+            //float tmp = (contact_p - cm).norm();
+            Vector3f r_dir = (contact_p - cm).normalized();
+            Vector3f vf1 = - e * project_cos(v0, r_dir);
             Vector3f N_impact = mass / tc * (vf1 - project_cos(v0, r_dir)) + mass * project_cos(gravity, r_dir);
 
             Vector3f vel_dir = project_sin(v0, r_dir).normalized();
@@ -303,9 +314,18 @@ void NewtonRigid::run(float delta_t,int seq)
 
             float I = 0.4 * mass * r * r;
             Vector3f wf = fs.cross(r_dir) * tc / I + w0;
-            DynamicVec[i].update_state(x0, v, wf, cm);
-            
+            DynamicVec[i].update_state((x0+x)/2, v, wf, cm);
+
+
+
+            //double translation = pow(v0.norm(), 2) - pow(v.norm(), 2);
+            //double angular = 0.4 * pow(w0.norm(), 2) - 0.4 * pow(wf.norm(), 2);
+            //double energy = translation + angular;
+            //double amount = pow(v.norm(), 2) + 0.4 * pow(wf.norm(), 2);
+            //cout << energy << endl;
         }
+
+        DynamicVec[i].update_state(xf, vf, wf, cmf);
     }
 
 }

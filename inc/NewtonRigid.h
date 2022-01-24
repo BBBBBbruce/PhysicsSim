@@ -11,9 +11,10 @@ class NewtonRigid :
 private:
 
     string tpath;
-    float e = -0.8; // restitution coefficient
-    float tc = 0.002; // collision time
-    float u = 0.2; // friction
+    //default
+    float e; // restitution coefficient
+    float tc; // collision time
+    float u; // friction
 
 public:
     NewtonRigid();
