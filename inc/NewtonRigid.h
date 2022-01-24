@@ -11,11 +11,15 @@ class NewtonRigid :
 private:
 
     string tpath;
+    float e = -0.8; // restitution coefficient
+    float tc = 0.002; // collision time
+    float u = 0.2; // friction
 
 public:
     NewtonRigid();
     NewtonRigid(string t_path);
     void run(float time, int seq);// in seconds
+    void set_physics_params(float restitution, float collision_t, float friction);
     bool collision_detection();
     //void ParseWorld(json objectlist);
     vector<StaticObj> getStaticObjs();

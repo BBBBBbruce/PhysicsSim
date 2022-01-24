@@ -97,6 +97,9 @@ void World::InitConfigs()
 	
 	for (auto it = currentconfig.begin(); it != currentconfig.end(); ++it)
 	{
+		if (it.key() == "physics") {
+			PhyEngine->set_physics_params(it.value()["restitution"], it.value()["collision_time"], it.value()["friction"]);
+		}
 		if (it.value()["type"] == "dynamic") {
 			//cout << it.value()["position"].get<> << endl;
 
@@ -178,6 +181,7 @@ void World::InitConfigs()
 
 		}
 	}
+	
 	
 	string path_scene = targetpath + "0000" + "/" + "Scene.json"; 
 	std::ofstream o(path_scene);

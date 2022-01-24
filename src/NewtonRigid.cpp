@@ -263,10 +263,8 @@ Eigen::Vector3f project_sin(Eigen::Vector3f vec, Eigen::Vector3f dir_vec) {
 
 void NewtonRigid::run(float delta_t,int seq)
 {   
-    float e = -0.8; // restitution coefficient
-    float tc = 0.002; // collision time
-    float r = 1; // radius of sphere
-    float u = 0.8; // friction coefficient
+ 
+    float r = 1; // friction coefficient
     for (auto i = 0; i < DynamicVec.size(); i++) {
 
         // pre-defined parameters
@@ -310,6 +308,13 @@ void NewtonRigid::run(float delta_t,int seq)
         }
     }
 
+}
+
+void NewtonRigid::set_physics_params(float restitution, float collision_t, float friction)
+{
+    e = restitution;
+    tc = collision_t;
+    u = friction;
 }
 
 
