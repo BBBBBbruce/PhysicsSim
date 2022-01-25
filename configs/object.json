@@ -2,14 +2,14 @@
   "Objects": {
 
     "physics": {
-      "restitution": 0.4,
+      "restitution": 0.8,
       "collision_time": 0.002,
-      "friction": 0.4
+      "friction": 0.04
     },
 
     "cube": {
       "type": "dynamic",
-      "path": "D:\\Bruce_Projects\\BBBBBbruce\\PhysicsSim\\assets\\sphere1.msh",
+      "path": "D:\\Bruce_Projects\\BBBBBbruce\\PhysicsSim\\assets\\uvsphere.msh",
       "position": [ -3.0, 10.0, 0.0 ],
       "scale": [ 1.0, 1.0, 1.0 ],
       "linear_velocity": [ 0.0, 0.0, 0.0 ],
@@ -20,10 +20,10 @@
     },
     "table": {
       "type": "static",
-      "path": "D:\\Bruce_Projects\\BBBBBbruce\\PhysicsSim\\assets\\bowl.msh",
+      "path": "D:\\Bruce_Projects\\BBBBBbruce\\PhysicsSim\\assets\\bowl_fixed.msh",
       "position": [ 0.0, 0.0, 0.0 ],
       "scale": [ 1.0, 1.0, 1.0 ],
-      "rotation": [ 0.0, 1.57, 0.0 ]
+      "rotation": [ 0.0, 1.57 , 0.0 ]
     }
   }
   }

@@ -181,7 +181,7 @@ tuple<bool, Vector3f> CD_bowl(MatrixXf vertices) {
         float y = vertices(i, 1);// y
         //float z = vertices(i, 2);// z
 
-        if (-4 <= x && x < -2) {
+        if (-4 <= x && x < -2 && y <=8 ) {
             if (4 * x + y + 8 <= 0 && abs(4 * x + y + 8) / sqrt(17) > distance) {//land on LHS
                 collide = true;
                 distance = abs(4 * x + y + 8) / sqrt(17);
@@ -195,13 +195,40 @@ tuple<bool, Vector3f> CD_bowl(MatrixXf vertices) {
                 contact_p = vertices.row(i);
             }
         }
-        else if (2 <= x && x < 4) {
+        else if (2 <= x && x < 4 && y <= 8) {
             if (4 * x - y - 8 >= 0 && abs(4 * x - y - 8) / sqrt(17) > distance) {//land on RHS
                 collide = true;
                 distance = abs(4 * x - y - 8) / sqrt(17);
                 contact_p = vertices.row(i);
             }
         }
+    }
+
+    return{ collide, contact_p };
+
+}
+
+tuple<bool, Vector3f> CD_table (MatrixXf vertices) {
+
+    // calculate for 2D case: xy plane, z stays constant
+    // bowl: 
+    // -4 <= x < -2, y = -4x - 8
+    // -2 <= x <  2, y =  0
+    //  2 <= x <  4, y =  4x - 8
+    float distance = 0;
+    Vector3f contact_p = { 0.0,0.0,0.0 };
+    bool collide = false;
+    for (auto i = 0; i < vertices.rows(); i++) {
+        float x = vertices(i, 0);// x
+        float y = vertices(i, 1);// y
+        //float z = vertices(i, 2);// z
+
+        if (y <= 0 && abs(y) > distance) {
+            collide = true;
+            distance = abs(y);
+            contact_p = vertices.row(i);
+        }
+
     }
 
     return{ collide, contact_p };
@@ -261,14 +288,12 @@ Eigen::Vector3f project_sin(Eigen::Vector3f vec, Eigen::Vector3f dir_vec) {
     return vec - output;
 }
 
-void restore_contact(Eigen::Vector3f &contact) {
-    
-}
+
 
 void NewtonRigid::run(float delta_t,int seq)
 {   
  
-    float r = 1; // friction coefficient
+    float r = 1; 
     for (auto i = 0; i < DynamicVec.size(); i++) {
 
         // pre-defined parameters
@@ -287,45 +312,43 @@ void NewtonRigid::run(float delta_t,int seq)
         MatrixXf x = x0.rowwise() + (v0 * delta_t + 0.5 * gravity * delta_t * delta_t).transpose();
         //bool collide = collision_check(x, tets);
         auto [collide, contact_p] = CD_bowl(x);
+        //auto [collide, contact_p] = CD_table(x);
         //collide = false;
+
+        cmf = cm + v0 * delta_t + 0.5 * gravity * delta_t * delta_t;
+        Vector3f theta = w0 * delta_t;
+        rotate(x, theta, cmf);
+        
         if (!collide) {
-            cm = cm + v0 * delta_t + 0.5 * gravity * delta_t * delta_t;
-            // assume velocity is all same;
-            // in deformable, cm need to be delt with properly
-            Vector3f v = v0 + gravity * delta_t;
-            Vector3f theta = w0 * delta_t;
-            rotate(x, theta, cm);
-            DynamicVec[i].update_state(x, v, w0, cm);// in sphere case, due to rotation
-            
+            vf = v0 + gravity * delta_t;
+            wf = w0;
+
         }
         else {
-
+            std::cout << endl;
             contact_p = contact_p - (v0 * delta_t + 0.5 * gravity * delta_t * delta_t);
-            //float tmp = (contact_p - cm).norm();
             Vector3f r_dir = (contact_p - cm).normalized();
-            Vector3f vf1 = - e * project_cos(v0, r_dir);
-            Vector3f N_impact = mass / tc * (vf1 - project_cos(v0, r_dir)) + mass * project_cos(gravity, r_dir);
 
-            Vector3f vel_dir = project_sin(v0, r_dir).normalized();
-            Vector3f fs = u * N_impact.norm() * (project_sin(v0, r_dir) - w0.norm() * vel_dir).normalized();
-            //check fs's direction
-            Vector3f vf2 = (mass * project_sin(gravity, r_dir) - fs) * tc / mass + project_sin(v0, r_dir);
-            Vector3f v = vf1 + vf2;
+            Vector3f vc = project_cos(v0, r_dir);
+            Vector3f vs = v0 - vc;
+            Vector3f gc = project_cos(gravity, r_dir);
+            Vector3f gs = gravity - gc;
+
+            Vector3f N_impact = mass  * (-e - 1) * vc /tc + mass * gc;// simplification of vc
+            Vector3f fs = u * N_impact.norm() * (vs + w0.cross(r_dir)).normalized();
+
+            Vector3f vf1 = -vc * (1 + e) + gc * (delta_t - tc) ; 
+
+            Vector3f vf2 = delta_t * gs + fs*tc/mass ;
+            vf = vf1 + vf2+v0;
 
             float I = 0.4 * mass * r * r;
-            Vector3f wf = fs.cross(r_dir) * tc / I + w0;
-            DynamicVec[i].update_state((x0+x)/2, v, wf, cm);
+            //Vector3f fs = u * mass / tc * (-e - 1) * vc;
+            wf = fs.cross(r_dir) * tc / I + w0;
 
-
-
-            //double translation = pow(v0.norm(), 2) - pow(v.norm(), 2);
-            //double angular = 0.4 * pow(w0.norm(), 2) - 0.4 * pow(wf.norm(), 2);
-            //double energy = translation + angular;
-            //double amount = pow(v.norm(), 2) + 0.4 * pow(wf.norm(), 2);
-            //cout << energy << endl;
         }
 
-        DynamicVec[i].update_state(xf, vf, wf, cmf);
+        DynamicVec[i].update_state(x, vf, wf, cmf);
     }
 
 }
