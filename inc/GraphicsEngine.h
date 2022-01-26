@@ -20,6 +20,7 @@ public:
     void load_scene(string folder);
     void save_scene(string t_folder,int seq);
     void reset();
+    void run(string project_folder);
 };
 
 #endif

@@ -1,0 +1,17 @@
+{
+  "Objects": {
+    "cube": {
+      "mass": 5.0,
+      "position_path": "bin\\out\\Project1642610568\\0001/cube_p.msh",
+      "linear_velocity": [ 0.0, 0.0, 0.0 ],
+      "angular_velocity": [ 0.0, 0.0, 0.0 ],
+      "mass_centre": [ 0.0, 0.0, 0.0 ],
+      "type": "dynamic"
+
+    },
+    "table": {
+      "position_path": "bin\\out\\Project1642610568\\0000/table_s.msh",
+      "type": "static"
+    }
+  }
+}

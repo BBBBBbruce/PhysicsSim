@@ -1,33 +1,55 @@
 #include "DynamicObj.h"
 
+using namespace Eigen;
+
+//Vector3f gravity = {0.f, 10.f, 0.f};
+
+//Eigen::Matrix4f rotate_eigen_api(Vector3f omega) {
+//	Affine3f rx(AngleAxisf(omega[0], Vector3f::UnitX()));
+//	Matrix4f rotationx = rx.matrix();
+//	Affine3f ry(AngleAxisf(omega[1], Vector3f::UnitY()));
+//	Matrix4f rotationy = ry.matrix();
+//	Affine3f rz(AngleAxisf(omega[2], Vector3f::UnitZ()));
+//	Matrix4f rotationz = rz.matrix();
+//	return rotationx * rotationy * rotationz;
+//}
+
+//void DynamicObj::rotate(float t, Vector3f rotating_point) {
+//	Affine3f tl(Translation3f(-rotating_point[0], -rotating_point[1], -rotating_point[2]));
+//	Matrix4f translation = tl.matrix();
+//	Affine3f tlb(Translation3f(rotating_point[0], rotating_point[1], rotating_point[2]));
+//	Matrix4f translation_back = tlb.matrix();
+//
+//	MatrixXf pos_tmp = position;
+//	pos_tmp.conservativeResize(pos_tmp.rows(), 4);// Make V n*4 matrix
+//	pos_tmp.col(3).setOnes();
+//	pos_tmp = (translation_back * rotate_eigen_api(angular_velocity*t) * translation * pos_tmp.transpose()).transpose();
+//	position = MatrixXf(pos_tmp.rows(), 3);
+//	position.col(0) = pos_tmp.col(0);
+//	position.col(1) = pos_tmp.col(1);
+//	position.col(2) = pos_tmp.col(2);
+//
+//	//rotate gravity_centre
+//}
 
 DynamicObj::DynamicObj()
 {
 }
 
-/*
-DynamicObj::DynamicObj(string n, string path, float m)
-{
-	name = n;
-	loadingpath = path;
-	mass = m;
-	position = Eigen::Vector3f{ 0.,0.,0. };
-	velocity = Eigen::Vector3f{ 0.,0.,0. };
-	
-}*/
-
 DynamicObj::DynamicObj(string n, 
-	Eigen::MatrixXd pos, 
+	Eigen::MatrixXf pos, 
 	Eigen::MatrixXi tet, 
 	Eigen::MatrixXi tri, 
 	Eigen::MatrixXi tritag, 
 	Eigen::MatrixXi tettag, 
 	std::vector<std::string> xfields, 
 	std::vector<std::string> efields, 
-	std::vector<Eigen::MatrixXd> xf, 
-	std::vector<Eigen::MatrixXd> trif, 
-	std::vector<Eigen::MatrixXd> tetf, 
-	Eigen::MatrixXd vel, 
+	std::vector<Eigen::MatrixXf> xf, 
+	std::vector<Eigen::MatrixXf> trif, 
+	std::vector<Eigen::MatrixXf> tetf, 
+	Eigen::Vector3f vel, 
+	Eigen::Vector3f cm,
+	Eigen::Vector3f angular_vel,
 	float m)
 {
 	name = n;
@@ -41,13 +63,15 @@ DynamicObj::DynamicObj(string n,
 	XF = xf;
 	TriF = trif;
 	TetF = tetf;
-	velocity = vel;
+	linear_velocity = vel;
+	mass_centre = cm;
 	mass = m;
+	angular_velocity = angular_vel;
 }
 
-Eigen::MatrixXd DynamicObj::get_velocity()
+Eigen::Vector3f DynamicObj::get_linear_velocity()
 {
-	return velocity;
+	return linear_velocity;
 }
 
 Eigen::MatrixXi DynamicObj::get_tetrahedrons()
@@ -55,66 +79,64 @@ Eigen::MatrixXi DynamicObj::get_tetrahedrons()
 	return tetrahedral;
 }
 
+Eigen::Vector3f DynamicObj::get_angular_velocity()
+{
+	return angular_velocity;
+}
+
 float DynamicObj::get_mass()
 {
 	return mass;
 }
 
-void DynamicObj::updatestate(Eigen::Vector3d pos, Eigen::Vector3d v, bool collide, float t, int seq)
+Eigen::Vector3f DynamicObj::get_cm()
 {
-	if (collide) {
-		velocity *= -0.8;
-		cout << seq <<endl;
-		//BUG: should update postion as well, for simplicity, stay the same
-	}
-	else {
-		
-		position.rowwise() += pos.transpose();
-		position += velocity * t;
-		velocity.rowwise() += v.transpose();
-		cout << seq <<endl;
-	}
+	return mass_centre;
 }
 
-void DynamicObj::displayinfo()
+void DynamicObj::updatestate(Eigen::Vector3f pos, Eigen::Vector3f v, bool collide, float t, int seq)
+{
+	//if (collide) {
+	//	linear_velocity *= -0.8;
+	//	cout << seq <<endl;
+	//	//BUG: should update postion as well, for simplicity, stay the same
+	//}
+	//else {
+	//	
+	//	position.rowwise() += pos.transpose();
+	//	position += linear_velocity * t;
+	//	linear_velocity.rowwise() += v.transpose();
+	//	cout << seq <<endl;
+	//}
+	//simulate_linear(pos, v, collide, t);
+	//simulate_angular(t);
+}
+
+void DynamicObj::update_state(Eigen::MatrixXf x, Eigen::Vector3f v, Eigen::Vector3f w, Eigen::Vector3f cm)
+{
+	position = x;
+	linear_velocity = v;
+	angular_velocity = w;
+	mass_centre = cm;
+	
+}
+
+void DynamicObj::writemsh(string p)
 {	
-	cout << endl;
-	cout << "name: " << name << endl;
-	//cout << "path: " << loadingpath << endl;
-	//cout << "position: " << glm::to_string(position) << endl;
-	//cout << "scale: " << glm::to_string(scale) << endl;
-	//cout << "rotation: " << glm::to_string(rotation) << endl;
-	//cout << "velocity: " << glm::to_string(velocity) << endl;
-	cout << "mass: " << mass << endl;
-	cout << endl;
-}
-
-json DynamicObj::tojson()
-{
-	json j;
-	j["type"] = "dynamic";
-	//j["path"] = loadingpath;
-	//j["position"] = { position.x(),position.y(),position.z() };
-	//j["rotation"] = { rotation.x(), rotation.y(), rotation.z() };
-	//j["scale"] = { scale.x(),scale.y(),scale.z() };
-	//j["velocity"] = { velocity.x(),velocity.y(),velocity.z() };
-	j["mass"] = mass;
-	return j;
-}
-
-void DynamicObj::writemsh(string p, string v)
-{
-	igl::writeMSH(p, position, Tri, tetrahedral, TriTag, TetTag, XFields, XF, EFields, TriF, TetF);
-	igl::writeMSH(v, velocity, Tri, tetrahedral, TriTag, TetTag, XFields, XF, EFields, TriF, TetF);
+	vector<Eigen::MatrixXd> xf, trif, tetf;
+	xf   = cast2double(XF);
+	trif = cast2double(TriF);
+	tetf = cast2double(TetF);
+	igl::writeMSH(p, float2double(position), Tri, tetrahedral, TriTag, TetTag, XFields, xf, EFields, trif, tetf);
 }
 
 
-void DynamicObj::ToViewer(Eigen::MatrixXd& vertices, Eigen::MatrixXi& faces)
+void DynamicObj::ToViewer(Eigen::MatrixXf& vertices, Eigen::MatrixXi& faces)
 {
 	using namespace Eigen;
 	int row = tetrahedral.rows();
 
-	MatrixXd V(row * 4, 3);
+	MatrixXf V(row * 4, 3);
 	MatrixXi F(row * 4, 3);
 
 	// list the tetrahedrals
@@ -137,12 +159,12 @@ void DynamicObj::ToViewer(Eigen::MatrixXd& vertices, Eigen::MatrixXi& faces)
 
 }
 
-tuple<Eigen::MatrixXd, Eigen::MatrixXi> DynamicObj::Get_ViewMatrix()
+tuple<Eigen::MatrixXf, Eigen::MatrixXi> DynamicObj::Get_ViewMatrix()
 {
 	using namespace Eigen;
 	int row = tetrahedral.rows();
 
-	MatrixXd V(row * 4, 3);
+	MatrixXf V(row * 4, 3);
 	MatrixXi F(row * 4, 3);
 
 	// list the tetrahedrals

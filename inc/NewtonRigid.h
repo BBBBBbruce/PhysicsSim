@@ -9,21 +9,22 @@ class NewtonRigid :
    public Engine
 {
 private:
-    //vector<StaticObj>StaticVec;
-    //vector<DynamicObj>DynamicVec;
+
     string tpath;
-    Tree aabb_tree;
-    
+    //default
+    float e; // restitution coefficient
+    float tc; // collision time
+    float u; // friction
 
 public:
     NewtonRigid();
     NewtonRigid(string t_path);
     void run(float time, int seq);// in seconds
+    void set_physics_params(float restitution, float collision_t, float friction);
     bool collision_detection();
     //void ParseWorld(json objectlist);
     vector<StaticObj> getStaticObjs();
     vector<DynamicObj> getDynamicObjs();
-    void ShowObjectsInfo();
     void load_scene(int pre_seq);
     void save_scene(int seq);
     void create_aabb_tree();

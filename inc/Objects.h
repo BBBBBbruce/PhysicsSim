@@ -13,21 +13,25 @@ class Objects
 {
 protected:
 	
-	Eigen::MatrixXd position;
+	Eigen::MatrixXf position;
 	Eigen::MatrixXi tetrahedral;
 	//other unnecessary stuff, might be useful later:
 	Eigen::MatrixXi Tri;
 	Eigen::VectorXi TriTag, TetTag;
 	std::vector<std::string> XFields, EFields;
-	std::vector<Eigen::MatrixXd> XF, TriF, TetF;
-
+	std::vector<Eigen::MatrixXf> XF, TriF, TetF;
 
 public:
 	string name;
 	Objects();
 	string get_name();
-	Eigen::MatrixXd get_position();
+	Eigen::MatrixXf get_position();
 
 };
+
+Eigen::MatrixXf double2float(const Eigen::MatrixXd& matrix);
+Eigen::MatrixXd float2double(const Eigen::MatrixXf& matrix);
+vector<Eigen::MatrixXd> cast2double(const vector<Eigen::MatrixXf>& vec);
+vector<Eigen::MatrixXf> cast2float (const vector<Eigen::MatrixXd>& vec);
 
 #endif

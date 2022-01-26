@@ -154,6 +154,7 @@
   <ItemGroup>
     <ClCompile Include="ExternalLib\external\stb\igl_stb_image.cpp" />
     <ClCompile Include="ExternalLib\glad\src\glad.c" />
+    <ClCompile Include="src\Collision.cpp" />
     <ClCompile Include="src\DynamicObj.cpp" />
     <ClCompile Include="src\Engine.cpp" />
     <ClCompile Include="src\GraphicsEngine.cpp" />
@@ -175,6 +176,7 @@
     <Xml Include="configs\objects.xml" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="inc\Collision.h" />
     <ClInclude Include="inc\Coords.h" />
     <ClInclude Include="inc\DynamicObj.h" />
     <ClInclude Include="inc\Engine.h" />
