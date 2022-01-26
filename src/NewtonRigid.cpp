@@ -1,5 +1,5 @@
 #include "NewtonRigid.h"
-
+#include "Collision.h"
 using namespace std;
 using namespace Eigen;
 //glm::vec3 gravity(0.0, 0.0, -9.8);
@@ -166,74 +166,6 @@ bool collision_check(MatrixXf vertices, MatrixXi tets) {
 
 //+++++++++++++++++++++++++++++++++++++++++++
 
-tuple<bool, Vector3f> CD_bowl(MatrixXf vertices) {
-
-    // calculate for 2D case: xy plane, z stays constant
-    // bowl: 
-    // -4 <= x < -2, y = -4x - 8
-    // -2 <= x <  2, y =  0
-    //  2 <= x <  4, y =  4x - 8
-    float distance = 0;
-    Vector3f contact_p = { 0.0,0.0,0.0 };
-    bool collide = false;
-    for (auto i = 0; i < vertices.rows(); i++) {
-        float x = vertices(i, 0);// x
-        float y = vertices(i, 1);// y
-        //float z = vertices(i, 2);// z
-
-        if (-4 <= x && x < -2 && y <=8 ) {
-            if (4 * x + y + 8 <= 0 && abs(4 * x + y + 8) / sqrt(17) > distance) {//land on LHS
-                collide = true;
-                distance = abs(4 * x + y + 8) / sqrt(17);
-                contact_p = vertices.row(i);
-            }
-        }
-        else if (-2 <= x && x < 2) {
-            if (y <= 0 && abs(y) > distance) {
-                collide = true;
-                distance = abs(y);
-                contact_p = vertices.row(i);
-            }
-        }
-        else if (2 <= x && x < 4 && y <= 8) {
-            if (4 * x - y - 8 >= 0 && abs(4 * x - y - 8) / sqrt(17) > distance) {//land on RHS
-                collide = true;
-                distance = abs(4 * x - y - 8) / sqrt(17);
-                contact_p = vertices.row(i);
-            }
-        }
-    }
-
-    return{ collide, contact_p };
-
-}
-
-tuple<bool, Vector3f> CD_table (MatrixXf vertices) {
-
-    // calculate for 2D case: xy plane, z stays constant
-    // bowl: 
-    // -4 <= x < -2, y = -4x - 8
-    // -2 <= x <  2, y =  0
-    //  2 <= x <  4, y =  4x - 8
-    float distance = 0;
-    Vector3f contact_p = { 0.0,0.0,0.0 };
-    bool collide = false;
-    for (auto i = 0; i < vertices.rows(); i++) {
-        float x = vertices(i, 0);// x
-        float y = vertices(i, 1);// y
-        //float z = vertices(i, 2);// z
-
-        if (y <= 0 && abs(y) > distance) {
-            collide = true;
-            distance = abs(y);
-            contact_p = vertices.row(i);
-        }
-
-    }
-
-    return{ collide, contact_p };
-
-}
 
 Eigen::Matrix4f rotate_eigen_api(Vector3f theta) {
     Affine3f rx(AngleAxisf(theta[0], Vector3f::UnitX()));
@@ -311,8 +243,9 @@ void NewtonRigid::run(float delta_t,int seq)
 
         MatrixXf x = x0.rowwise() + (v0 * delta_t + 0.5 * gravity * delta_t * delta_t).transpose();
         //bool collide = collision_check(x, tets);
-        auto [collide, contact_p] = CD_bowl(x);
+        //auto [collide, contact_p] = CD_bowl(x);
         //auto [collide, contact_p] = CD_table(x);
+        auto [collide, contact_p] = CD_bowl_wide(x);
         //collide = false;
 
         cmf = cm + v0 * delta_t + 0.5 * gravity * delta_t * delta_t;
@@ -325,7 +258,7 @@ void NewtonRigid::run(float delta_t,int seq)
 
         }
         else {
-            std::cout << endl;
+            //std::cout << endl;
             contact_p = contact_p - (v0 * delta_t + 0.5 * gravity * delta_t * delta_t);
             Vector3f r_dir = (contact_p - cm).normalized();
 

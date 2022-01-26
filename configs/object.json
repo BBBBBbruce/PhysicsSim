@@ -10,7 +10,7 @@
     "cube": {
       "type": "dynamic",
       "path": "D:\\Bruce_Projects\\BBBBBbruce\\PhysicsSim\\assets\\uvsphere.msh",
-      "position": [ -3.0, 10.0, 0.0 ],
+      "position": [ -5.0, 10.0, 0.0 ],
       "scale": [ 1.0, 1.0, 1.0 ],
       "linear_velocity": [ 0.0, 0.0, 0.0 ],
       "angular_velocity": [0.0,0.0,0.0],
@@ -20,7 +20,7 @@
     },
     "table": {
       "type": "static",
-      "path": "D:\\Bruce_Projects\\BBBBBbruce\\PhysicsSim\\assets\\bowl_fixed.msh",
+      "path": "D:\\Bruce_Projects\\BBBBBbruce\\PhysicsSim\\assets\\bowl_wide.msh",
       "position": [ 0.0, 0.0, 0.0 ],
       "scale": [ 1.0, 1.0, 1.0 ],
       "rotation": [ 0.0, 1.57 , 0.0 ]
