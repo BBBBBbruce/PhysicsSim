@@ -40,14 +40,27 @@ Base class of physics engine, process the world and predict the next state
 
 inherited class from Engine. using the basics Newton's laws.
 
+### StressFEM
+
+inherited class from Engine. Implement deformable stress/strin model with FEM method
+
 ### other simulation
 
-FEM, PBD, PD, etc: adding later
+PBD, PD, etc: adding later
 
 ### World
 
 pasring files, calling engines to simulate, export setup for the current state, etc
 
+### GraphicsEngine
+
+rendering the scene
+
+### Collision
+
+collision detection class
+
 ### visulisation
 
-render the world and display.
+adding header files, save for later, maybe change name to utils.h
+
