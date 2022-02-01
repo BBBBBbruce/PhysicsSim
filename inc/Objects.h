@@ -33,5 +33,6 @@ Eigen::MatrixXf double2float(const Eigen::MatrixXd& matrix);
 Eigen::MatrixXd float2double(const Eigen::MatrixXf& matrix);
 vector<Eigen::MatrixXd> cast2double(const vector<Eigen::MatrixXf>& vec);
 vector<Eigen::MatrixXf> cast2float (const vector<Eigen::MatrixXd>& vec);
+void make_dir_win(string targetpath, int seq);
 
 #endif

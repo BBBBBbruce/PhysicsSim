@@ -2,7 +2,9 @@
 #ifndef WORLD_H
 #define WORLD_H
 
+#include"Engine.h"
 #include"NewtonRigid.h"
+#include"StressFEM.h"
 #include"GraphicsEngine.h"
 
 using json = nlohmann::json;
@@ -16,17 +18,16 @@ private:
 	string targetpath;
 	json currentconfig;
 	json outputconfig;
-	NewtonRigid* PhyEngine;
+	Engine* PhyEngine;
 	GraphicsEngine* GraEngine;
 
 public:
 	~World();
 	World();
-	World(string inputpath, string outputpath, float runningtime, int step);
+	World(string inputpath, string outputpath, float runningtime, int step, string mode);
 	void LoadingWorld();
 	void init();
 	void PhysicsRender(float time, int seq);
-	void InitConfigs();
 	void Physics_run();
 	void Graphics_run();
 	void run();

@@ -2,14 +2,16 @@
 #define GRAPHICSENGINE_H
 
 #pragma once
-#include "Engine.h"
 #include <igl/png/writePNG.h>
-class GraphicsEngine :
-    public Engine
+
+#include"StaticObj.h"
+#include"DynamicObj.h"
+
+class GraphicsEngine 
 {
 private:
-    //vector<StaticObj>StaticVec;
-    //vector<DynamicObj>DynamicVec;
+    vector<StaticObj>StaticVec;
+    vector<DynamicObj>DynamicVec;
     string tpath;
 
 public:

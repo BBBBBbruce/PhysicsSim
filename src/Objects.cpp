@@ -53,3 +53,14 @@ vector<Eigen::MatrixXf> cast2float(const vector<Eigen::MatrixXd>& vec)
 	std::transform(vec.begin(), vec.end(), std::back_inserter(fvec), double2float);
 	return fvec;
 }
+
+void make_dir_win(string targetpath, int seq) {
+	if (seq < 10)
+		_mkdir((targetpath + "000" + to_string(seq)).c_str());
+	else if (seq < 100)
+		_mkdir((targetpath + "00" + to_string(seq)).c_str());
+	else if (seq < 1000)
+		_mkdir((targetpath + "0" + to_string(seq)).c_str());
+	else
+		_mkdir((targetpath + to_string(seq)).c_str());
+}

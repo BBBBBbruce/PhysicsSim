@@ -30,6 +30,10 @@ int main(int argc, char* argv[])
     float runningtime = atof(argv[4]);
     int step = atoi(argv[6]);
     string project_folder = argv[8];
+    string sim_mode = argv[10];
+
+
+
     //time_t start_time = 1639740809;
     time_t start_time = time(0);
     cout << start_time << endl;
@@ -46,7 +50,7 @@ int main(int argc, char* argv[])
     delete wrld;*/
     //================fully-auto ==================
     //============ dynamic method ======================
-    World* wrld = new World(InputScene, project_folder, runningtime, step);
+    World* wrld = new World(InputScene, project_folder, runningtime, step, sim_mode);
     wrld->init();
     wrld->Physics_run();
 

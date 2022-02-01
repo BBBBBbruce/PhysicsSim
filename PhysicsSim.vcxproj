@@ -162,6 +162,7 @@
     <ClCompile Include="src\Objects.cpp" />
     <ClCompile Include="src\PhysicsSim.cpp" />
     <ClCompile Include="src\StaticObj.cpp" />
+    <ClCompile Include="src\StressFEM.cpp" />
     <ClCompile Include="src\visualisation.cpp" />
     <ClCompile Include="src\World.cpp" />
   </ItemGroup>
@@ -185,6 +186,7 @@
     <ClInclude Include="inc\NewtonRigid.h" />
     <ClInclude Include="inc\Objects.h" />
     <ClInclude Include="inc\StaticObj.h" />
+    <ClInclude Include="inc\StressFEM.h" />
     <ClInclude Include="inc\test.h" />
     <ClInclude Include="inc\visualisation.h" />
     <ClInclude Include="inc\World.h" />

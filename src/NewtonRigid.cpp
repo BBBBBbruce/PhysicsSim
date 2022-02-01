@@ -136,7 +136,6 @@ void NewtonRigid::load_scene(int pre_seq)
 }
 
 
-
 bool collision_check(MatrixXf vertices, MatrixXi tets) {
 
 
@@ -286,13 +285,6 @@ void NewtonRigid::run(float delta_t,int seq)
 
 }
 
-void NewtonRigid::set_physics_params(float restitution, float collision_t, float friction)
-{
-    e = restitution;
-    tc = collision_t;
-    u = friction;
-}
-
 
 //++++++++++++++++++++
 void NewtonRigid::save_scene(int seq)
@@ -334,10 +326,112 @@ void NewtonRigid::create_aabb_tree() {
 
 }
 
-void NewtonRigid::reset()
+void NewtonRigid::InitConfigs(string targetpath, json currentconfig)
 {
-    DynamicVec.clear();
-    StaticVec.clear();
+    json jout;
+
+    make_dir_win(targetpath, 0);
+    Eigen::MatrixXd X;
+    Eigen::MatrixXi Tri, Tet;
+    Eigen::VectorXi TriTag, TetTag;
+    std::vector<std::string> XFields, EFields;
+    std::vector<Eigen::MatrixXd> XF, TriF, TetF;
+
+    using namespace Eigen;
+
+    for (auto it = currentconfig.begin(); it != currentconfig.end(); ++it)
+    {
+        if (it.key() == "physics") {
+            set_physics_params(it.value()["restitution"], it.value()["collision_time"], it.value()["friction"]);
+        }
+        if (it.value()["type"] == "dynamic") {
+            //cout << it.value()["position"].get<> << endl;
+
+            igl::readMSH(it.value()["path"], X, Tri, Tet, TriTag, TetTag, XFields, XF, EFields, TriF, TetF);
+
+            X.conservativeResize(X.rows(), 4);// Make V n*4 matrix
+            X.col(3).setOnes();
+
+            Affine3d tl(Translation3d(it.value()["position"][0], it.value()["position"][1], it.value()["position"][2]));
+            Matrix4d translation = tl.matrix();
+            Affine3d sc(AlignedScaling3d(it.value()["scale"][0], it.value()["scale"][1], it.value()["scale"][2]));
+            Matrix4d scale = sc.matrix();
+            Affine3d rx(AngleAxisd(it.value()["rotation"][0], Vector3d::UnitX()));
+            Matrix4d rotationx = rx.matrix();
+            Affine3d ry(AngleAxisd(it.value()["rotation"][1], Vector3d::UnitY()));
+            Matrix4d rotationy = ry.matrix();
+            Affine3d rz(AngleAxisd(it.value()["rotation"][2], Vector3d::UnitZ()));
+            Matrix4d rotationz = rz.matrix();
+
+            //seems redundent, TODO: opt
+            MatrixXd V_tmp = translation * rotationx * rotationy * rotationz * scale * X.transpose();
+            X = V_tmp.transpose();
+            MatrixXd _X(X.rows(), 3);
+            _X.col(0) = X.col(0);
+            _X.col(1) = X.col(1);
+            _X.col(2) = X.col(2);
+            string path_p = targetpath + "0000" + "/" + it.key() + "_p.msh";
+            igl::writeMSH(path_p, _X, Tri, Tet, TriTag, TetTag, XFields, XF, EFields, TriF, TetF);
+
+            Eigen::Vector3d cm = Eigen::Vector3d(it.value()["mass_centre"][0], it.value()["mass_centre"][1], it.value()["mass_centre"][2]);
+            Eigen::Vector4d cm_tmp = Vector4d(cm[0], cm[1], cm[2], 1.0);
+            cm_tmp = translation * rotationx * rotationy * rotationz * scale * cm_tmp;
+            //cm = (translation* rotationx* rotationy* rotationz* scale* cm_tmp).head<3>();
+            // TODO adding initial velocity with .msh file of a complete verision of velocity)
+
+            json jtmp;
+            jtmp["position_path"] = path_p;
+            jtmp["linear_velocity"] = it.value()["linear_velocity"];
+            jtmp["angular_velocity"] = it.value()["angular_velocity"];
+            jtmp["mass_centre"] = { cm_tmp[0],cm_tmp[1], cm_tmp[2] };
+            jtmp["mass"] = it.value()["mass"];
+            jtmp["type"] = "dynamic";
+            jout["Objects"][it.key()] = jtmp;
+
+        }
+
+
+        else if (it.value()["type"] == "static") {
+
+            igl::readMSH(it.value()["path"], X, Tri, Tet, TriTag, TetTag, XFields, XF, EFields, TriF, TetF);
+
+            X.conservativeResize(X.rows(), 4);// Make V n*4 matrix
+            X.col(3).setOnes();
+
+            Affine3d tl(Translation3d(it.value()["position"][0], it.value()["position"][1], it.value()["position"][2]));
+            Matrix4d translation = tl.matrix();
+            Affine3d sc(AlignedScaling3d(it.value()["scale"][0], it.value()["scale"][1], it.value()["scale"][2]));
+            Matrix4d scale = sc.matrix();
+            Affine3d rx(AngleAxisd(it.value()["rotation"][0], Vector3d::UnitX()));
+            Matrix4d rotationx = rx.matrix();
+            Affine3d ry(AngleAxisd(it.value()["rotation"][1], Vector3d::UnitY()));
+            Matrix4d rotationy = ry.matrix();
+            Affine3d rz(AngleAxisd(it.value()["rotation"][2], Vector3d::UnitZ()));
+            Matrix4d rotationz = rz.matrix();
+
+            //seems redundent, TODO: opt
+            MatrixXd V_tmp = translation * rotationx * rotationy * rotationz * scale * X.transpose();
+            X = V_tmp.transpose();
+            MatrixXd _X(X.rows(), 3);
+            _X.col(0) = X.col(0);
+            _X.col(1) = X.col(1);
+            _X.col(2) = X.col(2);
+            string path_p = targetpath + "0000" + "/" + it.key() + "_s.msh";
+            igl::writeMSH(path_p, _X, Tri, Tet, TriTag, TetTag, XFields, XF, EFields, TriF, TetF);
+            json jtmp;
+            jtmp["position_path"] = path_p;
+            jtmp["type"] = "static";
+            jout["Objects"][it.key()] = jtmp;
+
+        }
+    }
+
+
+    string path_scene = targetpath + "0000" + "/" + "Scene.json";
+    std::ofstream o(path_scene);
+    o << std::setw(4) << jout << std::endl;
 }
+
+
 
 
