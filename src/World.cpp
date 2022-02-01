@@ -12,7 +12,6 @@ inline bool checkfile(const std::string& name) {
 	return (stat(name.c_str(), &buffer) == 0);
 }
 
-
 World::~World()
 {
 	delete PhyEngine;
@@ -37,8 +36,10 @@ World::World(string inputpath, string outputpath, float runningtime, int step, s
 
 	if (mode == "Rigid" || mode == "r")
 		PhyEngine = new NewtonRigid(targetpath);
-	else if (mode == "FEM" || mode == "f")
-		PhyEngine = new StressFEM();
+	else if (mode == "FEM" || mode == "f") {
+		//cout << "FEM engine" << endl;
+		PhyEngine = new StressFEM(targetpath); 
+	}
 	else
 		PhyEngine = new Engine();
 }
@@ -70,7 +71,6 @@ void World::init()
 void World::PhysicsRender(float runningtime, int seq)
 {	
 	make_dir_win(targetpath, seq);
-
 	PhyEngine->load_scene(seq - 1);
 	PhyEngine->run(runningtime, seq);
 	PhyEngine->save_scene(seq);

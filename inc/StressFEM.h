@@ -4,17 +4,19 @@
 
 
 #include "Engine.h"
-
+#include "Collision.h"
 
 class StressFEM :
     public Engine
 {
 
+private:
+    vector<Eigen::MatrixXf>TransVelVec;
+
 public:
     StressFEM();
     StressFEM(string t_path);
-    void run(float time, int seq);// in seconds
-    bool collision_detection();
+    void run(float delta_t, int seq);// in seconds
     vector<StaticObj> getStaticObjs();
     vector<DynamicObj> getDynamicObjs();
     void load_scene(int pre_seq);

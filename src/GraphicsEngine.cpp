@@ -59,7 +59,6 @@ void GraphicsEngine::load_scene(string folder)
                 cast2float(XF), cast2float(TriF), cast2float(TetF),
                 Eigen::Vector3f(),
                 Eigen::Vector3f(),
-                Eigen::Vector3f(),
                 it.value()["mass"]
             );
             DynamicVec.push_back(dtmp);
@@ -100,7 +99,8 @@ using namespace Eigen;
 
 void GraphicsEngine::save_scene(string t_folder, int seq)
 {   
-
+    std::cout << std::endl;
+    std::cout << "start rendering sequence " << seq << std::endl;
     igl::opengl::glfw::Viewer viewer;
     viewer.data().clear();
     Eigen::MatrixXf V;
@@ -159,14 +159,15 @@ void GraphicsEngine::save_scene(string t_folder, int seq)
     // Save it to a PNG
     string outpng = t_folder + "\\Image" + padseq(seq) + ".png";
 
-    cout << outpng << endl;
+    //cout << outpng << endl;
     
     //missing header file.
     igl::png::writePNG(R, G, B, A, outpng);
     //
     viewer.launch_rendering(false);
     viewer.launch_shut();
-
+    std::cout << "Finish rendering sequence " << seq << std::endl;
+    std::cout << std::endl;
 
 }
 

@@ -64,3 +64,6 @@ collision detection class
 
 adding header files, save for later, maybe change name to utils.h
 
+## note:
+libigl readmsh and rendering output are suppressed, check igl/readMSH.cpp and igl\opengl\glfw\Viewer.cpp for more info
+

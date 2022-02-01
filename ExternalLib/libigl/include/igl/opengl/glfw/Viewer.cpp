@@ -182,7 +182,7 @@ namespace glfw
       printf("Failed to load OpenGL and its extensions\n");
       return(-1);
     }
-    #if defined(DEBUG) || defined(_DEBUG)
+    /*#if defined(DEBUG) || defined(_DEBUG)
       printf("OpenGL Version %d.%d loaded\n", GLVersion.major, GLVersion.minor);
       int major, minor, rev;
       major = glfwGetWindowAttrib(window, GLFW_CONTEXT_VERSION_MAJOR);
@@ -191,7 +191,7 @@ namespace glfw
       printf("OpenGL version received: %d.%d.%d\n", major, minor, rev);
       printf("Supported OpenGL is %s\n", (const char*)glGetString(GL_VERSION));
       printf("Supported GLSL is %s\n", (const char*)glGetString(GL_SHADING_LANGUAGE_VERSION));
-    #endif
+    #endif*/
     glfwSetInputMode(window,GLFW_CURSOR,GLFW_CURSOR_NORMAL);
     // Initialize FormScreen
     __viewer = this;
@@ -350,7 +350,7 @@ namespace glfw
     callback_key_down_data      = nullptr;
     callback_key_up_data        = nullptr;
 
-#ifndef IGL_VIEWER_VIEWER_QUIET
+/*#ifndef IGL_VIEWER_VIEWER_QUIET
     const std::string usage(R"(igl::opengl::glfw::Viewer usage:
   [drag]  Rotate scene
   A,a     Toggle animation (tight draw loop)
@@ -368,7 +368,7 @@ namespace glfw
   :       Toggle face labels)"
 );
     std::cout<<usage<<std::endl;
-#endif
+#endif*/
   }
 
   IGL_INLINE Viewer::~Viewer()

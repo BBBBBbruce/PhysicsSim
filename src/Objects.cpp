@@ -64,3 +64,4 @@ void make_dir_win(string targetpath, int seq) {
 	else
 		_mkdir((targetpath + to_string(seq)).c_str());
 }
+

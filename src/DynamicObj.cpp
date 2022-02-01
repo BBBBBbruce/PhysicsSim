@@ -2,36 +2,6 @@
 
 using namespace Eigen;
 
-//Vector3f gravity = {0.f, 10.f, 0.f};
-
-//Eigen::Matrix4f rotate_eigen_api(Vector3f omega) {
-//	Affine3f rx(AngleAxisf(omega[0], Vector3f::UnitX()));
-//	Matrix4f rotationx = rx.matrix();
-//	Affine3f ry(AngleAxisf(omega[1], Vector3f::UnitY()));
-//	Matrix4f rotationy = ry.matrix();
-//	Affine3f rz(AngleAxisf(omega[2], Vector3f::UnitZ()));
-//	Matrix4f rotationz = rz.matrix();
-//	return rotationx * rotationy * rotationz;
-//}
-
-//void DynamicObj::rotate(float t, Vector3f rotating_point) {
-//	Affine3f tl(Translation3f(-rotating_point[0], -rotating_point[1], -rotating_point[2]));
-//	Matrix4f translation = tl.matrix();
-//	Affine3f tlb(Translation3f(rotating_point[0], rotating_point[1], rotating_point[2]));
-//	Matrix4f translation_back = tlb.matrix();
-//
-//	MatrixXf pos_tmp = position;
-//	pos_tmp.conservativeResize(pos_tmp.rows(), 4);// Make V n*4 matrix
-//	pos_tmp.col(3).setOnes();
-//	pos_tmp = (translation_back * rotate_eigen_api(angular_velocity*t) * translation * pos_tmp.transpose()).transpose();
-//	position = MatrixXf(pos_tmp.rows(), 3);
-//	position.col(0) = pos_tmp.col(0);
-//	position.col(1) = pos_tmp.col(1);
-//	position.col(2) = pos_tmp.col(2);
-//
-//	//rotate gravity_centre
-//}
-
 DynamicObj::DynamicObj()
 {
 }
@@ -48,9 +18,9 @@ DynamicObj::DynamicObj(string n,
 	std::vector<Eigen::MatrixXf> trif, 
 	std::vector<Eigen::MatrixXf> tetf, 
 	Eigen::Vector3f vel, 
-	Eigen::Vector3f cm,
 	Eigen::Vector3f angular_vel,
-	float m)
+	float m
+	)
 {
 	name = n;
 	position = pos;
@@ -63,10 +33,14 @@ DynamicObj::DynamicObj(string n,
 	XF = xf;
 	TriF = trif;
 	TetF = tetf;
+	//std::cout << "here is problem" << std::endl;
 	linear_velocity = vel;
-	mass_centre = cm;
+	//std::cout << "here is problem" << std::endl;
+	mass_centre = find_cm();
+	//std::cout << "here is problem" << std::endl;
 	mass = m;
 	angular_velocity = angular_vel;
+	//translation_velocity = vel_t;
 }
 
 Eigen::Vector3f DynamicObj::get_linear_velocity()
@@ -92,24 +66,6 @@ float DynamicObj::get_mass()
 Eigen::Vector3f DynamicObj::get_cm()
 {
 	return mass_centre;
-}
-
-void DynamicObj::updatestate(Eigen::Vector3f pos, Eigen::Vector3f v, bool collide, float t, int seq)
-{
-	//if (collide) {
-	//	linear_velocity *= -0.8;
-	//	cout << seq <<endl;
-	//	//BUG: should update postion as well, for simplicity, stay the same
-	//}
-	//else {
-	//	
-	//	position.rowwise() += pos.transpose();
-	//	position += linear_velocity * t;
-	//	linear_velocity.rowwise() += v.transpose();
-	//	cout << seq <<endl;
-	//}
-	//simulate_linear(pos, v, collide, t);
-	//simulate_angular(t);
 }
 
 void DynamicObj::update_state(Eigen::MatrixXf x, Eigen::Vector3f v, Eigen::Vector3f w, Eigen::Vector3f cm)
@@ -184,3 +140,11 @@ tuple<Eigen::MatrixXf, Eigen::MatrixXi> DynamicObj::Get_ViewMatrix()
 	}
 	return {V,F};
 }
+
+Vector3f DynamicObj::find_cm()
+{	
+	//Vector3f out = position.colwise().mean();	
+	return position.colwise().mean();
+}
+
+

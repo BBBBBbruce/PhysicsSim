@@ -36,7 +36,7 @@ int main(int argc, char* argv[])
 
     //time_t start_time = 1639740809;
     time_t start_time = time(0);
-    cout << start_time << endl;
+    //cout << start_time << endl;
     project_folder += to_string(start_time) + "\\";
 
     _mkdir(project_folder.c_str());

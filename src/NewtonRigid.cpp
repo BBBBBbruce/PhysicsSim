@@ -21,12 +21,6 @@ NewtonRigid::NewtonRigid(string t_path)
     //cout <<"engine: "<< targetpath << endl;
 }
 
-
-bool NewtonRigid::collision_detection()
-{
-    return false;
-}
-
 /*
 void NewtonRigid::ParseWorld(json objectlist)
 {
@@ -111,7 +105,6 @@ void NewtonRigid::load_scene(int pre_seq)
                 double2float(X), Tet, Tri, TriTag, TetTag, XFields, EFields,
                 cast2float(XF), cast2float(TriF), cast2float(TetF),
                 Eigen::Vector3f(it.value()["linear_velocity"][0], it.value()["linear_velocity"][1], it.value()["linear_velocity"][2]),
-                Eigen::Vector3f(it.value()["mass_centre"][0], it.value()["mass_centre"][1], it.value()["mass_centre"][2]),
                 Eigen::Vector3f(it.value()["angular_velocity"][0], it.value()["angular_velocity"][1], it.value()["angular_velocity"][2]),
                 it.value()["mass"]
             );
@@ -220,7 +213,6 @@ Eigen::Vector3f project_sin(Eigen::Vector3f vec, Eigen::Vector3f dir_vec) {
 }
 
 
-
 void NewtonRigid::run(float delta_t,int seq)
 {   
  
@@ -303,7 +295,6 @@ void NewtonRigid::save_scene(int seq)
         jtmp["position_path"] = path_p;
         jtmp["linear_velocity"] = {lv[0],lv[1],lv[2]};
         jtmp["angular_velocity"] = {av[0],av[1],av[2]};
-        jtmp["mass_centre"] = {cm[0],cm[1],cm[2]};
         jtmp["mass"] = DynamicVec[i].get_mass();
         jtmp["type"] = "dynamic";
         jout["Objects"][DynamicVec[i].name] = jtmp;
@@ -383,7 +374,6 @@ void NewtonRigid::InitConfigs(string targetpath, json currentconfig)
             jtmp["position_path"] = path_p;
             jtmp["linear_velocity"] = it.value()["linear_velocity"];
             jtmp["angular_velocity"] = it.value()["angular_velocity"];
-            jtmp["mass_centre"] = { cm_tmp[0],cm_tmp[1], cm_tmp[2] };
             jtmp["mass"] = it.value()["mass"];
             jtmp["type"] = "dynamic";
             jout["Objects"][it.key()] = jtmp;

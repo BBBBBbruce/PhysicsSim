@@ -28,7 +28,7 @@ IGL_INLINE  bool  igl::readMSH(const std::string &msh,
         igl::MshLoader _loader(msh);
         const int USETAG = 1;
 
-        #ifndef NDEBUG
+        /*#ifndef NDEBUG
         std::cout<<"readMSH:Total number of nodes:" << _loader.get_nodes().size()<<std::endl;   
         std::cout<<"readMSH:Total number of elements:" << _loader.get_elements().size()<<std::endl;
 
@@ -49,7 +49,7 @@ IGL_INLINE  bool  igl::readMSH(const std::string &msh,
         else
             std::cout<<"readMSH:Element ids map is NOT identity"<<std::endl;
         
-        #endif
+        #endif*/
         
         // convert nodes
         // hadrcoded for 3D 
@@ -77,11 +77,11 @@ IGL_INLINE  bool  igl::readMSH(const std::string &msh,
             auto j=element_counts.insert({i,1});
             if(!j.second) (*j.first).second+=1;
         }
-        #ifndef NDEBUG
+        /*#ifndef NDEBUG
         std::cout<<"ReadMSH: elements found"<<std::endl;
         for(auto i:element_counts)
             std::cout<<"\t"<<i.first<<":"<<i.second<<std::endl;
-        #endif
+        #endif*/
         int n_tri_el=0;
         int n_tet_el=0;
         
