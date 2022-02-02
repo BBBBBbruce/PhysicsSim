@@ -12,6 +12,9 @@ class StressFEM :
 
 private:
     vector<Eigen::MatrixXf>TransVelVec;
+    float Young;
+    float Poisson;
+    MatrixXf YModulus;
 
 public:
     StressFEM();
@@ -22,6 +25,8 @@ public:
     void load_scene(int pre_seq);
     void save_scene(int seq);
     void InitConfigs(string targetpath, json currentconfig);
+    void reset();
+    void set_physics_params(float restitution, float collision_t, float friction, float young, float poisson);
 
 };
 

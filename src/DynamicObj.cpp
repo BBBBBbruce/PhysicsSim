@@ -68,12 +68,11 @@ Eigen::Vector3f DynamicObj::get_cm()
 	return mass_centre;
 }
 
-void DynamicObj::update_state(Eigen::MatrixXf x, Eigen::Vector3f v, Eigen::Vector3f w, Eigen::Vector3f cm)
+void DynamicObj::update_state(Eigen::MatrixXf x, Eigen::Vector3f v, Eigen::Vector3f w)
 {
 	position = x;
 	linear_velocity = v;
 	angular_velocity = w;
-	mass_centre = cm;
 	
 }
 

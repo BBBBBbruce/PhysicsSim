@@ -35,4 +35,6 @@ vector<Eigen::MatrixXd> cast2double(const vector<Eigen::MatrixXf>& vec);
 vector<Eigen::MatrixXf> cast2float (const vector<Eigen::MatrixXd>& vec);
 void make_dir_win(string targetpath, int seq);
 
+inline Eigen::Vector3f gravity = { 0.0,-10.0,0.0 };
+
 #endif

@@ -5,7 +5,7 @@ using namespace Eigen;
 //glm::vec3 gravity(0.0, 0.0, -9.8);
 
 
-Eigen::Vector3f gravity(0.0, -10.0, 0.0);
+//Eigen::Vector3f gravity(0.0, -10.0, 0.0);
 
 NewtonRigid::NewtonRigid()
 {
@@ -272,7 +272,7 @@ void NewtonRigid::run(float delta_t,int seq)
 
         }
 
-        DynamicVec[i].update_state(x, vf, wf, cmf);
+        DynamicVec[i].update_state(x, vf, wf);
     }
 
 }

@@ -37,7 +37,7 @@ public:
     Eigen::Vector3f get_angular_velocity();
     float get_mass();
     Eigen::Vector3f get_cm();
-    void update_state(Eigen::MatrixXf x, Eigen::Vector3f v,  Eigen::Vector3f w, Eigen::Vector3f cm);
+    void update_state(Eigen::MatrixXf x, Eigen::Vector3f v,  Eigen::Vector3f w);
     void writemsh(string p);
     void ToViewer(Eigen::MatrixXf& vertices, Eigen::MatrixXi& faces);
     tuple<Eigen::MatrixXf, Eigen::MatrixXi> Get_ViewMatrix();
