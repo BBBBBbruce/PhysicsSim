@@ -142,7 +142,7 @@ void GraphicsEngine::save_scene(string t_folder, int seq)
     viewer.data().set_mesh(float2double(V), F);
     viewer.data().set_face_based(true);
 
-    viewer.core().camera_eye = Eigen::Vector3f(0.f, 0.f, 25.f);
+    viewer.core().camera_eye = Eigen::Vector3f(0.f, 0.f, 10.f);
 
     viewer.launch_init();
     viewer.draw();

@@ -155,3 +155,22 @@ tuple<bool, Vector3f> CD_vshape(MatrixXf vertices)
 
     return{ collide, contact_p };
 }
+
+tuple<bool, vector<int>> CD_table_FEM(MatrixXf vertices)
+{
+    vector<int> contact_points;
+    float distance = 0;
+    //Vector3f contact_p = { 0.0,0.0,0.0 };
+    bool collide = false;
+    for (auto i = 0; i < vertices.rows(); i++) {
+        float y = vertices(i, 1);// y
+        if (y <= 0 ) {
+            collide = true;
+            //contact_p = vertices.row(i);
+            contact_points.push_back(i);
+        }
+
+    }
+
+    return{ collide, contact_points };
+}

@@ -12,6 +12,7 @@ class StressFEM :
 
 private:
     vector<Eigen::MatrixXf>TransVelVec;
+    vector<Eigen::MatrixXf>RigidPosVec;
     float Young;
     float Poisson;
     MatrixXf YModulus;

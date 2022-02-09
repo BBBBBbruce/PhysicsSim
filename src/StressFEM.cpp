@@ -93,16 +93,16 @@ void StressFEM::load_scene(int pre_seq)
 
     for (auto it = j["Objects"].begin(); it != j["Objects"].end(); ++it) {
         if (it.value()["type"] == "dynamic") {
-            Eigen::MatrixXd X;
+            Eigen::MatrixXd P;
             Eigen::MatrixXi Tri, Tet;
             Eigen::VectorXi TriTag, TetTag;
             std::vector<std::string> XFields, EFields;
             std::vector<Eigen::MatrixXd> XF, TriF, TetF;
-            igl::readMSH(it.value()["position_path"], X, Tri, Tet, TriTag, TetTag, XFields, XF, EFields, TriF, TetF);
+            igl::readMSH(it.value()["position_path"], P, Tri, Tet, TriTag, TetTag, XFields, XF, EFields, TriF, TetF);
 
             DynamicObj dtmp(
                 it.key(),
-                double2float(X), Tet, Tri, TriTag, TetTag, XFields, EFields,
+                double2float(P), Tet, Tri, TriTag, TetTag, XFields, EFields,
                 cast2float(XF), cast2float(TriF), cast2float(TetF),
                 Eigen::Vector3f(),
                 Eigen::Vector3f(it.value()["angular_velocity"][0], it.value()["angular_velocity"][1], it.value()["angular_velocity"][2]),
@@ -111,6 +111,8 @@ void StressFEM::load_scene(int pre_seq)
             DynamicVec.push_back(dtmp);
             MatrixXf vel = XfFromcsv(string(it.value()["trans_vel_path"]).c_str());
             TransVelVec.push_back(vel); // stable(same order as DynamicVec)
+            MatrixXf x = XfFromcsv(string(it.value()["rigid_position_path"]).c_str());
+            RigidPosVec.push_back(x);
         }
         else if (it.value()["type"] == "static") {
             Eigen::MatrixXd X;
@@ -139,11 +141,17 @@ void StressFEM::save_scene(int seq)
         DynamicVec[i].writemsh(path_p);
         string path_v = tpath + padseq(seq) + "/" + DynamicVec[i].name + "_v.csv";
         Xf2csv(path_v.c_str(), TransVelVec[i]);
+        string path_x = tpath + padseq(seq) + "/" + DynamicVec[i].name + "_x.csv";
+        Xf2csv(path_x.c_str(), RigidPosVec[i]);
+        //debug only
+        string path_pp = tpath + padseq(seq) + "/" + DynamicVec[i].name + "_p.csv";
+        Xf2csv(path_pp.c_str(), DynamicVec[i].get_position());
 
         Eigen::Vector3f lv = DynamicVec[i].get_linear_velocity();
         Eigen::Vector3f av = DynamicVec[i].get_angular_velocity();
 
         json jtmp;
+        jtmp["rigid_position_path"] = path_x;
         jtmp["position_path"] = path_p;
         jtmp["trans_vel_path"] = path_v;
         jtmp["angular_velocity"] = { av[0],av[1],av[2] };
@@ -208,17 +216,21 @@ void StressFEM::InitConfigs(string targetpath, json currentconfig)
             _X.col(1) = X.col(1);
             _X.col(2) = X.col(2);
             string path_p = targetpath + "0000" + "/" + it.key() + "_p.msh";
+            
             igl::writeMSH(path_p, _X, Tri, Tet, TriTag, TetTag, XFields, XF, EFields, TriF, TetF);
             
             Eigen::Vector3d trans_vel = Eigen::Vector3d(it.value()["translation_velocity"][0], it.value()["translation_velocity"][1], it.value()["translation_velocity"][2]);
             Eigen::MatrixXd TransVel = trans_vel.replicate(1,X.rows()).transpose();
-
+            
+            string path_x = targetpath + "0000" + "/" + it.key() + "_x.csv";
             string path_v = targetpath + "0000" + "/" + it.key() + "_v.csv";
             Xd2csv(path_v.c_str(), TransVel);
+            Xd2csv(path_x.c_str(), _X);
 
             // TODO save matrixxf only
 
             json jtmp;
+            jtmp["rigid_position_path"] = path_x;
             jtmp["position_path"] = path_p;
             jtmp["trans_vel_path"] = path_v;
             jtmp["angular_velocity"] = it.value()["angular_velocity"];
@@ -275,6 +287,7 @@ void StressFEM::reset()
     StaticVec.clear();
     DynamicVec.clear();
     TransVelVec.clear();
+    RigidPosVec.clear();
 }
 
 void StressFEM::set_physics_params(float restitution, float collision_t, float friction, float young, float poisson)
@@ -307,38 +320,47 @@ MatrixXf HookeLaw( MatrixXf epsilon, Matrix<float, 6, 6 > modulus) {
     return sigma;
 }
 
+MatrixXf apply_poisson(MatrixXf d, float p) {
+    MatrixXf x = d.col(0);
+    MatrixXf y = d.col(1);
+    MatrixXf z = d.col(2);
+    d.col(0) += -(y + z) * p;
+    d.col(1) += -(x + z) * p;
+    d.col(2) += -(x + y) * p;
+    return d;
+}
+
 void StressFEM::run(float delta_t, int seq)
 {
     // Implement the physics
     // linearly iterate through all tetrahedrons
     // assume no friction yet
     for (auto i = 0; i < DynamicVec.size(); i++) {
-        MatrixXf x = DynamicVec[i].get_position();
+        MatrixXf p_s = DynamicVec[i].get_position();
         MatrixXi tet = DynamicVec[i].get_tetrahedrons();
         MatrixXf v = TransVelVec[i];
         float m = DynamicVec[i].get_mass();
         Vector3f cm = DynamicVec[i].get_cm();
-        MatrixXf p_s = x;
-
+        MatrixXf x = RigidPosVec[i];
+        //cout << x << endl;
         vector<MatrixXf> _x;
         for (auto j = 0; j < tet.rows(); j++) {
             MatrixXf x0 = x.row(tet(j, 0));
             MatrixXf tmp(3, 3);
             tmp << x.row(tet(j, 1)) - x0, x.row(tet(j, 2)) - x0, x.row(tet(j, 3)) - x0;
+            //MatrixXf TMP_X = x.row(tet(j, 1)) - x0;
+            //float norm = TMP_X.norm();
 
             _x.push_back(tmp.inverse());
+            cout << tmp << endl;
         }
         
-
-        MatrixXf G = m / tet.rows() * gravity.transpose().replicate(x.rows(), 1);
+        MatrixXf G = m / x.rows() * gravity.transpose().replicate(x.rows(), 1);
         MatrixXf f_total;
-        auto [collide, contact_p] = CD_table(x);
-        if (!collide)
-            f_total = G;
-        else {
-            MatrixXf f_collide = -(1 + e) * v * m / tet.rows() / tc;
-            f_total = G + f_collide;
-        }
+        auto [collide, contact_points] = CD_table_FEM(p_s);
+        
+
+        MatrixXf f_internal = MatrixXf::Zero(x.rows(), x.cols());
 
         for (auto j = 0; j < tet.rows(); j++) {
 
@@ -352,23 +374,65 @@ void StressFEM::run(float delta_t, int seq)
             p_c << p0, p1, p2;
             p_c = p_c * _x[j];
 
-            MatrixXf delta_u = p_c - Matrix3f::Identity();
-            MatrixXf strain = 0.5 * (delta_u + delta_u.transpose() + delta_u.transpose() * delta_u);
+            //MatrixXf delta_u = p_c - Matrix3f::Identity();
+            //cout << delta_u << endl;
+            //MatrixXf strain = 0.5 * (delta_u + delta_u.transpose() + delta_u.transpose() * delta_u);
+            MatrixXf strain = p_c.transpose()*p_c - Matrix3f::Identity();
+            //t << strain << endl;
             MatrixXf stress = HookeLaw(strain, YModulus); 
-
-            Matrix<float, 1, 3> ff1 = p0.cross(p1) * stress;
-            Matrix<float, 1, 3> ff2 = p0.cross(p2) * stress;
-            Matrix<float, 1, 3> ff3 = p1.cross(p2) * stress;
-            Matrix<float, 1, 3> ff4 = p3.cross(p4) * stress;
-
-            f_total.row(tet(j, 0)) += (ff1 + ff2 + ff3) / 3;
-            f_total.row(tet(j, 1)) += (ff1 + ff2 + ff4) / 3;
-            f_total.row(tet(j, 2)) += (ff1 + ff4 + ff3) / 3;
-            f_total.row(tet(j, 3)) += (ff4 + ff2 + ff3) / 3;
+            //stress /= 10;
+            //Matrix<float, 1, 3> ff1 = p0.cross(p1) * signbit(p0.cross(p1).dot(p4)) * stress * 0.5;
+            Matrix<float, 1, 3> ff1 = p0.cross(p1) * stress * 0.5;
+            ff1 *= signbit(p0.cross(p1).dot(p4)) == 1 ? 1 : -1;
+            Matrix<float, 1, 3> ff2 = p0.cross(p2) * stress * 0.5;
+            ff2 *= signbit(p0.cross(p2).dot(p3)) == 1 ? 1 : -1;
+            Matrix<float, 1, 3> ff3 = p1.cross(p2) * stress * 0.5;
+            ff3 *= signbit(p1.cross(p2).dot(p0)) == 1 ? 1 : -1;
+            Matrix<float, 1, 3> ff4 = p3.cross(p4)  * stress * 0.5;
+            ff4 *= signbit(p3.cross(p4).dot(-p0)) == 1 ? 1 : -1;
+            ff1 *= -1;
+            ff2 *= -1;
+            ff3 *= -1;
+            ff4 *= -1;
+            f_internal.row(tet(j, 0)) += (ff1 + ff2 + ff3) / 3;
+            f_internal.row(tet(j, 1)) += (ff1 + ff2 + ff4) / 3;
+            f_internal.row(tet(j, 2)) += (ff1 + ff4 + ff3) / 3;
+            f_internal.row(tet(j, 3)) += (ff4 + ff2 + ff3) / 3;
         }
-        MatrixXf vf = v + f_total * delta_t / m * tet.rows();
-        p_s += delta_t * v;
+
+        if (!collide)
+            f_total = G + f_internal;
+        else {
+            MatrixXf v_stress = MatrixXf::Zero(f_internal.rows(), f_internal.cols());
+            v_stress.col(1) = f_internal.col(1);
+            MatrixXf f_collide = -(1 + e) * v * m / x.rows() / tc - G - v_stress;
+            MatrixXf zero_buff = MatrixXf::Zero(f_collide.rows(), f_collide.cols());
+
+            for (auto i = 0; i < contact_points.size(); i++) {
+                zero_buff.row(contact_points[i]) = f_collide.row(contact_points[i]);
+            }
+            f_total = G + zero_buff + f_internal;
+            //cout << f_total << endl;
+        }
+        //f_total += f_internal;
+
+
+
+        //================ debugging ==========================
+        string path_f_internal = tpath + padseq(seq) + "/" + DynamicVec[i].name + "_internal.csv";
+        Xf2csv(path_f_internal.c_str(), f_internal);
+        string path_f_total = tpath + padseq(seq) + "/" + DynamicVec[i].name + "_total.csv";
+        Xf2csv(path_f_total.c_str(), f_total);
+        //================ debugging ==========================
+
+        MatrixXf vf = v + f_total * delta_t / m * x.rows();
+        //MatrixXf delta_x = delta_t * (v + vf) / 2;
+        MatrixXf delta_x = delta_t * vf / 2;
+        p_s += delta_x;
+        //p_s += apply_poisson(delta_x,Poisson);
         DynamicVec[i].update_state(p_s, Vector3f(), Vector3f()); // no w 
         TransVelVec[i] = vf;
+        RigidPosVec[i] = x;
     }
 }
+

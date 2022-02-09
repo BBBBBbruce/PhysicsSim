@@ -3,6 +3,7 @@
 #include <fstream>
 #include <ctime>
 #include <direct.h>
+#include <ctime>
 #pragma warning (disable : 4996)
 
 using namespace std;
@@ -82,7 +83,13 @@ void World::Physics_run()
 {
 	short seq = 1;
 	for (auto i = 0; i < step; i++) {
+		std::cout << "rendering physics seq: " << seq << std::endl;
+		clock_t begin = clock();
 		PhysicsRender(runningtime, seq);
+		clock_t end = clock();
+		float elapsed_secs = float(end - begin) / CLOCKS_PER_SEC;
+		std::cout << "Finished, time taken: "<< elapsed_secs<< std::endl;
+		std::cout << std::endl;
 		seq++;
 	}
 }

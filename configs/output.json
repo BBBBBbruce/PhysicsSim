@@ -38,12 +38,19 @@
       "rotation": [ 0.0, 0.0, 0.0 ],
       "mass": 10.0
     },
-    "table": {
+    "table1": {
       "type": "static",
       "path": "D:\\Bruce_Projects\\BBBBBbruce\\PhysicsSim\\assets\\table.msh",
       "position": [ 0.0, 0.0, 0.0 ],
       "scale": [ 1.0, 1.0, 1.0 ],
       "rotation": [ 0.0, 0.0, 0.0 ]
+    },
+    "table": {
+      "type": "static",
+      "path": "D:\\Bruce_Projects\\BBBBBbruce\\PhysicsSim\\assets\\table.msh",
+      "position": [ 0.0, 0.0, 0.0 ],
+      "scale": [ 1.0, 1.0, 1.0 ],
+      "rotation": [ 0.0, 1.57, 0.0 ]
     }
   }
 }
