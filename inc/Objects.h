@@ -13,19 +13,19 @@ class Objects
 {
 protected:
 	
-	Eigen::MatrixXf position;
+	Eigen::MatrixXd position;
 	Eigen::MatrixXi tetrahedral;
 	//other unnecessary stuff, might be useful later:
 	Eigen::MatrixXi Tri;
 	Eigen::VectorXi TriTag, TetTag;
 	std::vector<std::string> XFields, EFields;
-	std::vector<Eigen::MatrixXf> XF, TriF, TetF;
+	std::vector<Eigen::MatrixXd> XF, TriF, TetF;
 
 public:
 	string name;
 	Objects();
 	string get_name();
-	Eigen::MatrixXf get_position();
+	Eigen::MatrixXd get_position();
 
 };
 
@@ -35,6 +35,6 @@ vector<Eigen::MatrixXd> cast2double(const vector<Eigen::MatrixXf>& vec);
 vector<Eigen::MatrixXf> cast2float (const vector<Eigen::MatrixXd>& vec);
 void make_dir_win(string targetpath, int seq);
 
-inline Eigen::Vector3f gravity = { 0.0,-10.0,0.0 };
+inline Eigen::Vector3d gravity = { 0.0,-10.0,0.0 };
 
 #endif

@@ -14,13 +14,13 @@ private:
 
 public:
     StaticObj();
-    StaticObj(string n, Eigen::MatrixXf pos, Eigen::MatrixXi tet, Eigen::MatrixXi tri, Eigen::MatrixXi tritag, Eigen::MatrixXi tettag, std::vector<std::string> xfields, std::vector<std::string> efields, std::vector<Eigen::MatrixXf> xf, std::vector<Eigen::MatrixXf>trif, std::vector<Eigen::MatrixXf> tetf,string path);
-    //StaticObj(string n, string path, Eigen::Vector3f pos, Eigen::Vector3f sc, Eigen::Vector3f rot);
+    StaticObj(string n, Eigen::MatrixXd pos, Eigen::MatrixXi tet, Eigen::MatrixXi tri, Eigen::MatrixXi tritag, Eigen::MatrixXi tettag, std::vector<std::string> xfields, std::vector<std::string> efields, std::vector<Eigen::MatrixXd> xf, std::vector<Eigen::MatrixXd>trif, std::vector<Eigen::MatrixXd> tetf,string path);
+    //StaticObj(string n, string path, Eigen::Vector3f pos, Eigen::Vector3f sc, Eigen::Vector3d rot);
     void displayinfo();
     string get_loadingpath();
     json tojson();
-    void ToViewer(Eigen::MatrixXf& vertices, Eigen::MatrixXi& faces);
-    tuple<Eigen::MatrixXf, Eigen::MatrixXi> Get_ViewMatrix();
+    void ToViewer(Eigen::MatrixXd& vertices, Eigen::MatrixXi& faces);
+    tuple<Eigen::MatrixXd, Eigen::MatrixXi> Get_ViewMatrix();
 };
 #endif
 

@@ -11,13 +11,13 @@ class StressFEM :
 {
 
 private:
-    vector<Eigen::MatrixXf>TransVelVec;
-    vector<Eigen::MatrixXf>RigidPosVec;
-    vector<float> DampVec;
-    float Young;
-    float Poisson;
-    MatrixXf YModulus;
-    float zeta;
+    vector<Eigen::MatrixXd>TransVelVec;
+    vector<Eigen::MatrixXd>RigidPosVec;
+    vector<double> DampVec;
+    double Young;
+    double Poisson;
+    MatrixXd YModulus;
+    double zeta;
     //float damp;
 
 public:
@@ -30,7 +30,7 @@ public:
     void save_scene(int seq);
     void InitConfigs(string targetpath, json currentconfig);
     void reset();
-    void set_physics_params(float d, float restitution, float collision_t, float friction, float young, float poisson);
+    void set_physics_params(double d, double restitution, double collision_t, double friction, double young, double poisson);
 
 };
 
