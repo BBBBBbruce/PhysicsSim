@@ -13,7 +13,7 @@ private:
     Eigen::Vector3f angular_velocity;
     Eigen::Vector3f mass_centre;
     float mass;
-    //FEM
+    //FEm_float
     Eigen::MatrixXf translation_velocity;
 
 public:
