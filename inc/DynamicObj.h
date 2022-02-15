@@ -9,39 +9,39 @@ class DynamicObj :
     public Objects
 {
 private:
-    Eigen::Vector3f linear_velocity;
-    Eigen::Vector3f angular_velocity;
-    Eigen::Vector3f mass_centre;
-    float mass;
+    Eigen::Vector3d linear_velocity;
+    Eigen::Vector3d angular_velocity;
+    Eigen::Vector3d mass_centre;
+    double mass;
     //FEM
-    Eigen::MatrixXf translation_velocity;
+    Eigen::MatrixXd translation_velocity;
 
 public:
     DynamicObj();
     DynamicObj(string n,
-        Eigen::MatrixXf pos,
+        Eigen::MatrixXd pos,
         Eigen::MatrixXi tet,
         Eigen::MatrixXi tri,
         Eigen::MatrixXi tritag,
         Eigen::MatrixXi tettag,
         std::vector<std::string> xfields,
         std::vector<std::string> efields,
-        std::vector<Eigen::MatrixXf> xf,
-        std::vector<Eigen::MatrixXf> trif,
-        std::vector<Eigen::MatrixXf> tetf,
-        Eigen::Vector3f vel,
-        Eigen::Vector3f angular_vel,
-        float m);
-    Eigen::Vector3f get_linear_velocity();
+        std::vector<Eigen::MatrixXd> xf,
+        std::vector<Eigen::MatrixXd> trif,
+        std::vector<Eigen::MatrixXd> tetf,
+        Eigen::Vector3d vel,
+        Eigen::Vector3d angular_vel,
+        double m);
+    Eigen::Vector3d get_linear_velocity();
     Eigen::MatrixXi get_tetrahedrons();
-    Eigen::Vector3f get_angular_velocity();
-    float get_mass();
-    Eigen::Vector3f get_cm();
-    void update_state(Eigen::MatrixXf x, Eigen::Vector3f v,  Eigen::Vector3f w);
+    Eigen::Vector3d get_angular_velocity();
+    double get_mass();
+    Eigen::Vector3d get_cm();
+    void update_state(Eigen::MatrixXd x, Eigen::Vector3d v,  Eigen::Vector3d w);
     void writemsh(string p);
-    void ToViewer(Eigen::MatrixXf& vertices, Eigen::MatrixXi& faces);
-    tuple<Eigen::MatrixXf, Eigen::MatrixXi> Get_ViewMatrix();
-    Eigen::Vector3f find_cm();
+    void ToViewer(Eigen::MatrixXd& vertices, Eigen::MatrixXi& faces);
+    tuple<Eigen::MatrixXd, Eigen::MatrixXi> Get_ViewMatrix();
+    Eigen::Vector3d find_cm();
 };
 
 #endif

@@ -5,19 +5,19 @@
 using namespace std;
 using namespace Eigen;
 
-tuple<bool, Vector3f> CD_bowl(MatrixXf vertices) {
+tuple<bool, Vector3d> CD_bowl(MatrixXd vertices) {
 
     // calculate for 2D case: xy plane, z stays constant
     // bowl: 
     // -4 <= x < -2, y = -4x - 8
     // -2 <= x <  2, y =  0
     //  2 <= x <  4, y =  4x - 8
-    float distance = 0;
-    Vector3f contact_p = { 0.0,0.0,0.0 };
+    double distance = 0;
+    Vector3d contact_p = { 0.0,0.0,0.0 };
     bool collide = false;
     for (auto i = 0; i < vertices.rows(); i++) {
-        float x = vertices(i, 0);// x
-        float y = vertices(i, 1);// y
+        double x = vertices(i, 0);// x
+        double y = vertices(i, 1);// y
         //float z = vertices(i, 2);// z
 
         if (-4 <= x && x < -2 && y <= 8) {
@@ -47,19 +47,19 @@ tuple<bool, Vector3f> CD_bowl(MatrixXf vertices) {
 
 }
 
-tuple<bool, Vector3f> CD_table(MatrixXf vertices) {
+tuple<bool, Vector3d> CD_table(MatrixXd vertices) {
 
     // calculate for 2D case: xy plane, z stays constant
     // bowl: 
     // -4 <= x < -2, y = -4x - 8
     // -2 <= x <  2, y =  0
     //  2 <= x <  4, y =  4x - 8
-    float distance = 0;
-    Vector3f contact_p = { 0.0,0.0,0.0 };
+    double distance = 0;
+    Vector3d contact_p = { 0.0,0.0,0.0 };
     bool collide = false;
     for (auto i = 0; i < vertices.rows(); i++) {
-        float x = vertices(i, 0);// x
-        float y = vertices(i, 1);// y
+        double x = vertices(i, 0);// x
+        double y = vertices(i, 1);// y
         //float z = vertices(i, 2);// z
 
         if (y <= 0 && abs(y) > distance) {
@@ -74,19 +74,19 @@ tuple<bool, Vector3f> CD_table(MatrixXf vertices) {
 
 }
 
-tuple<bool, Vector3f> CD_bowl_wide(MatrixXf vertices)
+tuple<bool, Vector3d> CD_bowl_wide(MatrixXd vertices)
 {
     // calculate for 2D case: xy plane, z stays constant
 // bowl: 
 // -4 <= x < -2, y = -4x - 8
 // -2 <= x <  2, y =  0
 //  2 <= x <  4, y =  4x - 8
-    float distance = 0;
-    Vector3f contact_p = { 0.0,0.0,0.0 };
+    double distance = 0;
+    Vector3d contact_p = { 0.0,0.0,0.0 };
     bool collide = false;
     for (auto i = 0; i < vertices.rows(); i++) {
-        float x = vertices(i, 0);// x
-        float y = vertices(i, 1);// y
+        double x = vertices(i, 0);// x
+        double y = vertices(i, 1);// y
         //float z = vertices(i, 2);// z
 
         if (-9 <= x && x < -3 && y <= 6) {
@@ -115,19 +115,19 @@ tuple<bool, Vector3f> CD_bowl_wide(MatrixXf vertices)
     return{ collide, contact_p };
 }
 
-tuple<bool, Vector3f> CD_vshape(MatrixXf vertices)
+tuple<bool, Vector3d> CD_vshape(MatrixXd vertices)
 {
     // calculate for 2D case: xy plane, z stays constant
 // bowl: 
 // -4 <= x < -2, y = -4x - 8
 // -2 <= x <  2, y =  0
 //  2 <= x <  4, y =  4x - 8
-    float distance = 0;
-    Vector3f contact_p = { 0.0,0.0,0.0 };
+    double distance = 0;
+    Vector3d contact_p = { 0.0,0.0,0.0 };
     bool collide = false;
     for (auto i = 0; i < vertices.rows(); i++) {
-        float x = vertices(i, 0);// x
-        float y = vertices(i, 1);// y
+        double x = vertices(i, 0);// x
+        double y = vertices(i, 1);// y
         //float z = vertices(i, 2);// z
 
         if (-4 <= x && x < -2 && y <= 8) {
@@ -156,14 +156,14 @@ tuple<bool, Vector3f> CD_vshape(MatrixXf vertices)
     return{ collide, contact_p };
 }
 
-tuple<bool, vector<int>> CD_table_FEM(MatrixXf vertices)
+tuple<bool, vector<int>> CD_table_FEM(MatrixXd vertices)
 {
     vector<int> contact_points;
-    float distance = 0;
-    //Vector3f contact_p = { 0.0,0.0,0.0 };
+    double distance = 0;
+    //Vector3d contact_p = { 0.0,0.0,0.0 };
     bool collide = false;
     for (auto i = 0; i < vertices.rows(); i++) {
-        float y = vertices(i, 1);// y
+        double y = vertices(i, 1);// y
         if (y <= 0 ) {
             collide = true;
             //contact_p = vertices.row(i);
