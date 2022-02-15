@@ -32,6 +32,6 @@ public:
     void reset();
     void set_physics_params(double d, double restitution, double collision_t, double friction, double young, double poisson);
 
-};
+};//
 
 #endif // !STRESSFEM
