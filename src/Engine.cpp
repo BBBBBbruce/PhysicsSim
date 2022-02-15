@@ -37,7 +37,7 @@ void Engine::reset()
 	StaticVec.clear();
 }
 
-void Engine::set_physics_params(float restitution, float collision_t, float friction)
+void Engine::set_physics_params(double restitution, double collision_t, double friction)
 {
 	e = restitution;
 	tc = collision_t;

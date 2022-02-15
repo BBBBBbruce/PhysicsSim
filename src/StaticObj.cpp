@@ -5,16 +5,16 @@ StaticObj::StaticObj()
 }
 
 StaticObj::StaticObj(string n, 
-	Eigen::MatrixXf pos, 
+	Eigen::MatrixXd pos, 
 	Eigen::MatrixXi tet, 
 	Eigen::MatrixXi tri, 
 	Eigen::MatrixXi tritag, 
 	Eigen::MatrixXi tettag, 
 	std::vector<std::string> xfields, 
 	std::vector<std::string> efields, 
-	std::vector<Eigen::MatrixXf> xf, 
-	std::vector<Eigen::MatrixXf> trif, 
-	std::vector<Eigen::MatrixXf> tetf,
+	std::vector<Eigen::MatrixXd> xf, 
+	std::vector<Eigen::MatrixXd> trif, 
+	std::vector<Eigen::MatrixXd> tetf,
 	std::string path
 )
 {
@@ -39,12 +39,12 @@ string StaticObj::get_loadingpath()
 }
 
 
-void StaticObj::ToViewer(Eigen::MatrixXf& vertices, Eigen::MatrixXi& faces)
+void StaticObj::ToViewer(Eigen::MatrixXd& vertices, Eigen::MatrixXi& faces)
 {
 	using namespace Eigen;
 	int row = tetrahedral.rows();
 
-	MatrixXf V(row * 4, 3);
+	MatrixXd V(row * 4, 3);
 	MatrixXi F(row * 4, 3);
 
 	// list the tetrahedrals
@@ -67,12 +67,12 @@ void StaticObj::ToViewer(Eigen::MatrixXf& vertices, Eigen::MatrixXi& faces)
 	faces << F;
 }
 
-tuple<Eigen::MatrixXf, Eigen::MatrixXi> StaticObj::Get_ViewMatrix()
+tuple<Eigen::MatrixXd, Eigen::MatrixXi> StaticObj::Get_ViewMatrix()
 {
 	using namespace Eigen;
 	int row = tetrahedral.rows();
 
-	MatrixXf V(row * 4, 3);
+	MatrixXd V(row * 4, 3);
 	MatrixXi F(row * 4, 3);
 
 	for (unsigned i = 0; i < row; ++i)

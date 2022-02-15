@@ -14,9 +14,9 @@ protected:
 	vector<StaticObj>StaticVec;
 	vector<DynamicObj>DynamicVec;
 	string tpath;
-	float e; // restitution coefficient
-	float tc; // collision time
-	float u; // friction
+	double e; // restitution coefficient
+	double tc; // collision time
+	double u; // friction
 	
 
 public:
@@ -28,7 +28,7 @@ public:
 	virtual void InitConfigs(string targetpath, json currentconfig);
 
 	virtual void reset();
-	virtual void set_physics_params(float restitution, float collision_t, float friction);
+	virtual void set_physics_params(double restitution, double collision_t, double friction);
 
 };
 

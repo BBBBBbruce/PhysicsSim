@@ -5,7 +5,7 @@ using namespace Eigen;
 //glm::vec3 gravity(0.0, 0.0, -9.8);
 
 
-//Eigen::Vector3f gravity(0.0, -10.0, 0.0);
+//Eigen::Vector3d gravity(0.0, -10.0, 0.0);
 
 NewtonRigid::NewtonRigid()
 {
@@ -36,10 +36,10 @@ void NewtonRigid::ParseWorld(json objectlist)
             DynamicObj dtmp(
                 it.key(),
                 it.value()["path"],
-                Eigen::Vector3f({ it.value()["position"][0],it.value()["position"][1], it.value()["position"][2] }),
-                Eigen::Vector3f({ it.value()["scale"][0],it.value()["scale"][1], it.value()["scale"][2] }),
-                Eigen::Vector3f({ it.value()["rotation"][0],it.value()["rotation"][1], it.value()["rotation"][2] }),
-                Eigen::Vector3f({ it.value()["velocity"][0],it.value()["velocity"][1], it.value()["velocity"][2] }),
+                Eigen::Vector3d({ it.value()["position"][0],it.value()["position"][1], it.value()["position"][2] }),
+                Eigen::Vector3d({ it.value()["scale"][0],it.value()["scale"][1], it.value()["scale"][2] }),
+                Eigen::Vector3d({ it.value()["rotation"][0],it.value()["rotation"][1], it.value()["rotation"][2] }),
+                Eigen::Vector3d({ it.value()["velocity"][0],it.value()["velocity"][1], it.value()["velocity"][2] }),
                 it.value()["mass"]
             );
             DynamicVec.push_back(dtmp);
@@ -50,9 +50,9 @@ void NewtonRigid::ParseWorld(json objectlist)
             StaticObj stmp(
                 it.key(),
                 it.value()["path"],
-                Eigen::Vector3f({ it.value()["position"][0],it.value()["position"][1], it.value()["position"][2] }),
-                Eigen::Vector3f({ it.value()["scale"][0],it.value()["scale"][1], it.value()["scale"][2] }),
-                Eigen::Vector3f({ it.value()["rotation"][0],it.value()["rotation"][1], it.value()["rotation"][2] })
+                Eigen::Vector3d({ it.value()["position"][0],it.value()["position"][1], it.value()["position"][2] }),
+                Eigen::Vector3d({ it.value()["scale"][0],it.value()["scale"][1], it.value()["scale"][2] }),
+                Eigen::Vector3d({ it.value()["rotation"][0],it.value()["rotation"][1], it.value()["rotation"][2] })
                 
             );
             StaticVec.push_back(stmp);
@@ -102,10 +102,10 @@ void NewtonRigid::load_scene(int pre_seq)
             
             DynamicObj dtmp(
                 it.key(),
-                double2float(X), Tet, Tri, TriTag, TetTag, XFields, EFields,
-                cast2float(XF), cast2float(TriF), cast2float(TetF),
-                Eigen::Vector3f(it.value()["linear_velocity"][0], it.value()["linear_velocity"][1], it.value()["linear_velocity"][2]),
-                Eigen::Vector3f(it.value()["angular_velocity"][0], it.value()["angular_velocity"][1], it.value()["angular_velocity"][2]),
+                X, Tet, Tri, TriTag, TetTag, XFields, EFields,
+                XF, TriF, TetF,
+                Eigen::Vector3d(it.value()["linear_velocity"][0], it.value()["linear_velocity"][1], it.value()["linear_velocity"][2]),
+                Eigen::Vector3d(it.value()["angular_velocity"][0], it.value()["angular_velocity"][1], it.value()["angular_velocity"][2]),
                 it.value()["mass"]
             );
             DynamicVec.push_back(dtmp);
@@ -120,8 +120,8 @@ void NewtonRigid::load_scene(int pre_seq)
             igl::readMSH(it.value()["position_path"], X, Tri, Tet, TriTag, TetTag, XFields, XF, EFields, TriF, TetF);
             StaticObj stmp(
                 it.key(),
-                double2float(X), Tet, Tri, TriTag, TetTag, XFields, EFields,
-                cast2float(XF), cast2float(TriF), cast2float(TetF), it.value()["position_path"]
+                X, Tet, Tri, TriTag, TetTag, XFields, EFields,
+                XF, TriF, TetF, it.value()["position_path"]
             );
             StaticVec.push_back(stmp);
         }
@@ -129,7 +129,7 @@ void NewtonRigid::load_scene(int pre_seq)
 }
 
 
-bool collision_check(MatrixXf vertices, MatrixXi tets) {
+bool collision_check(MatrixXd vertices, MatrixXi tets) {
 
 
     for (auto i = 0; i < tets.rows(); i++) {
@@ -159,56 +159,56 @@ bool collision_check(MatrixXf vertices, MatrixXi tets) {
 //+++++++++++++++++++++++++++++++++++++++++++
 
 
-Eigen::Matrix4f rotate_eigen_api(Vector3f theta) {
-    Affine3f rx(AngleAxisf(theta[0], Vector3f::UnitX()));
-    Matrix4f rotationx = rx.matrix();
-    Affine3f ry(AngleAxisf(theta[1], Vector3f::UnitY()));
-    Matrix4f rotationy = ry.matrix();
-    Affine3f rz(AngleAxisf(theta[2], Vector3f::UnitZ()));
-    Matrix4f rotationz = rz.matrix();
+Eigen::Matrix4d rotate_eigen_api(Vector3d theta) {
+    Affine3d rx(AngleAxisd(theta[0], Vector3d::UnitX()));
+    Matrix4d rotationx = rx.matrix();
+    Affine3d ry(AngleAxisd(theta[1], Vector3d::UnitY()));
+    Matrix4d rotationy = ry.matrix();
+    Affine3d rz(AngleAxisd(theta[2], Vector3d::UnitZ()));
+    Matrix4d rotationz = rz.matrix();
     return rotationx * rotationy * rotationz;
 }
 
-void rotate(MatrixXf &x, Vector3f&theta, Vector3f &cm) {
+void rotate(MatrixXd &x, Vector3d&theta, Vector3d &cm) {
     // define theta: 
     // Right hand rule: (+) --> counter-clockwise, (-) --> clockwise
-    // x rotates about Vector3f::UnitX(), y rotates about Vector3f::UnitY(), z rotates about Vector3f::UnitZ()
-    Affine3f tl(Translation3f(-cm[0], -cm[1], -cm[2]));
-    Matrix4f translation = tl.matrix();
-    Affine3f tlb(Translation3f(cm[0], cm[1], cm[2]));
-    Matrix4f translation_back = tlb.matrix();
+    // x rotates about Vector3d::UnitX(), y rotates about Vector3f::UnitY(), z rotates about Vector3f::UnitZ()
+    Affine3d tl(Translation3d(-cm[0], -cm[1], -cm[2]));
+    Matrix4d translation = tl.matrix();
+    Affine3d tlb(Translation3d(cm[0], cm[1], cm[2]));
+    Matrix4d translation_back = tlb.matrix();
 
-    MatrixXf pos_tmp = x;
+    MatrixXd pos_tmp = x;
     pos_tmp.conservativeResize(pos_tmp.rows(), 4);// Make V n*4 matrix
     pos_tmp.col(3).setOnes();
     pos_tmp = (translation_back * rotate_eigen_api(theta) * translation * pos_tmp.transpose()).transpose();
-    x = MatrixXf(pos_tmp.rows(), 3);
+    x = MatrixXd(pos_tmp.rows(), 3);
     x.col(0) = pos_tmp.col(0);
     x.col(1) = pos_tmp.col(1);
     x.col(2) = pos_tmp.col(2);
 }
 
-Eigen::Vector3f rowwise_projection(Eigen::Vector3f vec, Eigen::Vector3f dir_vec) {
+Eigen::Vector3d rowwise_projection(Eigen::Vector3d vec, Eigen::Vector3d dir_vec) {
     return dir_vec.normalized() * vec.dot(dir_vec);
 }
 
-Eigen::MatrixXf projection(Eigen::MatrixXf matrix, Eigen::Vector3f dir_vec) {
+Eigen::MatrixXd projection(Eigen::MatrixXd matrix, Eigen::Vector3d dir_vec) {
     auto dots = matrix * dir_vec;
-    MatrixXf output = dir_vec.normalized().replicate(matrix.rows(), 1);
+    MatrixXd output = dir_vec.normalized().replicate(matrix.rows(), 1);
 
     output = output.array() * dots.replicate(1,3).array();// debug til runtime
     return output;
 }
 
-Eigen::Vector3f project_cos(Eigen::Vector3f vec, Eigen::Vector3f dir_vec) {
+Eigen::Vector3d project_cos(Eigen::Vector3d vec, Eigen::Vector3d dir_vec) {
     auto dots = vec.transpose() * dir_vec;
-    Vector3f output = dir_vec.normalized() * dots;
+    Vector3d output = dir_vec.normalized() * dots;
     return output;
 }
 
-Eigen::Vector3f project_sin(Eigen::Vector3f vec, Eigen::Vector3f dir_vec) {
+Eigen::Vector3d project_sin(Eigen::Vector3d vec, Eigen::Vector3d dir_vec) {
     auto dots = vec.transpose() * dir_vec;
-    Vector3f output = dir_vec.normalized() * dots;
+    Vector3d output = dir_vec.normalized() * dots;
     return vec - output;
 }
 
@@ -216,23 +216,23 @@ Eigen::Vector3f project_sin(Eigen::Vector3f vec, Eigen::Vector3f dir_vec) {
 void NewtonRigid::run(float delta_t,int seq)
 {   
  
-    float r = 1; 
+    double r = 1; 
     for (auto i = 0; i < DynamicVec.size(); i++) {
 
         // pre-defined parameters
-        MatrixXf xf;
-        Vector3f vf;
-        Vector3f wf;
-        Vector3f cmf;
+        MatrixXd xf;
+        Vector3d vf;
+        Vector3d wf;
+        Vector3d cmf;
 
-        float mass = DynamicVec[i].get_mass();
-        MatrixXf x0 = DynamicVec[i].get_position();
-        Vector3f v0 = DynamicVec[i].get_linear_velocity();
-        Vector3f w0 = DynamicVec[i].get_angular_velocity();
+        double mass = DynamicVec[i].get_mass();
+        MatrixXd x0 = DynamicVec[i].get_position();
+        Vector3d v0 = DynamicVec[i].get_linear_velocity();
+        Vector3d w0 = DynamicVec[i].get_angular_velocity();
         MatrixXi tets = DynamicVec[i].get_tetrahedrons();
-        Vector3f cm = DynamicVec[i].get_cm();
+        Vector3d cm = DynamicVec[i].get_cm();
 
-        MatrixXf x = x0.rowwise() + (v0 * delta_t + 0.5 * gravity * delta_t * delta_t).transpose();
+        MatrixXd x = x0.rowwise() + (v0 * delta_t + 0.5 * gravity * delta_t * delta_t).transpose();
         //bool collide = collision_check(x, tets);
         //auto [collide, contact_p] = CD_bowl(x);
         //auto [collide, contact_p] = CD_table(x);
@@ -240,7 +240,7 @@ void NewtonRigid::run(float delta_t,int seq)
         //collide = false;
 
         cmf = cm + v0 * delta_t + 0.5 * gravity * delta_t * delta_t;
-        Vector3f theta = w0 * delta_t;
+        Vector3d theta = w0 * delta_t;
         rotate(x, theta, cmf);
         
         if (!collide) {
@@ -251,23 +251,23 @@ void NewtonRigid::run(float delta_t,int seq)
         else {
             //std::cout << endl;
             contact_p = contact_p - (v0 * delta_t + 0.5 * gravity * delta_t * delta_t);
-            Vector3f r_dir = (contact_p - cm).normalized();
+            Vector3d r_dir = (contact_p - cm).normalized();
 
-            Vector3f vc = project_cos(v0, r_dir);
-            Vector3f vs = v0 - vc;
-            Vector3f gc = project_cos(gravity, r_dir);
-            Vector3f gs = gravity - gc;
+            Vector3d vc = project_cos(v0, r_dir);
+            Vector3d vs = v0 - vc;
+            Vector3d gc = project_cos(gravity, r_dir);
+            Vector3d gs = gravity - gc;
 
-            Vector3f N_impact = mass  * (-e - 1) * vc /tc + mass * gc;// simplification of vc
-            Vector3f fs = u * N_impact.norm() * (vs + w0.cross(r_dir)).normalized();
+            Vector3d N_impact = mass  * (-e - 1) * vc /tc + mass * gc;// simplification of vc
+            Vector3d fs = u * N_impact.norm() * (vs + w0.cross(r_dir)).normalized();
 
-            Vector3f vf1 = -vc * (1 + e) + gc * (delta_t - tc) ; 
+            Vector3d vf1 = -vc * (1 + e) + gc * (delta_t - tc) ; 
 
-            Vector3f vf2 = delta_t * gs + fs*tc/mass ;
+            Vector3d vf2 = delta_t * gs + fs*tc/mass ;
             vf = vf1 + vf2+v0;
 
-            float I = 0.4 * mass * r * r;
-            //Vector3f fs = u * mass / tc * (-e - 1) * vc;
+            double I = 0.4 * mass * r * r;
+            //Vector3d fs = u * mass / tc * (-e - 1) * vc;
             wf = fs.cross(r_dir) * tc / I + w0;
 
         }
@@ -287,9 +287,9 @@ void NewtonRigid::save_scene(int seq)
         string path_p = tpath + padseq(seq) + "/" + DynamicVec[i].name + "_p.msh";
         DynamicVec[i].writemsh(path_p);
 
-        Eigen::Vector3f lv = DynamicVec[i].get_linear_velocity();
-        Eigen::Vector3f av = DynamicVec[i].get_angular_velocity();
-        Eigen::Vector3f cm = DynamicVec[i].get_cm();
+        Eigen::Vector3d lv = DynamicVec[i].get_linear_velocity();
+        Eigen::Vector3d av = DynamicVec[i].get_angular_velocity();
+        Eigen::Vector3d cm = DynamicVec[i].get_cm();
 
         json jtmp;
         jtmp["position_path"] = path_p;

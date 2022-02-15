@@ -15,7 +15,7 @@ string Objects::get_name()
 
 
 
-Eigen::MatrixXf Objects::get_position()
+Eigen::MatrixXd Objects::get_position()
 {
 	return position;
 }

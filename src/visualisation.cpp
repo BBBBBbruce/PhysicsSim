@@ -48,36 +48,38 @@ void render(string path)
     }
     //V_temp = V_temp * 0.5;
     //cout << V << endl; 
-    MatrixXf V = double2float(Vt);
+    MatrixXd V = Vt;
+    //MatrixXd V = double2float(Vt);
 
     V.conservativeResize(V.rows(), 4);// Make V n*4 matrix
     V.col(3).setOnes();
 
     // translation, rotation, scaling matrices
-    Affine3f tl(Translation3f(2.0, 2.0, 2.0));
-    Matrix4f translation = tl.matrix();
-    Affine3f sc(AlignedScaling3f(0.5, 0.5, 0.5));
-    Matrix4f scale = sc.matrix();
-    Affine3f rx(AngleAxisf(0.5, Vector3f::UnitX()));
-    Matrix4f rotationx = rx.matrix();
-    Affine3f ry(AngleAxisf(0.5, Vector3f::UnitY()));
-    Matrix4f rotationy = ry.matrix();
-    Affine3f rz(AngleAxisf(0.5, Vector3f::UnitZ()));
-    Matrix4f rotationz = rz.matrix();
+    Affine3d tl(Translation3d(2.0, 2.0, 2.0));
+    Matrix4d translation = tl.matrix();
+    Affine3d sc(AlignedScaling3d(0.5, 0.5, 0.5));
+    Matrix4d scale = sc.matrix();
+    Affine3d rx(AngleAxisd(0.5, Vector3d::UnitX()));
+    Matrix4d rotationx = rx.matrix();
+    Affine3d ry(AngleAxisd(0.5, Vector3d::UnitY()));
+    Matrix4d rotationy = ry.matrix();
+    Affine3d rz(AngleAxisd(0.5, Vector3d::UnitZ()));
+    Matrix4d rotationz = rz.matrix();
 
     cout << translation * scale << endl;
     //cout << V << endl;
     //delete last column
 
-    MatrixXf V_tmp = translation * rotationx * rotationy * rotationz * scale * V.transpose();
+    MatrixXd V_tmp = translation * rotationx * rotationy * rotationz * scale * V.transpose();
     V = V_tmp.transpose();
 
-    MatrixXf _V(V.rows(), 3);
+    MatrixXd _V(V.rows(), 3);
     _V.col(0) = V.col(0);
     _V.col(1) = V.col(1);
     _V.col(2) = V.col(2);
     
-    viewer.data().set_mesh(float2double(_V), F);
+    //viewer.data().set_mesh(float2double(_V), F);
+    viewer.data().set_mesh(_V, F);
     viewer.data().set_face_based(true);
     viewer.launch();
 }
