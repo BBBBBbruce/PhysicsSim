@@ -65,7 +65,7 @@ void World::LoadingWorld()
 void World::init()
 {
 	LoadingWorld();
-	PhyEngine->InitConfigs(targetpath, currentconfig);
+	PhyEngine->InitConfigs(targetpath, currentconfig, runningtime);
 	//InitConfigs();
 }
 

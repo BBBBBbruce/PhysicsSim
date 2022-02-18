@@ -26,7 +26,7 @@ void Engine::save_scene(int seq)
 	//do nothing
 }
 
-void Engine::InitConfigs(string targetpath, json currentconfig)
+void Engine::InitConfigs(string targetpath, json currentconfig, float tc)
 {
 	//do nothing
 }

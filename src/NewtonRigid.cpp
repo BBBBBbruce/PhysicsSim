@@ -317,7 +317,7 @@ void NewtonRigid::create_aabb_tree() {
 
 }
 
-void NewtonRigid::InitConfigs(string targetpath, json currentconfig)
+void NewtonRigid::InitConfigs(string targetpath, json currentconfig, float tc)
 {
     json jout;
 

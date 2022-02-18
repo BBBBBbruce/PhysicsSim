@@ -5,15 +5,15 @@
       "restitution": 0.8,
       "collision_time": 0.002,
       "friction": 0.04,
-      "Young_s_modulus": 500000000.0,
-      "Poisson_Ratio": 0.3,
+      "Young_s_modulus": 0.00000001e+9,
+      "Poisson_Ratio": 0.47,
       "damping_coef": 2.0
 
     },
 
     "cube": {
       "type": "dynamic",
-      "path": "D:\\Bruce_Projects\\BBBBBbruce\\PhysicsSim\\assets\\equal_triangle.msh",
+      "path": "D:\\Bruce_Projects\\BBBBBbruce\\PhysicsSim\\assets\\uvsphere.msh",
       "position": [ 0.0, 0.0, 0.0 ],
       "scale": [ 1.0, 1.0, 1.0 ],
       "linear_velocity": [ 0.0, 0.0, 0.0 ],
@@ -21,7 +21,8 @@
       "angular_velocity": [ 0.0, 0.0, 0.0 ],
       "rotation": [ 0.0, 0.0, 0.0 ],
       "mass_centre": [ 0.0, 0.0, 0.0 ],
-      "mass": 0.5
+      "mass": 1100.0,
+      "density": 1100.0
     }
   }
 

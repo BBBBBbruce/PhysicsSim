@@ -25,7 +25,7 @@ public:
 	virtual void load_scene(int pre_seq);
 	virtual void run(float time, int seq);
 	virtual void save_scene(int seq);
-	virtual void InitConfigs(string targetpath, json currentconfig);
+	virtual void InitConfigs(string targetpath, json currentconfig, float tc);
 
 	virtual void reset();
 	virtual void set_physics_params(double restitution, double collision_t, double friction);

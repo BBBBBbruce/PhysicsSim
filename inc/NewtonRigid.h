@@ -20,7 +20,7 @@ public:
     void load_scene(int pre_seq);
     void save_scene(int seq);
     void create_aabb_tree();
-    void InitConfigs(string targetpath, json currentconfig);
+    void InitConfigs(string targetpath, json currentconfig, float tc);
 
 };
 

@@ -164,7 +164,7 @@ tuple<bool, vector<int>> CD_table_FEM(MatrixXd vertices)
     bool collide = false;
     for (auto i = 0; i < vertices.rows(); i++) {
         double y = vertices(i, 1);// y
-        if (y <= 0 ) {
+        if (abs(y)<1.0e-05 ) {
             collide = true;
             //contact_p = vertices.row(i);
             contact_points.push_back(i);

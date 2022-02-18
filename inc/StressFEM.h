@@ -11,7 +11,8 @@ class StressFEM :
 {
 
 private:
-    vector<Eigen::MatrixXd>TransVelVec;
+    vector<Eigen::MatrixXd>currentVec;
+    vector<Eigen::MatrixXd>lastVec;
     vector<Eigen::MatrixXd>RigidPosVec;
     vector<double> DampVec;
     double Young;
@@ -28,7 +29,7 @@ public:
     vector<DynamicObj> getDynamicObjs();
     void load_scene(int pre_seq);
     void save_scene(int seq);
-    void InitConfigs(string targetpath, json currentconfig);
+    void InitConfigs(string targetpath, json currentconfig, float tc);
     void reset();
     void set_physics_params(double d, double restitution, double collision_t, double friction, double young, double poisson);
 
