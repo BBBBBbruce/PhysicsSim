@@ -488,6 +488,28 @@ tuple<bool, double, int> self_collision_tet(Matrix<double, 4, 3> X, Matrix<doubl
 
 }
 
+void TetrahedronElementVolume() {
+
+}
+
+void TetrahedronElementStiffness() {
+
+}
+
+void TetrahedronAssemble() {
+
+}
+
+void TetrahedronElementStresses() {
+
+}
+
+void TetrahedronElementPStresses() {
+
+}
+
+
+
 void StressFEM::run(float delta_t, int seq)
 {
     // Implement the physics
