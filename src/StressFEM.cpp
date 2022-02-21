@@ -390,6 +390,104 @@ MatrixXd apply_poisson(MatrixXd d, double p) {
     return d;
 }
 
+bool point_in_triangle(Matrix<double, 1, 3> p, Matrix<double, 1, 3> V0, Matrix<double, 1, 3> V1, Matrix<double, 1, 3> V2) {
+    cout << "contact: " << endl << p << endl;
+    double S = 0.5 * ((V0 - V1).cross(V0 - V2)).norm();
+    double s1 = 0.5 * ((V0 - p).cross(V2 - p)).norm();
+    double s2 = 0.5 * ((V1 - p).cross(V2 - p)).norm();
+    double s3 = 0.5 * ((V1 - p).cross(V0 - p)).norm();
+    double a = s1 / S;
+    double b = s2 / S;
+    double c = s3 / S;
+    if (abs(a + b + c - 1) < 1.0e-05 && a > 0 && b > 0 && c > 0 && a < 1 && b < 1 && c < 1)
+        return true;
+    else
+        return false;
+
+}
+
+tuple<bool, double> LinePlaneIntersection(
+    Matrix<double, 1, 3> p,
+    Matrix<double, 1, 3> V,
+    Matrix<double, 1, 3> V1,
+    Matrix<double, 1, 3> V2,
+    Matrix<double, 1, 3> V3
+) {
+    //cout<<"p: "<<endl<<p<<endl;
+    //cout<<"V: "<<endl<<V<<endl;
+    //cout<<"V1: "<<endl<<V1<<endl;
+    //cout<<"V2: "<<endl<<V2<<endl;
+    //cout<<"V3: "<<endl<<V3<<endl;
+    Matrix<double, 1, 3> line = p.row(0) - V;
+    Matrix<double, 1, 3> x2 = V2 - V1;
+    Matrix<double, 1, 3> x3 = V3 - V1;
+    Matrix<double, 1, 3> normal = (x2.cross(x3)).normalized();
+
+    //cout<<"normal: "<<endl<<normal<<endl;
+    //cout<<"line: "<<endl<<line<<endl;
+    if (normal.dot(line) == 0.0) {
+        return { false,0.0 };
+    }
+
+    double d = normal.dot(V1);
+    double x = (d - normal.dot(V)) / normal.dot(line);
+    //cout<<"x: "<< x <<endl;
+    Matrix<double, 1, 3> contact = V + line * x;
+    double max_d = (contact - V).norm();
+    if (max_d - line.norm() < 1.0e-05)
+        if (point_in_triangle(contact, V1, V2, V3))
+            // p = p0 + (p1 - p0) * s + (p2 - p0) * t
+            return { true,max_d };
+        else
+            return { false,0.0 };
+    else
+        return { false,0.0 };
+}
+
+tuple<bool, double, int> self_collision_tet(Matrix<double, 4, 3> X, Matrix<double, 4, 3> P) {
+    //cout<<"X: "<<endl<<X<<endl;
+    //cout<<"P: "<<endl<<P<<endl;
+
+    int index = -1;
+    bool flag = false;
+    double max_d = -1;
+    auto [collide0, max_d0] = LinePlaneIntersection(P.row(0), X.row(0), X.row(1), X.row(2), X.row(3));
+    //cout<<"collide0: "<<collide0<<endl;
+    //cout<<"max_d0: "<<max_d0<<endl;
+    if (collide0 && max_d0 > max_d) {
+        flag = true;
+        index = 0;
+        max_d = max_d0;
+    }
+    auto [collide1, max_d1] = LinePlaneIntersection(P.row(1), X.row(1), X.row(0), X.row(2), X.row(3));
+    //cout<<"collide1: "<<collide1<<endl;
+    //cout<<"max_d1: "<<max_d1<<endl;
+    if (collide1 && max_d1 > max_d) {
+        flag = true;
+        index = 0;
+        max_d = max_d1;
+    }
+    auto [collide2, max_d2] = LinePlaneIntersection(P.row(2), X.row(2), X.row(1), X.row(0), X.row(3));
+    //cout<<"collide2: "<<collide2<<endl;
+    //cout<<"max_d2: "<<max_d2<<endl;
+    if (collide2 && max_d2 > max_d) {
+        flag = true;
+        index = 0;
+        max_d = max_d2;
+    }
+    auto [collide3, max_d3] = LinePlaneIntersection(P.row(3), X.row(3), X.row(1), X.row(2), X.row(0));
+    //cout<<"collide3: "<<collide3<<endl;
+    //cout<<"max_d3: "<<max_d3<<endl;
+    if (collide3 && max_d3 > max_d) {
+        flag = true;
+        index = 0;
+        max_d = max_d3;
+    }
+
+    return { flag,max_d,index };
+
+}
+
 void StressFEM::run(float delta_t, int seq)
 {
     // Implement the physics
@@ -409,6 +507,10 @@ void StressFEM::run(float delta_t, int seq)
         //cout << "vc: " << endl << vc << endl;
         //======================= new logic: ==========================
         MatrixXd pc = pl + (vl + vc) * 0.5 * delta_t;
+        //+++++++++++++++++++++++++
+        // TODO: self_collision check:
+        //
+        //+++++++++++++++++++++++++
 
         //cout << "pc: " << endl << pc << endl;
         vector<MatrixXd> _x;
@@ -445,6 +547,7 @@ void StressFEM::run(float delta_t, int seq)
             //cout << strain << endl;
             MatrixXd stress = HookeLaw(strain, YModulus);
             //cout << "stress: " << endl << stress << endl;
+            
             ff1 = p0.cross(p1) * stress * 0.5;
             ff1 *= signbit(p0.cross(p1).dot(p4)) == 1 ? -1 : 1;
             ff2 = p0.cross(p2) * stress * 0.5;
@@ -461,19 +564,18 @@ void StressFEM::run(float delta_t, int seq)
         }
         //cout << "fi: " << endl << fi << endl;
         MatrixXd G = m / x.rows() * gravity.transpose().replicate(x.rows(), 1);
-        MatrixXd f_total;
-        //cout << "pc: " << endl << pc << endl;
-        auto [collide, contact_points] = CD_table_FEM(pc);
-        MatrixXd fe;
-        MatrixXd v_y = MatrixXd::Zero(vc.rows(), vc.cols());
-        v_y.col(1) = vc.col(1);
+
+        
         // return the 
         //float maxnorm = fi.rowwise().norm().maxCoeff();
         //cout << "fi: " << endl << fi << endl;
         if (fi.rowwise().norm().maxCoeff() > 2 * G.rowwise().norm().maxCoeff()) {
             //cout << "FLAG!!!FLAG!!!FLAG!!!FLAG!!!FLAG!!!FLAG!!!FLAG!!!FLAG!!!" << endl;
             fi = fi.normalized() * 1.6 * G.norm();
-
+            MatrixXd fe;
+            MatrixXd v_y = MatrixXd::Zero(vl.rows(), vl.cols());
+            v_y.col(1) = vl.col(1);
+            auto [collide, contact_points] = CD_table_FEM(pl);
             if (!collide) {
                 //f_total = G + f_internal; //+f_damping;
                 //cout << "not collide" << endl;
@@ -483,23 +585,18 @@ void StressFEM::run(float delta_t, int seq)
                 //cout << "collide" << endl;
                 MatrixXd v_stress = MatrixXd::Zero(fi.rows(), fi.cols());
                 v_stress.col(1) = fi.col(1);
-                //cout << "v_stress: " << endl << v_stress << endl;
-                
                 MatrixXd f_collide = -(1 + e) * v_y * m / x.rows() / tc - G - v_stress;
-                //cout << "f_collide: " << endl << f_collide << endl;
                 MatrixXd zero_buff = MatrixXd::Zero(f_collide.rows(), f_collide.cols());
 
                 for (auto i = 0; i < contact_points.size(); i++) {
                     zero_buff.row(contact_points[i]) = f_collide.row(contact_points[i]);
                 }
-
-                //cout << "zero_buff: " << endl << zero_buff << endl;
                 //f_total = G + zero_buff + f_internal +f_damping;
                 fe = G + zero_buff;
                 //cout << f_total << endl;
             }
 
-            f_total = fi + fe;
+            MatrixXd f_total = fi + fe;
             vc = vl + f_total * delta_t / m * x.rows();
             //cout << "vc: " << endl << vc << endl;
             pc = pl + (vl + vc) * 0.5 * delta_t;
@@ -507,29 +604,36 @@ void StressFEM::run(float delta_t, int seq)
             vc = -0.8*vc;
             //vc = -vc;
         }
-        else {
-            
-            if (!collide) {
-                //f_total = G + f_internal; //+f_damping;
-                //cout << "not collide" << endl;
-                fe = G;
-            }
-            else {
-                //cout << "collide" << endl;
-                MatrixXd v_stress = MatrixXd::Zero(fi.rows(), fi.cols());
-                v_stress.col(1) = fi.col(1);
-                MatrixXd f_collide = -(1 + e) * v_y * m / x.rows() / tc - G - v_stress;
-                MatrixXd zero_buff = MatrixXd::Zero(f_collide.rows(), f_collide.cols());
 
-                for (auto i = 0; i < contact_points.size(); i++) {
-                    zero_buff.row(contact_points[i]) = f_collide.row(contact_points[i]);
-                }
-                //f_total = G + zero_buff + f_internal +f_damping;
-                fe = G + zero_buff;
-                //cout << f_total << endl;
-            }
-            f_total = fi + fe;
+        MatrixXd f_total;
+        //cout << "pc: " << endl << pc << endl;
+        MatrixXd fe;
+
+        // update fi, pc, vc
+        MatrixXd v_y = MatrixXd::Zero(vc.rows(), vc.cols());
+        v_y.col(1) = vc.col(1);
+        auto [collide, contact_points] = CD_table_FEM(pc);
+        
+        if (!collide) {
+            //f_total = G + f_internal; //+f_damping;
+            //cout << "not collide" << endl;
+            fe = G;
         }
+        else {
+            //cout << "collide" << endl;
+            MatrixXd v_stress = MatrixXd::Zero(fi.rows(), fi.cols());
+            v_stress.col(1) = fi.col(1);
+            MatrixXd f_collide = -(1 + e) * v_y * m / x.rows() / tc - G - v_stress;
+            MatrixXd zero_buff = MatrixXd::Zero(f_collide.rows(), f_collide.cols());
+
+            for (auto i = 0; i < contact_points.size(); i++) {
+                zero_buff.row(contact_points[i]) = f_collide.row(contact_points[i]);
+            }
+            //f_total = G + zero_buff + f_internal +f_damping;
+            fe = G + zero_buff;
+            //cout << f_total << endl;
+        }
+        f_total = fi + fe;
        
         //cout << "fi: " << endl << fi << endl;
         //cout << "fe: " << endl << fe << endl;
