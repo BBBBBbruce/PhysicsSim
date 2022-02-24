@@ -488,26 +488,364 @@ tuple<bool, double, int> self_collision_tet(Matrix<double, 4, 3> X, Matrix<doubl
 
 }
 
-void TetrahedronElementVolume() {
+float TetrahedronElementVolume(MatrixXd tet_vertices) {
 
+    MatrixXd new_mat(tet_vertices.rows(), tet_vertices.cols() + 1);
+    new_mat << Matrix<double, 4, 1>::Ones(), tet_vertices;
+    //new_mat.setOnes();
+
+    //cout << new_mat << endl;
+    return new_mat.determinant() / 6;
 }
 
-void TetrahedronElementStiffness() {
+MatrixXd TetrahedronElementStiffness(MatrixXd YModulus, MatrixXd vertices) {
+    double x1 = vertices(0, 0);
+    double y1 = vertices(0, 1);
+    double z1 = vertices(0, 2);
+    double x2 = vertices(1, 0);
+    double y2 = vertices(1, 1);
+    double z2 = vertices(1, 2);
+    double x3 = vertices(2, 0);
+    double y3 = vertices(2, 1);
+    double z3 = vertices(2, 2);
+    double x4 = vertices(3, 0);
+    double y4 = vertices(3, 1);
+    double z4 = vertices(3, 2);
 
+    Matrix<double, 3, 3> mbeta1;
+    mbeta1 << 1, y2, z2, 1, y3, z3, 1, y4, z4;
+    Matrix<double, 3, 3> mbeta2;
+    mbeta2 << 1, y1, z1, 1, y3, z3, 1, y4, z4;
+    Matrix<double, 3, 3> mbeta3;
+    mbeta3 << 1, y1, z1, 1, y2, z2, 1, y4, z4;
+    Matrix<double, 3, 3> mbeta4;
+    mbeta4 << 1, y1, z1, 1, y2, z2, 1, y3, z3;
+
+    /*cout << "mbeta1: " << endl << mbeta1 << endl;
+    cout << "mbeta2: " << endl << mbeta2 << endl;
+    cout << "mbeta3: " << endl << mbeta3 << endl;
+    cout << "mbeta4: " << endl << mbeta4 << endl;*/
+
+
+    Matrix<double, 3, 3> mgamma1;
+    mgamma1 << 1, x2, z2, 1, x3, z3, 1, x4, z4;
+    Matrix<double, 3, 3> mgamma2;
+    mgamma2 << 1, x1, z1, 1, x3, z3, 1, x4, z4;
+    Matrix<double, 3, 3> mgamma3;
+    mgamma3 << 1, x1, z1, 1, x2, z2, 1, x4, z4;
+    Matrix<double, 3, 3> mgamma4;
+    mgamma4 << 1, x1, z1, 1, x2, z2, 1, x3, z3;
+
+    /* cout << "mgamma1: " << endl << mgamma1 << endl;
+     cout << "mgamma2: " << endl << mgamma2 << endl;
+     cout << "mgamma3: " << endl << mgamma3 << endl;
+     cout << "mgamma4: " << endl << mgamma4 << endl; */
+
+    Matrix<double, 3, 3> mdelta1;
+    mdelta1 << 1, x2, y2, 1, x3, y3, 1, x4, y4;
+    Matrix<double, 3, 3> mdelta2;
+    mdelta2 << 1, x1, y1, 1, x3, y3, 1, x4, y4;
+    Matrix<double, 3, 3> mdelta3;
+    mdelta3 << 1, x1, y1, 1, x2, y2, 1, x4, y4;
+    Matrix<double, 3, 3> mdelta4;
+    mdelta4 << 1, x1, y1, 1, x2, y2, 1, x3, y3;
+
+    /*cout << "mdelta1: " << endl << mdelta1 << endl;
+    cout << "mdelta2: " << endl << mdelta2 << endl;
+    cout << "mdelta3: " << endl << mdelta3 << endl;
+    cout << "mdelta4: " << endl << mdelta4 << endl;*/
+
+    float beta1 = -1 * mbeta1.determinant();
+    float beta2 = mbeta2.determinant();
+    float beta3 = -1 * mbeta3.determinant();
+    float beta4 = mbeta4.determinant();
+
+    //cout << "beta1: " << beta1 << endl;
+    //cout << "beta2: " << beta2 << endl;
+    //cout << "beta3: " << beta3 << endl;
+    //cout << "beta4: " << beta4 << endl;
+
+    float gamma1 = mgamma1.determinant();
+    float gamma2 = -1 * mgamma2.determinant();
+    float gamma3 = mgamma3.determinant();
+    float gamma4 = -1 * mgamma4.determinant();
+
+    //cout << "gamma1: " << gamma1 << endl;
+    //cout << "gamma2: " << gamma2 << endl;
+    //cout << "gamma3: " << gamma3 << endl;
+    //cout << "gamma4: " << gamma4 << endl;
+
+    float delta1 = -1 * mdelta1.determinant();
+    float delta2 = mdelta2.determinant();
+    float delta3 = -1 * mdelta3.determinant();
+    float delta4 = mdelta4.determinant();
+
+    //cout << "delta1: " << delta1 << endl;
+    //cout << "delta2: " << delta2 << endl;
+    //cout << "delta3: " << delta3 << endl;
+    //cout << "delta4: " << delta4 << endl;
+
+    Matrix<double, 6, 12> B;
+    B << beta1, 0, 0, beta2, 0, 0, beta3, 0, 0, beta4, 0, 0,
+        0, gamma1, 0, 0, gamma2, 0, 0, gamma3, 0, 0, gamma4, 0,
+        0, 0, delta1, 0, 0, delta2, 0, 0, delta3, 0, 0, delta4,
+        gamma1, beta1, 0, gamma2, beta2, 0, gamma3, beta3, 0, gamma4, beta4, 0,
+        0, delta1, gamma1, 0, delta2, gamma2, 0, delta3, gamma3, 0, delta4, gamma4,
+        delta1, 0, beta1, delta2, 0, beta2, delta3, 0, beta3, delta4, 0, beta4;
+    float V = TetrahedronElementVolume(vertices);
+    //cout << "V: " << endl << V << endl;
+    B /= (6 * V);
+    return V * B.transpose() * YModulus * B;
 }
 
-void TetrahedronAssemble() {
+void TetrahedronAssemble(MatrixXd& K, MatrixXd k, MatrixXi indices) {
+    int i = indices(0, 0);
+    int j = indices(0, 1);
+    int m = indices(0, 2);
+    int n = indices(0, 3);
 
+    K(3 * i, 3 * i) = K(3 * i, 3 * i) + k(0, 0);
+    K(3 * i, 3 * i + 1) = K(3 * i, 3 * i + 1) + k(0, 1);
+    K(3 * i, 3 * i + 2) = K(3 * i, 3 * i + 2) + k(0, 2);
+    K(3 * i, 3 * j) = K(3 * i, 3 * j) + k(0, 3);
+    K(3 * i, 3 * j + 1) = K(3 * i, 3 * j + 1) + k(0, 4);
+    K(3 * i, 3 * j + 2) = K(3 * i, 3 * j + 2) + k(0, 5);
+    K(3 * i, 3 * m) = K(3 * i, 3 * m) + k(0, 6);
+    K(3 * i, 3 * m + 1) = K(3 * i, 3 * m + 1) + k(0, 7);
+    K(3 * i, 3 * m + 2) = K(3 * i, 3 * m + 2) + k(0, 8);
+    K(3 * i, 3 * n) = K(3 * i, 3 * n) + k(0, 9);
+    K(3 * i, 3 * n + 1) = K(3 * i, 3 * n + 1) + k(0, 10);
+    K(3 * i, 3 * n + 2) = K(3 * i, 3 * n + 2) + k(0, 11);
+
+    K(3 * i + 1, 3 * i) = K(3 * i + 1, 3 * i) + k(1, 0);
+    K(3 * i + 1, 3 * i + 1) = K(3 * i + 1, 3 * i + 1) + k(1, 1);
+    K(3 * i + 1, 3 * i + 2) = K(3 * i + 1, 3 * i + 2) + k(1, 2);
+    K(3 * i + 1, 3 * j) = K(3 * i + 1, 3 * j) + k(1, 3);
+    K(3 * i + 1, 3 * j + 1) = K(3 * i + 1, 3 * j + 1) + k(1, 4);
+    K(3 * i + 1, 3 * j + 2) = K(3 * i + 1, 3 * j + 2) + k(1, 5);
+    K(3 * i + 1, 3 * m) = K(3 * i + 1, 3 * m) + k(1, 6);
+    K(3 * i + 1, 3 * m + 1) = K(3 * i + 1, 3 * m + 1) + k(1, 7);
+    K(3 * i + 1, 3 * m + 2) = K(3 * i + 1, 3 * m + 2) + k(1, 8);
+    K(3 * i + 1, 3 * n) = K(3 * i + 1, 3 * n) + k(1, 9);
+    K(3 * i + 1, 3 * n + 1) = K(3 * i + 1, 3 * n + 1) + k(1, 10);
+    K(3 * i + 1, 3 * n + 2) = K(3 * i + 1, 3 * n + 2) + k(1, 11);
+
+    K(3 * i + 2, 3 * i) = K(3 * i + 2, 3 * i) + k(2, 0);
+    K(3 * i + 2, 3 * i + 1) = K(3 * i + 2, 3 * i + 1) + k(2, 1);
+    K(3 * i + 2, 3 * i + 2) = K(3 * i + 2, 3 * i + 2) + k(2, 2);
+    K(3 * i + 2, 3 * j) = K(3 * i + 2, 3 * j) + k(2, 3);
+    K(3 * i + 2, 3 * j + 1) = K(3 * i + 2, 3 * j + 1) + k(2, 4);
+    K(3 * i + 2, 3 * j + 2) = K(3 * i + 2, 3 * j + 2) + k(2, 5);
+    K(3 * i + 2, 3 * m) = K(3 * i + 2, 3 * m) + k(2, 6);
+    K(3 * i + 2, 3 * m + 1) = K(3 * i + 2, 3 * m + 1) + k(2, 7);
+    K(3 * i + 2, 3 * m + 2) = K(3 * i + 2, 3 * m + 2) + k(2, 8);
+    K(3 * i + 2, 3 * n) = K(3 * i + 2, 3 * n) + k(2, 9);
+    K(3 * i + 2, 3 * n + 1) = K(3 * i + 2, 3 * n + 1) + k(2, 10);
+    K(3 * i + 2, 3 * n + 2) = K(3 * i + 2, 3 * n + 2) + k(2, 11);
+
+    K(3 * j, 3 * i) = K(3 * j, 3 * i) + k(3, 0);
+    K(3 * j, 3 * i + 1) = K(3 * j, 3 * i + 1) + k(3, 1);
+    K(3 * j, 3 * i + 2) = K(3 * j, 3 * i + 2) + k(3, 2);
+    K(3 * j, 3 * j) = K(3 * j, 3 * j) + k(3, 3);
+    K(3 * j, 3 * j + 1) = K(3 * j, 3 * j + 1) + k(3, 4);
+    K(3 * j, 3 * j + 2) = K(3 * j, 3 * j + 2) + k(3, 5);
+    K(3 * j, 3 * m) = K(3 * j, 3 * m) + k(3, 6);
+    K(3 * j, 3 * m + 1) = K(3 * j, 3 * m + 1) + k(3, 7);
+    K(3 * j, 3 * m + 2) = K(3 * j, 3 * m + 2) + k(3, 8);
+    K(3 * j, 3 * n) = K(3 * j, 3 * n) + k(3, 9);
+    K(3 * j, 3 * n + 1) = K(3 * j, 3 * n + 1) + k(3, 10);
+    K(3 * j, 3 * n + 2) = K(3 * j, 3 * n + 2) + k(3, 11);
+
+    K(3 * j + 1, 3 * i) = K(3 * j + 1, 3 * i) + k(4, 0);
+    K(3 * j + 1, 3 * i + 1) = K(3 * j + 1, 3 * i + 1) + k(4, 1);
+    K(3 * j + 1, 3 * i + 2) = K(3 * j + 1, 3 * i + 2) + k(4, 2);
+    K(3 * j + 1, 3 * j) = K(3 * j + 1, 3 * j) + k(4, 3);
+    K(3 * j + 1, 3 * j + 1) = K(3 * j + 1, 3 * j + 1) + k(4, 4);
+    K(3 * j + 1, 3 * j + 2) = K(3 * j + 1, 3 * j + 2) + k(4, 5);
+    K(3 * j + 1, 3 * m) = K(3 * j + 1, 3 * m) + k(4, 6);
+    K(3 * j + 1, 3 * m + 1) = K(3 * j + 1, 3 * m + 1) + k(4, 7);
+    K(3 * j + 1, 3 * m + 2) = K(3 * j + 1, 3 * m + 2) + k(4, 8);
+    K(3 * j + 1, 3 * n) = K(3 * j + 1, 3 * n) + k(4, 9);
+    K(3 * j + 1, 3 * n + 1) = K(3 * j + 1, 3 * n + 1) + k(4, 10);
+    K(3 * j + 1, 3 * n + 2) = K(3 * j + 1, 3 * n + 2) + k(4, 11);
+    //
+    K(3 * j + 2, 3 * i) = K(3 * j + 2, 3 * i) + k(5, 0);
+    K(3 * j + 2, 3 * i + 1) = K(3 * j + 2, 3 * i + 1) + k(5, 1);
+    K(3 * j + 2, 3 * i + 2) = K(3 * j + 2, 3 * i + 2) + k(5, 2);
+    K(3 * j + 2, 3 * j) = K(3 * j + 2, 3 * j) + k(5, 3);
+    K(3 * j + 2, 3 * j + 1) = K(3 * j + 2, 3 * j + 1) + k(5, 4);
+    K(3 * j + 2, 3 * j + 2) = K(3 * j + 2, 3 * j + 2) + k(5, 5);
+    K(3 * j + 2, 3 * m) = K(3 * j + 2, 3 * m) + k(5, 6);
+    K(3 * j + 2, 3 * m + 1) = K(3 * j + 2, 3 * m + 1) + k(5, 7);
+    K(3 * j + 2, 3 * m + 2) = K(3 * j + 2, 3 * m + 2) + k(5, 8);
+    K(3 * j + 2, 3 * n) = K(3 * j + 2, 3 * n) + k(5, 9);
+    K(3 * j + 2, 3 * n + 1) = K(3 * j + 2, 3 * n + 1) + k(5, 10);
+    K(3 * j + 2, 3 * n + 2) = K(3 * j + 2, 3 * n + 2) + k(5, 11);
+
+    K(3 * m, 3 * i) = K(3 * m, 3 * i) + k(6, 0);
+    K(3 * m, 3 * i + 1) = K(3 * m, 3 * i + 1) + k(6, 1);
+    K(3 * m, 3 * i + 2) = K(3 * m, 3 * i + 2) + k(6, 2);
+    K(3 * m, 3 * j) = K(3 * m, 3 * j) + k(6, 3);
+    K(3 * m, 3 * j + 1) = K(3 * m, 3 * j + 1) + k(6, 4);
+    K(3 * m, 3 * j + 2) = K(3 * m, 3 * j + 2) + k(6, 5);
+    K(3 * m, 3 * m) = K(3 * m, 3 * m) + k(6, 6);
+    K(3 * m, 3 * m + 1) = K(3 * m, 3 * m + 1) + k(6, 7);
+    K(3 * m, 3 * m + 2) = K(3 * m, 3 * m + 2) + k(6, 8);
+    K(3 * m, 3 * n) = K(3 * m, 3 * n) + k(6, 9);
+    K(3 * m, 3 * n + 1) = K(3 * m, 3 * n + 1) + k(6, 10);
+    K(3 * m, 3 * n + 2) = K(3 * m, 3 * n + 2) + k(6, 11);
+
+    K(3 * m + 1, 3 * i) = K(3 * m + 1, 3 * i) + k(7, 0);
+    K(3 * m + 1, 3 * i + 1) = K(3 * m + 1, 3 * i + 1) + k(7, 1);
+    K(3 * m + 1, 3 * i + 2) = K(3 * m + 1, 3 * i + 2) + k(7, 2);
+    K(3 * m + 1, 3 * j) = K(3 * m + 1, 3 * j) + k(7, 3);
+    K(3 * m + 1, 3 * j + 1) = K(3 * m + 1, 3 * j + 1) + k(7, 4);
+    K(3 * m + 1, 3 * j + 2) = K(3 * m + 1, 3 * j + 2) + k(7, 5);
+    K(3 * m + 1, 3 * m) = K(3 * m + 1, 3 * m) + k(7, 6);
+    K(3 * m + 1, 3 * m + 1) = K(3 * m + 1, 3 * m + 1) + k(7, 7);
+    K(3 * m + 1, 3 * m + 2) = K(3 * m + 1, 3 * m + 2) + k(7, 8);
+    K(3 * m + 1, 3 * n) = K(3 * m + 1, 3 * n) + k(7, 9);
+    K(3 * m + 1, 3 * n + 1) = K(3 * m + 1, 3 * n + 1) + k(7, 10);
+    K(3 * m + 1, 3 * n + 2) = K(3 * m + 1, 3 * n + 2) + k(7, 11);
+
+    K(3 * m + 2, 3 * i) = K(3 * m + 2, 3 * i) + k(8, 0);
+    K(3 * m + 2, 3 * i + 1) = K(3 * m + 2, 3 * i + 1) + k(8, 1);
+    K(3 * m + 2, 3 * i + 2) = K(3 * m + 2, 3 * i + 2) + k(8, 2);
+    K(3 * m + 2, 3 * j) = K(3 * m + 2, 3 * j) + k(8, 3);
+    K(3 * m + 2, 3 * j + 1) = K(3 * m + 2, 3 * j + 1) + k(8, 4);
+    K(3 * m + 2, 3 * j + 2) = K(3 * m + 2, 3 * j + 2) + k(8, 5);
+    K(3 * m + 2, 3 * m) = K(3 * m + 2, 3 * m) + k(8, 6);
+    K(3 * m + 2, 3 * m + 1) = K(3 * m + 2, 3 * m + 1) + k(8, 7);
+    K(3 * m + 2, 3 * m + 2) = K(3 * m + 2, 3 * m + 2) + k(8, 8);
+    K(3 * m + 2, 3 * n) = K(3 * m + 2, 3 * n) + k(8, 9);
+    K(3 * m + 2, 3 * n + 1) = K(3 * m + 2, 3 * n + 1) + k(8, 10);
+    K(3 * m + 2, 3 * n + 2) = K(3 * m + 2, 3 * n + 2) + k(8, 11);
+
+    K(3 * n, 3 * i) = K(3 * n, 3 * i) + k(9, 0);
+    K(3 * n, 3 * i + 1) = K(3 * n, 3 * i + 1) + k(9, 1);
+    K(3 * n, 3 * i + 2) = K(3 * n, 3 * i + 2) + k(9, 2);
+    K(3 * n, 3 * j) = K(3 * n, 3 * j) + k(9, 3);
+    K(3 * n, 3 * j + 1) = K(3 * n, 3 * j + 1) + k(9, 4);
+    K(3 * n, 3 * j + 2) = K(3 * n, 3 * j + 2) + k(9, 5);
+    K(3 * n, 3 * m) = K(3 * n, 3 * m) + k(9, 6);
+    K(3 * n, 3 * m + 1) = K(3 * n, 3 * m + 1) + k(9, 7);
+    K(3 * n, 3 * m + 2) = K(3 * n, 3 * m + 2) + k(9, 8);
+    K(3 * n, 3 * n) = K(3 * n, 3 * n) + k(9, 9);
+    K(3 * n, 3 * n + 1) = K(3 * n, 3 * n + 1) + k(9, 10);
+    K(3 * n, 3 * n + 2) = K(3 * n, 3 * n + 2) + k(9, 11);
+
+    K(3 * n + 1, 3 * i) = K(3 * n + 1, 3 * i) + k(10, 0);
+    K(3 * n + 1, 3 * i + 1) = K(3 * n + 1, 3 * i + 1) + k(10, 1);
+    K(3 * n + 1, 3 * i + 2) = K(3 * n + 1, 3 * i + 2) + k(10, 2);
+    K(3 * n + 1, 3 * j) = K(3 * n + 1, 3 * j) + k(10, 3);
+    K(3 * n + 1, 3 * j + 1) = K(3 * n + 1, 3 * j + 1) + k(10, 4);
+    K(3 * n + 1, 3 * j + 2) = K(3 * n + 1, 3 * j + 2) + k(10, 5);
+    K(3 * n + 1, 3 * m) = K(3 * n + 1, 3 * m) + k(10, 6);
+    K(3 * n + 1, 3 * m + 1) = K(3 * n + 1, 3 * m + 1) + k(10, 7);
+    K(3 * n + 1, 3 * m + 2) = K(3 * n + 1, 3 * m + 2) + k(10, 8);
+    K(3 * n + 1, 3 * n) = K(3 * n + 1, 3 * n) + k(10, 9);
+    K(3 * n + 1, 3 * n + 1) = K(3 * n + 1, 3 * n + 1) + k(10, 10);
+    K(3 * n + 1, 3 * n + 2) = K(3 * n + 1, 3 * n + 2) + k(10, 11);
+
+    K(3 * n + 2, 3 * i) = K(3 * n + 2, 3 * i) + k(11, 0);
+    K(3 * n + 2, 3 * i + 1) = K(3 * n + 2, 3 * i + 1) + k(11, 1);
+    K(3 * n + 2, 3 * i + 2) = K(3 * n + 2, 3 * i + 2) + k(11, 2);
+    K(3 * n + 2, 3 * j) = K(3 * n + 2, 3 * j) + k(11, 3);
+    K(3 * n + 2, 3 * j + 1) = K(3 * n + 2, 3 * j + 1) + k(11, 4);
+    K(3 * n + 2, 3 * j + 2) = K(3 * n + 2, 3 * j + 2) + k(11, 5);
+    K(3 * n + 2, 3 * m) = K(3 * n + 2, 3 * m) + k(11, 6);
+    K(3 * n + 2, 3 * m + 1) = K(3 * n + 2, 3 * m + 1) + k(11, 7);
+    K(3 * n + 2, 3 * m + 2) = K(3 * n + 2, 3 * m + 2) + k(11, 8);
+    K(3 * n + 2, 3 * n) = K(3 * n + 2, 3 * n) + k(11, 9);
+    K(3 * n + 2, 3 * n + 1) = K(3 * n + 2, 3 * n + 1) + k(11, 10);
+    K(3 * n + 2, 3 * n + 2) = K(3 * n + 2, 3 * n + 2) + k(11, 11);
 }
 
-void TetrahedronElementStresses() {
+MatrixXd TetrahedronElementStresses(MatrixXd YModulus, MatrixXd vertices, MatrixXd u) {
+    double x1 = vertices(0, 0);
+    double y1 = vertices(0, 1);
+    double z1 = vertices(0, 2);
+    double x2 = vertices(1, 0);
+    double y2 = vertices(1, 1);
+    double z2 = vertices(1, 2);
+    double x3 = vertices(2, 0);
+    double y3 = vertices(2, 1);
+    double z3 = vertices(2, 2);
+    double x4 = vertices(3, 0);
+    double y4 = vertices(3, 1);
+    double z4 = vertices(3, 2);
 
+    Matrix<double, 3, 3> mbeta1;
+    mbeta1 << 1, y2, z2, 1, y3, z3, 1, y4, z4;
+    Matrix<double, 3, 3> mbeta2;
+    mbeta2 << 1, y1, z1, 1, y3, z3, 1, y4, z4;
+    Matrix<double, 3, 3> mbeta3;
+    mbeta3 << 1, y1, z1, 1, y2, z2, 1, y4, z4;
+    Matrix<double, 3, 3> mbeta4;
+    mbeta4 << 1, y1, z1, 1, y2, z2, 1, y3, z3;
+
+    Matrix<double, 3, 3> mgamma1;
+    mgamma1 << 1, x2, z2, 1, x3, z3, 1, x4, z4;
+    Matrix<double, 3, 3> mgamma2;
+    mgamma2 << 1, x1, z1, 1, x3, z3, 1, x4, z4;
+    Matrix<double, 3, 3> mgamma3;
+    mgamma3 << 1, x1, z1, 1, x2, z2, 1, x4, z4;
+    Matrix<double, 3, 3> mgamma4;
+    mgamma4 << 1, x1, z1, 1, x2, z2, 1, x3, z3;
+
+    Matrix<double, 3, 3> mdelta1;
+    mdelta1 << 1, x2, y2, 1, x3, y3, 1, x4, y4;
+    Matrix<double, 3, 3> mdelta2;
+    mdelta2 << 1, x1, y1, 1, x3, y3, 1, x4, y4;
+    Matrix<double, 3, 3> mdelta3;
+    mdelta3 << 1, x1, y1, 1, x2, y2, 1, x4, y4;
+    Matrix<double, 3, 3> mdelta4;
+    mdelta4 << 1, x1, y1, 1, x2, y2, 1, x3, y3;
+
+    float beta1 = -1 * mbeta1.determinant();
+    float beta2 = mbeta2.determinant();
+    float beta3 = -1 * mbeta3.determinant();
+    float beta4 = mbeta4.determinant();
+
+    float gamma1 = mgamma1.determinant();
+    float gamma2 = -1 * mgamma2.determinant();
+    float gamma3 = mgamma3.determinant();
+    float gamma4 = -1 * mgamma4.determinant();
+
+    float delta1 = -1 * mdelta1.determinant();
+    float delta2 = mdelta2.determinant();
+    float delta3 = -1 * mdelta3.determinant();
+    float delta4 = mdelta4.determinant();
+
+    Matrix<double, 6, 12> B;
+    B << beta1, 0, 0, beta2, 0, 0, beta3, 0, 0, beta4, 0, 0,
+        0, gamma1, 0, 0, gamma2, 0, 0, gamma3, 0, 0, gamma4, 0,
+        0, 0, delta1, 0, 0, delta2, 0, 0, delta3, 0, 0, delta4,
+        gamma1, beta1, 0, gamma2, beta2, 0, gamma3, beta3, 0, gamma4, beta4, 0,
+        0, delta1, gamma1, 0, delta2, gamma2, 0, delta3, gamma3, 0, delta4, gamma4,
+        delta1, 0, beta1, delta2, 0, beta2, delta3, 0, beta3, delta4, 0, beta4;
+    float V = TetrahedronElementVolume(vertices);
+    B /= (6 * V);
+    return YModulus * B * u;
 }
 
-void TetrahedronElementPStresses() {
+Matrix<double, 1, 3> TetrahedronElementPStresses(Matrix<double, 6, 1> sigma) {
+    double sg1 = sigma(0, 0);
+    double sg2 = sigma(1, 0);
+    double sg3 = sigma(2, 0);
+    double sg4 = sigma(3, 0);
+    double sg5 = sigma(4, 0);
+    double sg6 = sigma(5, 0);
+    double s1 = sg1 + sg2 + sg3;
+    double s2 = sg1 * sg2 + sg1 * sg3 + sg2 * sg3 - sg4 * sg4 - sg5 * sg5 - sg6 * sg6;
+    Matrix<double, 3, 3> ms3;
+    ms3 << sg1, sg4, sg6, sg4, sg2, sg5, sg6, sg5, sg3;
+    double s3 = ms3.determinant();
+    Matrix<double, 1, 3> out;
+    out << s1, s2, s3;
+    return out;
 
 }
-
 
 
 void StressFEM::run(float delta_t, int seq)
@@ -561,7 +899,7 @@ void StressFEM::run(float delta_t, int seq)
             Matrix<double, 1, 3> p4 = pc.row(tet(j, 3)) - pc.row(tet(j, 1));
 
             MatrixXd p_c(3, 3);
-            p_c << p0, p1, p2;
+            p_c << p0, p1, p2; 
             MatrixXd delta_u = (p_c - X0[j]) * _x[j];
             MatrixXd strain = 0.5 * (delta_u + delta_u.transpose() + delta_u.transpose() * delta_u);
             //cout << "strain: " << endl << strain << endl;
