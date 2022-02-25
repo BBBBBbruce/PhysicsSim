@@ -1,492 +1,12 @@
 #include "StressFEM.h"
 #include<Eigen/Dense>
 #include "igl/volume.h"
+//#include"Objects.h"
+#include <algorithm>
+#include <random>
 
 using namespace std;
 using namespace Eigen;
-
-
-
-void Xd2csv(string fileName, MatrixXd  matrix)
-{
-    const static IOFormat CSVFormat(FullPrecision, DontAlignCols, ", ", "\n");
-
-    ofstream file(fileName);
-    if (file.is_open())
-    {
-        file << matrix.format(CSVFormat);
-        file.close();
-    }
-}
-
-void Xf2csv(string fileName, MatrixXd  matrix)
-{
-    const static IOFormat CSVFormat(FullPrecision, DontAlignCols, ", ", "\n");
-
-    ofstream file(fileName);
-    if (file.is_open())
-    {
-        file << matrix.format(CSVFormat);
-        file.close();
-    }
-}
-
-MatrixXd XfFromcsv(string fileToOpen)
-{
-
-    vector<double> matrixEntries;
-    ifstream matrixDataFile(fileToOpen);
-    string matrixRowString;
-    string matrixEntry;
-    int matrixRowNumber = 0;
-
-
-    while (getline(matrixDataFile, matrixRowString)) 
-    {
-        stringstream matrixRowStringStream(matrixRowString); 
-
-        while (getline(matrixRowStringStream, matrixEntry, ',')) 
-        {
-            matrixEntries.push_back(stod(matrixEntry));   
-        }
-        matrixRowNumber++; 
-    }
-    return Map<Matrix<double, Dynamic, Dynamic, RowMajor>>(matrixEntries.data(), matrixRowNumber, matrixEntries.size() / matrixRowNumber);
-
-}
-
-StressFEM::StressFEM()
-{
-}
-
-StressFEM::StressFEM(string t_path)
-{
-    vector<StaticObj>StaticVec;
-    vector<DynamicObj>DynamicVec;
-    vector<Eigen::MatrixXd>currentVec;
-    vector<Eigen::MatrixXd>lastVec;
-    this->tpath = t_path;
-}
-
-vector<StaticObj> StressFEM::getStaticObjs()
-{
-    return StaticVec;
-}
-
-vector<DynamicObj> StressFEM::getDynamicObjs()
-{
-    return DynamicVec;
-}
-
-void StressFEM::InitConfigs(string targetpath, json currentconfig, float tc)
-{
-    json jout;
-
-    make_dir_win(targetpath, 0);
-    Eigen::MatrixXd X;
-    Eigen::MatrixXd V;
-    Eigen::MatrixXi Tri, Tet;
-    Eigen::VectorXi TriTag, TetTag;
-    std::vector<std::string> XFields, EFields;
-    std::vector<Eigen::MatrixXd> XF, TriF, TetF;
-
-
-    for (auto it = currentconfig.begin(); it != currentconfig.end(); ++it)
-    {
-        if (it.key() == "physics") {
-
-            set_physics_params(it.value()["damping_coef"], it.value()["restitution"], it.value()["collision_time"], it.value()["friction"], it.value()["Young_s_modulus"], it.value()["Poisson_Ratio"]);
-        }
-    }
-
-    for (auto it = currentconfig.begin(); it != currentconfig.end(); ++it)
-    {
-        if (it.value()["type"] == "dynamic") {
-            //cout << it.value()["position"].get<> << endl;
-
-            igl::readMSH(it.value()["path"], X, Tri, Tet, TriTag, TetTag, XFields, XF, EFields, TriF, TetF);
-
-            X.conservativeResize(X.rows(), 4);// Make V n*4 matrix
-            X.col(3).setOnes();
-
-            Affine3d tl(Translation3d(it.value()["position"][0], it.value()["position"][1], it.value()["position"][2]));
-            Matrix4d translation = tl.matrix();
-            Affine3d sc(AlignedScaling3d(it.value()["scale"][0], it.value()["scale"][1], it.value()["scale"][2]));
-            Matrix4d scale = sc.matrix();
-            Affine3d rx(AngleAxisd(it.value()["rotation"][0], Vector3d::UnitX()));
-            Matrix4d rotationx = rx.matrix();
-            Affine3d ry(AngleAxisd(it.value()["rotation"][1], Vector3d::UnitY()));
-            Matrix4d rotationy = ry.matrix();
-            Affine3d rz(AngleAxisd(it.value()["rotation"][2], Vector3d::UnitZ()));
-            Matrix4d rotationz = rz.matrix();
-
-            //seems redundent, TODO: opt
-            MatrixXd V_tmp = translation * rotationx * rotationy * rotationz * scale * X.transpose();
-            X = V_tmp.transpose();
-            MatrixXd _X(X.rows(), 3);
-            _X.col(0) = X.col(0);
-            _X.col(1) = X.col(1);
-            _X.col(2) = X.col(2);
-            string path_p = targetpath + "0000" + "/" + it.key() + "_p.msh";
-
-            igl::writeMSH(path_p, _X, Tri, Tet, TriTag, TetTag, XFields, XF, EFields, TriF, TetF);
-
-            Eigen::Vector3d trans_vel = Eigen::Vector3d(it.value()["translation_velocity"][0], it.value()["translation_velocity"][1], it.value()["translation_velocity"][2]);
-            Eigen::MatrixXd last_vel = trans_vel.replicate(1, X.rows()).transpose();
-            Eigen::MatrixXd current_vel;
-
-            // ================== init rendering ======================
-            auto [collide, contact_points] = CD_table_FEM(X);
-            double rho = it.value()["mass"];
-            Eigen::VectorXd vol;
-            igl::volume(_X, Tet, vol);
-            double volum = abs(vol.sum());
-            double m = volum * rho;
-            cout << "volume: " << volum << endl;
-            cout << "mass: " << m << endl;
-            cout << "density: " << rho << endl;
-            MatrixXd G = m * gravity.transpose().replicate(X.rows(), 1);
-            MatrixXd f_external;
-            if (!collide)
-                //f_total = G + f_internal; //+f_damping;
-                f_external = G;
-            else {
-                MatrixXd f_collide = -(1 + e) * last_vel * m / tc - G;
-                //cout << "f_collide:" << endl << f_collide << endl;
-                MatrixXd zero_buff = MatrixXd::Zero(f_collide.rows(), f_collide.cols());
-
-                for (auto i = 0; i < contact_points.size(); i++) {
-                    zero_buff.row(contact_points[i]) = f_collide.row(contact_points[i]);
-                }
-                //f_total = G + zero_buff + f_internal +f_damping;
-                f_external = G + zero_buff;
-                //cout << f_total << endl;
-            }
-            //cout << f_external << endl;
-            current_vel = f_external * tc / m;
-            // =============== end of init rendering ====================
-
-            string path_x = targetpath + "0000" + "/" + it.key() + "_x.csv";
-            string path_vl = targetpath + "0000" + "/" + it.key() + "_vl.csv";
-            string path_vc = targetpath + "0000" + "/" + it.key() + "_vc.csv";
-            Xd2csv(path_vl.c_str(), last_vel);
-            Xd2csv(path_vc.c_str(), current_vel);
-            Xd2csv(path_x.c_str(), _X);
-
-            // TODO save matrixxf only
-
-            json jtmp;
-            jtmp["rigid_position_path"] = path_x;
-            jtmp["position_path"] = path_p;
-            jtmp["last_velocity"] = path_vl;
-            jtmp["current_velocity"] = path_vc;
-            jtmp["angular_velocity"] = it.value()["angular_velocity"];
-            jtmp["mass"] = m;
-            jtmp["type"] = "dynamic";
-            jout["Objects"][it.key()] = jtmp;
-
-        }
-
-
-        else if (it.value()["type"] == "static") {
-
-            igl::readMSH(it.value()["path"], X, Tri, Tet, TriTag, TetTag, XFields, XF, EFields, TriF, TetF);
-
-            X.conservativeResize(X.rows(), 4);// Make V n*4 matrix
-            X.col(3).setOnes();
-
-            Affine3d tl(Translation3d(it.value()["position"][0], it.value()["position"][1], it.value()["position"][2]));
-            Matrix4d translation = tl.matrix();
-            Affine3d sc(AlignedScaling3d(it.value()["scale"][0], it.value()["scale"][1], it.value()["scale"][2]));
-            Matrix4d scale = sc.matrix();
-            Affine3d rx(AngleAxisd(it.value()["rotation"][0], Vector3d::UnitX()));
-            Matrix4d rotationx = rx.matrix();
-            Affine3d ry(AngleAxisd(it.value()["rotation"][1], Vector3d::UnitY()));
-            Matrix4d rotationy = ry.matrix();
-            Affine3d rz(AngleAxisd(it.value()["rotation"][2], Vector3d::UnitZ()));
-            Matrix4d rotationz = rz.matrix();
-
-            //seems redundent, TODO: opt
-            MatrixXd V_tmp = translation * rotationx * rotationy * rotationz * scale * X.transpose();
-            X = V_tmp.transpose();
-            MatrixXd _X(X.rows(), 3);
-            _X.col(0) = X.col(0);
-            _X.col(1) = X.col(1);
-            _X.col(2) = X.col(2);
-            string path_p = targetpath + "0000" + "/" + it.key() + "_s.msh";
-            igl::writeMSH(path_p, _X, Tri, Tet, TriTag, TetTag, XFields, XF, EFields, TriF, TetF);
-            json jtmp;
-            jtmp["position_path"] = path_p;
-            jtmp["type"] = "static";
-            jout["Objects"][it.key()] = jtmp;
-
-        }
-    }
-
-
-    string path_scene = targetpath + "0000" + "/" + "Scene.json";
-    std::ofstream o(path_scene);
-    o << std::setw(4) << jout << std::endl;
-}
-
-void StressFEM::load_scene(int pre_seq)
-{
-    string scene_in = tpath + padseq(pre_seq) + "/Scene.json";
-    std::ifstream ifs(scene_in);
-    json j;
-
-    try
-    {
-        j = json::parse(ifs);
-    }
-    catch (json::parse_error& ex)
-    {
-        std::cerr << "parse error at byte " << ex.byte << std::endl;
-    }
-
-    for (auto it = j["Objects"].begin(); it != j["Objects"].end(); ++it) {
-        if (it.value()["type"] == "dynamic") {
-            Eigen::MatrixXd P;
-            Eigen::MatrixXi Tri, Tet;
-            Eigen::VectorXi TriTag, TetTag;
-            std::vector<std::string> XFields, EFields;
-            std::vector<Eigen::MatrixXd> XF, TriF, TetF;
-            igl::readMSH(it.value()["position_path"], P, Tri, Tet, TriTag, TetTag, XFields, XF, EFields, TriF, TetF);
-
-            DynamicObj dtmp(
-                it.key(),
-                P, Tet, Tri, TriTag, TetTag, XFields, EFields,
-                XF, TriF, TetF,
-                Eigen::Vector3d(),
-                Eigen::Vector3d(it.value()["angular_velocity"][0], it.value()["angular_velocity"][1], it.value()["angular_velocity"][2]),
-                it.value()["mass"]
-            );
-            DynamicVec.push_back(dtmp);
-            MatrixXd vl = XfFromcsv(string(it.value()["last_velocity"]).c_str());
-            lastVec.push_back(vl); // stable(same order as DynamicVec)
-            MatrixXd vc = XfFromcsv(string(it.value()["current_velocity"]).c_str());
-            currentVec.push_back(vc); // stable(same order as DynamicVec)
-            MatrixXd x = XfFromcsv(string(it.value()["rigid_position_path"]).c_str());
-            RigidPosVec.push_back(x);
-            double damp = 2 * sqrt(it.value()["mass"] / P.rows())*zeta; // *w
-            DampVec.push_back(damp);
-
-        }
-        else if (it.value()["type"] == "static") {
-            Eigen::MatrixXd X;
-            Eigen::MatrixXi Tri, Tet;
-            Eigen::VectorXi TriTag, TetTag;
-            std::vector<std::string> XFields, EFields;
-            std::vector<Eigen::MatrixXd> XF, TriF, TetF;
-
-            igl::readMSH(it.value()["position_path"], X, Tri, Tet, TriTag, TetTag, XFields, XF, EFields, TriF, TetF);
-            StaticObj stmp(
-                it.key(),
-                X, Tet, Tri, TriTag, TetTag, XFields, EFields,
-                XF, TriF, TetF, it.value()["position_path"]
-            );
-            StaticVec.push_back(stmp);
-        }
-    }
-}
-
-void StressFEM::save_scene(int seq)
-{
-    json jout;
-
-    for (auto i = 0; i < DynamicVec.size(); i++) {
-        string path_p = tpath + padseq(seq) + "/" + DynamicVec[i].name + "_p.msh";
-        DynamicVec[i].writemsh(path_p);
-        string path_vl = tpath + padseq(seq) + "/" + DynamicVec[i].name + "_vl.csv";
-        Xf2csv(path_vl.c_str(), lastVec[i]);
-        string path_vc = tpath + padseq(seq) + "/" + DynamicVec[i].name + "_vc.csv";
-        Xf2csv(path_vc.c_str(), currentVec[i]);
-        string path_x = tpath + padseq(seq) + "/" + DynamicVec[i].name + "_x.csv";
-        Xf2csv(path_x.c_str(), RigidPosVec[i]);
-        //debug only
-        string path_pp = tpath + padseq(seq) + "/" + DynamicVec[i].name + "_p.csv";
-        Xf2csv(path_pp.c_str(), DynamicVec[i].get_position());
-
-        //Eigen::Vector3d lv = DynamicVec[i].get_linear_velocity();
-        //Eigen::Vector3d av = DynamicVec[i].get_angular_velocity();
-
-        json jtmp;
-        jtmp["rigid_position_path"] = path_x;
-        jtmp["position_path"] = path_p;
-        jtmp["last_velocity"] = path_vl;
-        jtmp["current_velocity"] = path_vc;
-        jtmp["angular_velocity"] = { 0.0,0.0,0.0};
-        jtmp["mass"] = DynamicVec[i].get_mass();
-        jtmp["type"] = "dynamic";
-        jout["Objects"][DynamicVec[i].name] = jtmp;
-    }
-    for (auto i = 0; i < StaticVec.size(); i++) {
-        json jtmp;
-        jtmp["position_path"] = StaticVec[i].get_loadingpath();
-        jtmp["type"] = "static";
-        jout["Objects"][StaticVec[i].name] = jtmp;
-    }
-
-    string path_scene = tpath + padseq(seq) + "/" + "Scene.json";
-    std::ofstream o(path_scene);
-    o << std::setw(4) << jout << std::endl;
-}
-
-void StressFEM::reset()
-{
-    StaticVec.clear();
-    DynamicVec.clear();
-    currentVec.clear();
-    lastVec.clear();
-    RigidPosVec.clear();
-    DampVec.clear();
-
-}
-
-void StressFEM::set_physics_params(double zeta, double restitution, double collision_t, double friction, double young, double poisson)
-{
-    zeta = zeta;
-    e = restitution;
-    tc = collision_t;
-    u = friction;
-    Young = young;
-    Poisson = poisson;
-
-    YModulus = MatrixXd(6, 6);
-  /*  YModulus << 1 - Poisson, Poisson    , Poisson    , 0              , 0              , 0,
-                Poisson    , 1 - Poisson, Poisson    , 0              , 0              , 0,
-                Poisson    , Poisson    , 1 - Poisson, 0              , 0              , 0,
-                0          , 0          , 0          , 1 - 2 * Poisson, 0              , 0,
-                0          , 0          , 0          , 0              , 1 - 2 * Poisson, 0,
-                0          , 0          , 0          , 0              , 0              , 1 - 2 * Poisson;*/
-    YModulus << 1 - Poisson, Poisson, Poisson, 0, 0, 0,
-        Poisson, 1 - Poisson, Poisson, 0, 0, 0,
-        Poisson, Poisson, 1 - Poisson, 0, 0, 0,
-        0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0;
-    YModulus *= Young / (1 + Poisson) / (1 - 2 * Poisson);
-}
-
-MatrixXd HookeLaw( MatrixXd epsilon, Matrix<double, 6, 6 > modulus) {
-    Matrix<double, 6, 1> tmp;
-    tmp << epsilon(0, 0), epsilon(1, 1), epsilon(2, 2),
-           epsilon(0, 1), epsilon(1, 2), epsilon(0, 2);
-    tmp = modulus * tmp;
-    MatrixXd sigma(3, 3);
-    sigma << tmp(0), tmp(3), tmp(5),
-             tmp(3), tmp(1), tmp(4),
-             tmp(5), tmp(4), tmp(2);
-    return sigma;
-}
-
-MatrixXd apply_poisson(MatrixXd d, double p) {
-    MatrixXd x = d.col(0);
-    MatrixXd y = d.col(1);
-    MatrixXd z = d.col(2);
-    d.col(0) += -(y + z) * p;
-    d.col(1) += -(x + z) * p;
-    d.col(2) += -(x + y) * p;
-    return d;
-}
-
-bool point_in_triangle(Matrix<double, 1, 3> p, Matrix<double, 1, 3> V0, Matrix<double, 1, 3> V1, Matrix<double, 1, 3> V2) {
-    cout << "contact: " << endl << p << endl;
-    double S = 0.5 * ((V0 - V1).cross(V0 - V2)).norm();
-    double s1 = 0.5 * ((V0 - p).cross(V2 - p)).norm();
-    double s2 = 0.5 * ((V1 - p).cross(V2 - p)).norm();
-    double s3 = 0.5 * ((V1 - p).cross(V0 - p)).norm();
-    double a = s1 / S;
-    double b = s2 / S;
-    double c = s3 / S;
-    if (abs(a + b + c - 1) < 1.0e-05 && a > 0 && b > 0 && c > 0 && a < 1 && b < 1 && c < 1)
-        return true;
-    else
-        return false;
-
-}
-
-tuple<bool, double> LinePlaneIntersection(
-    Matrix<double, 1, 3> p,
-    Matrix<double, 1, 3> V,
-    Matrix<double, 1, 3> V1,
-    Matrix<double, 1, 3> V2,
-    Matrix<double, 1, 3> V3
-) {
-    //cout<<"p: "<<endl<<p<<endl;
-    //cout<<"V: "<<endl<<V<<endl;
-    //cout<<"V1: "<<endl<<V1<<endl;
-    //cout<<"V2: "<<endl<<V2<<endl;
-    //cout<<"V3: "<<endl<<V3<<endl;
-    Matrix<double, 1, 3> line = p.row(0) - V;
-    Matrix<double, 1, 3> x2 = V2 - V1;
-    Matrix<double, 1, 3> x3 = V3 - V1;
-    Matrix<double, 1, 3> normal = (x2.cross(x3)).normalized();
-
-    //cout<<"normal: "<<endl<<normal<<endl;
-    //cout<<"line: "<<endl<<line<<endl;
-    if (normal.dot(line) == 0.0) {
-        return { false,0.0 };
-    }
-
-    double d = normal.dot(V1);
-    double x = (d - normal.dot(V)) / normal.dot(line);
-    //cout<<"x: "<< x <<endl;
-    Matrix<double, 1, 3> contact = V + line * x;
-    double max_d = (contact - V).norm();
-    if (max_d - line.norm() < 1.0e-05)
-        if (point_in_triangle(contact, V1, V2, V3))
-            // p = p0 + (p1 - p0) * s + (p2 - p0) * t
-            return { true,max_d };
-        else
-            return { false,0.0 };
-    else
-        return { false,0.0 };
-}
-
-tuple<bool, double, int> self_collision_tet(Matrix<double, 4, 3> X, Matrix<double, 4, 3> P) {
-    //cout<<"X: "<<endl<<X<<endl;
-    //cout<<"P: "<<endl<<P<<endl;
-
-    int index = -1;
-    bool flag = false;
-    double max_d = -1;
-    auto [collide0, max_d0] = LinePlaneIntersection(P.row(0), X.row(0), X.row(1), X.row(2), X.row(3));
-    //cout<<"collide0: "<<collide0<<endl;
-    //cout<<"max_d0: "<<max_d0<<endl;
-    if (collide0 && max_d0 > max_d) {
-        flag = true;
-        index = 0;
-        max_d = max_d0;
-    }
-    auto [collide1, max_d1] = LinePlaneIntersection(P.row(1), X.row(1), X.row(0), X.row(2), X.row(3));
-    //cout<<"collide1: "<<collide1<<endl;
-    //cout<<"max_d1: "<<max_d1<<endl;
-    if (collide1 && max_d1 > max_d) {
-        flag = true;
-        index = 0;
-        max_d = max_d1;
-    }
-    auto [collide2, max_d2] = LinePlaneIntersection(P.row(2), X.row(2), X.row(1), X.row(0), X.row(3));
-    //cout<<"collide2: "<<collide2<<endl;
-    //cout<<"max_d2: "<<max_d2<<endl;
-    if (collide2 && max_d2 > max_d) {
-        flag = true;
-        index = 0;
-        max_d = max_d2;
-    }
-    auto [collide3, max_d3] = LinePlaneIntersection(P.row(3), X.row(3), X.row(1), X.row(2), X.row(0));
-    //cout<<"collide3: "<<collide3<<endl;
-    //cout<<"max_d3: "<<max_d3<<endl;
-    if (collide3 && max_d3 > max_d) {
-        flag = true;
-        index = 0;
-        max_d = max_d3;
-    }
-
-    return { flag,max_d,index };
-
-}
 
 float TetrahedronElementVolume(MatrixXd tet_vertices) {
 
@@ -495,7 +15,44 @@ float TetrahedronElementVolume(MatrixXd tet_vertices) {
     //new_mat.setOnes();
 
     //cout << new_mat << endl;
-    return new_mat.determinant() / 6;
+    return new_mat.determinant();
+}
+
+MatrixXi tet_re_order(MatrixXi tet, MatrixXd p1, MatrixXd p2, MatrixXd p3, MatrixXd p4) {
+    
+    vector<int> indices;
+    indices.push_back(tet(0, 0));
+    indices.push_back(tet(0, 1));
+    indices.push_back(tet(0, 2));
+    indices.push_back(tet(0, 3));
+    //cout << "tet" << endl << tet << endl;
+
+    map<int, MatrixXd> vertex_index;
+    //initializing
+    vertex_index[tet(0, 0)] = p1;
+    vertex_index[tet(0, 1)] = p2;
+    vertex_index[tet(0, 2)] = p3;
+    vertex_index[tet(0, 3)] = p4;
+
+    Matrix<double, 4, 3> teti;
+    teti << p1,p2,p3,p4;
+    auto rng = std::default_random_engine{};
+
+    //cout << "tet: " << tet << " volume is "<< TetrahedronElementVolume(teti) <<endl;
+    
+
+    while (TetrahedronElementVolume(teti) < 0) {
+        
+        std::shuffle(std::begin(indices), std::end(indices), rng);
+        teti.row(indices[0]) = vertex_index[indices[0]];
+        teti.row(indices[1]) = vertex_index[indices[1]];
+        teti.row(indices[2]) = vertex_index[indices[2]];
+        teti.row(indices[3]) = vertex_index[indices[3]];
+    }
+    Matrix<int,1,4> out;
+    out << indices[0], indices[1] , indices[2] , indices[3];
+    //cout << "tet: " << out << " volume is " << TetrahedronElementVolume(teti) << endl;
+    return out;
 }
 
 MatrixXd TetrahedronElementStiffness(MatrixXd YModulus, MatrixXd vertices) {
@@ -592,10 +149,12 @@ MatrixXd TetrahedronElementStiffness(MatrixXd YModulus, MatrixXd vertices) {
         gamma1, beta1, 0, gamma2, beta2, 0, gamma3, beta3, 0, gamma4, beta4, 0,
         0, delta1, gamma1, 0, delta2, gamma2, 0, delta3, gamma3, 0, delta4, gamma4,
         delta1, 0, beta1, delta2, 0, beta2, delta3, 0, beta3, delta4, 0, beta4;
-    float V = TetrahedronElementVolume(vertices);
+    double V = TetrahedronElementVolume(vertices);
     //cout << "V: " << endl << V << endl;
     B /= (6 * V);
-    return V * B.transpose() * YModulus * B;
+    //cout << "YModulus" << endl << YModulus << endl;
+    MatrixXd out = V * B.transpose() * YModulus * B;
+    return out;
 }
 
 void TetrahedronAssemble(MatrixXd& K, MatrixXd k, MatrixXi indices) {
@@ -847,6 +406,569 @@ Matrix<double, 1, 3> TetrahedronElementPStresses(Matrix<double, 6, 1> sigma) {
 
 }
 
+void removeRow(Eigen::MatrixXd& matrix, unsigned int rowToRemove)
+{
+    unsigned int numRows = matrix.rows() - 1;
+    unsigned int numCols = matrix.cols();
+
+    if (rowToRemove < numRows)
+        matrix.block(rowToRemove, 0, numRows - rowToRemove, numCols) = matrix.bottomRows(numRows - rowToRemove);
+
+    matrix.conservativeResize(numRows, numCols);
+}
+
+void removeColumn(Eigen::MatrixXd& matrix, unsigned int colToRemove)
+{
+    unsigned int numRows = matrix.rows();
+    unsigned int numCols = matrix.cols() - 1;
+
+    if (colToRemove < numCols)
+        matrix.block(0, colToRemove, numRows, numCols - colToRemove) = matrix.rightCols(numCols - colToRemove);
+
+    matrix.conservativeResize(numRows, numCols);
+}
+
+MatrixXd insertRow(MatrixXd  matrix, int row, MatrixXd r) {
+    MatrixXd out;
+    out.resize(matrix.rows() + 1, matrix.cols());
+    //cout << "Mat_in:" << endl << matrix << endl;
+    ////cout << row << endl;
+    ////cout << matrix.rows()<<endl;
+    ////cout << matrix.cols() << endl;
+    //cout << "mat1: " << endl << matrix.block(0, 0, row, matrix.cols()) << endl;
+    //cout << "mat2: " << endl << r << endl;
+    //cout << "mat3: " << endl << matrix.block(row, 0, matrix.rows() - row, matrix.cols()) << endl;
+   
+    out << matrix.block(0, 0, row, matrix.cols()), r, matrix.block(row, 0, matrix.rows() - row, matrix.cols());
+    return out;
+}
+
+void Xd2csv(string fileName, MatrixXd  matrix)
+{
+    const static IOFormat CSVFormat(FullPrecision, DontAlignCols, ", ", "\n");
+
+    ofstream file(fileName);
+    if (file.is_open())
+    {
+        file << matrix.format(CSVFormat);
+        file.close();
+    }
+}
+
+void Xf2csv(string fileName, MatrixXd  matrix)
+{
+    const static IOFormat CSVFormat(FullPrecision, DontAlignCols, ", ", "\n");
+
+    ofstream file(fileName);
+    if (file.is_open())
+    {
+        file << matrix.format(CSVFormat);
+        file.close();
+    }
+}
+
+MatrixXd XfFromcsv(string fileToOpen)
+{
+
+    vector<double> matrixEntries;
+    ifstream matrixDataFile(fileToOpen);
+    string matrixRowString;
+    string matrixEntry;
+    int matrixRowNumber = 0;
+
+
+    while (getline(matrixDataFile, matrixRowString)) 
+    {
+        stringstream matrixRowStringStream(matrixRowString); 
+
+        while (getline(matrixRowStringStream, matrixEntry, ',')) 
+        {
+            matrixEntries.push_back(stod(matrixEntry));   
+        }
+        matrixRowNumber++; 
+    }
+    return Map<Matrix<double, Dynamic, Dynamic, RowMajor>>(matrixEntries.data(), matrixRowNumber, matrixEntries.size() / matrixRowNumber);
+
+}
+
+StressFEM::StressFEM()
+{
+}
+
+StressFEM::StressFEM(string t_path)
+{
+    vector<StaticObj>StaticVec;
+    vector<DynamicObj>DynamicVec;
+    vector<Eigen::MatrixXd>currentVec;
+    vector<Eigen::MatrixXd>lastVec;
+    this->tpath = t_path;
+}
+
+vector<StaticObj> StressFEM::getStaticObjs()
+{
+    return StaticVec;
+}
+
+vector<DynamicObj> StressFEM::getDynamicObjs()
+{
+    return DynamicVec;
+}
+
+void StressFEM::InitConfigs(string targetpath, json currentconfig, float tc)
+{
+    json jout;
+
+    make_dir_win(targetpath, 0);
+    Eigen::MatrixXd X;
+    Eigen::MatrixXd V;
+    Eigen::MatrixXi Tri, Tet;
+    Eigen::VectorXi TriTag, TetTag;
+    std::vector<std::string> XFields, EFields;
+    std::vector<Eigen::MatrixXd> XF, TriF, TetF;
+
+
+    for (auto it = currentconfig.begin(); it != currentconfig.end(); ++it)
+    {
+        if (it.key() == "physics") {
+
+            set_physics_params(it.value()["damping_coef"], it.value()["restitution"], it.value()["collision_time"], it.value()["friction"], it.value()["Young_s_modulus"], it.value()["Poisson_Ratio"]);
+        }
+    }
+
+    for (auto it = currentconfig.begin(); it != currentconfig.end(); ++it)
+    {
+        if (it.value()["type"] == "dynamic") {
+            //cout << it.value()["position"].get<> << endl;
+
+            igl::readMSH(it.value()["path"], X, Tri, Tet, TriTag, TetTag, XFields, XF, EFields, TriF, TetF);
+
+            X.conservativeResize(X.rows(), 4);// Make V n*4 matrix
+            X.col(3).setOnes();
+
+            Affine3d tl(Translation3d(it.value()["position"][0], it.value()["position"][1], it.value()["position"][2]));
+            Matrix4d translation = tl.matrix();
+            Affine3d sc(AlignedScaling3d(it.value()["scale"][0], it.value()["scale"][1], it.value()["scale"][2]));
+            Matrix4d scale = sc.matrix();
+            Affine3d rx(AngleAxisd(it.value()["rotation"][0], Vector3d::UnitX()));
+            Matrix4d rotationx = rx.matrix();
+            Affine3d ry(AngleAxisd(it.value()["rotation"][1], Vector3d::UnitY()));
+            Matrix4d rotationy = ry.matrix();
+            Affine3d rz(AngleAxisd(it.value()["rotation"][2], Vector3d::UnitZ()));
+            Matrix4d rotationz = rz.matrix();
+
+            //seems redundent, TODO: opt
+            MatrixXd V_tmp = translation * rotationx * rotationy * rotationz * scale * X.transpose();
+            X = V_tmp.transpose();
+            MatrixXd _X(X.rows(), 3);
+            _X.col(0) = X.col(0);
+            _X.col(1) = X.col(1);
+            _X.col(2) = X.col(2);
+            string path_x = targetpath + "0000" + "/" + it.key() + "_x.csv";
+            Xd2csv(path_x.c_str(), _X);
+            
+
+            //igl::writeMSH(path_p, _X, Tri, Tet, TriTag, TetTag, XFields, XF, EFields, TriF, TetF);
+
+            Eigen::Vector3d trans_vel = Eigen::Vector3d(it.value()["translation_velocity"][0], it.value()["translation_velocity"][1], it.value()["translation_velocity"][2]);
+            Eigen::MatrixXd last_vel = trans_vel.replicate(1, X.rows()).transpose();
+            //Eigen::MatrixXd current_vel;
+            Eigen::MatrixXd current_vel=last_vel;
+            // ================== init rendering ======================
+
+            
+            double rho = it.value()["mass"];
+            Eigen::VectorXd vol;
+            igl::volume(_X, Tet, vol);
+            double volum = abs(vol.sum());
+            double m = volum * rho;
+            MatrixXd G = m * gravity.transpose().replicate(X.rows(), 1);
+            MatrixXd f_external;
+
+            auto [collide, contact_points] = CD_table_FEM(X);
+            if (!collide)
+                //f_total = G + f_internal; //+f_damping;
+                f_external = G;
+            else {
+                MatrixXd f_collide = -(1 + e) * last_vel * m / tc - G;
+                //cout << "f_collide:" << endl << f_collide << endl;
+                MatrixXd zero_buff = MatrixXd::Zero(f_collide.rows(), f_collide.cols());
+
+                for (auto i = 0; i < contact_points.size(); i++) {
+                    zero_buff.row(contact_points[i]) = f_collide.row(contact_points[i]);
+                }
+                //f_total = G + zero_buff + f_internal +f_damping;
+                f_external = G + zero_buff;
+                //cout << f_total << endl;
+            }
+            MatrixXd K;
+            int n = _X.rows();// number of vertices
+            K.resize(3 * n, 3 * n);
+            K.setZero();
+            //cout << "_X:" << endl << _X << endl;
+            for (auto i = 0; i < Tet.rows(); i++) {
+       
+                MatrixXi tet_i = tet_re_order(Tet.row(i), _X.row(Tet(i, 0)), _X.row(Tet(i, 1)), _X.row(Tet(i, 2)), _X.row(Tet(i, 3)));
+                Tet.row(i) = tet_i;
+                Matrix<double, 4, 3> tet1;
+                tet1 << _X.row(Tet(i, 0)), _X.row(Tet(i, 1)), _X.row(Tet(i, 2)), _X.row(Tet(i, 3));
+                //cout << "tet1" << endl << tet1 << endl;
+                //cout <<"YModulus: " << YModulus << endl;
+                MatrixXd ki = TetrahedronElementStiffness(YModulus, tet1);
+                TetrahedronAssemble(K, ki, Tet.row(i));
+            }
+            f_external.resize(f_external.rows() * 3, 1);
+            // =================== apply boundry condition =====================
+            // apply BC to K and fe
+            MatrixXd fe = f_external;
+            MatrixXd k = K;
+            for (auto i = 0; i < contact_points.size(); i++) {
+                removeRow(k, contact_points[i]);
+                removeColumn(k, contact_points[i]);
+                removeRow(fe, contact_points[i]);
+            }
+
+
+            // ================= finish apply boundry conditions ===============
+            
+            //cout << "shape: "  << "(" << fe.rows() << ", " << fe.cols() << ")" << endl;
+            //cout << "shape: " << "(" << k.rows() << ", " << k.cols() << ")" << endl;
+            cout << "K:" << endl << k*k.inverse() << endl;
+            //cout << "K.inverse():" << endl << K.inverse() << endl;
+            //out << "K-K.transpose()" << endl << K - K.transpose() << endl;
+            //cout << "f_external:" << endl << f_external << endl;
+            
+            MatrixXd U = k.inverse() * fe;
+            cout << "U:" << endl << U << endl;
+            for (auto i = 0; i < contact_points.size(); i++) {
+                U = insertRow(U, contact_points[i], Matrix<double, 1, 1>(0));
+            }
+
+            //cout << "K.inverse():" << endl << K.inverse() << endl;
+            U.resize(U.rows() / 3, 3);
+            cout << "U:" << endl << U << endl;
+
+            _X += U;
+            string path_p = targetpath + "0000" + "/" + it.key() + "_p.msh";
+            igl::writeMSH(path_p, _X, Tri, Tet, TriTag, TetTag, XFields, XF, EFields, TriF, TetF);
+            
+            // =============== end of init rendering ====================
+
+            
+            string path_vl = targetpath + "0000" + "/" + it.key() + "_vl.csv";
+            string path_vc = targetpath + "0000" + "/" + it.key() + "_vc.csv";
+            Xd2csv(path_vl.c_str(), last_vel);
+            Xd2csv(path_vc.c_str(), current_vel);
+            
+
+            // TODO save matrixxf only
+
+            json jtmp;
+            jtmp["rigid_position_path"] = path_x;
+            jtmp["position_path"] = path_p;
+            jtmp["last_velocity"] = path_vl;
+            jtmp["current_velocity"] = path_vc;
+            jtmp["angular_velocity"] = it.value()["angular_velocity"];
+            jtmp["mass"] = m;
+            jtmp["type"] = "dynamic";
+            jout["Objects"][it.key()] = jtmp;
+
+        }
+
+
+        else if (it.value()["type"] == "static") {
+
+            igl::readMSH(it.value()["path"], X, Tri, Tet, TriTag, TetTag, XFields, XF, EFields, TriF, TetF);
+
+            X.conservativeResize(X.rows(), 4);// Make V n*4 matrix
+            X.col(3).setOnes();
+
+            Affine3d tl(Translation3d(it.value()["position"][0], it.value()["position"][1], it.value()["position"][2]));
+            Matrix4d translation = tl.matrix();
+            Affine3d sc(AlignedScaling3d(it.value()["scale"][0], it.value()["scale"][1], it.value()["scale"][2]));
+            Matrix4d scale = sc.matrix();
+            Affine3d rx(AngleAxisd(it.value()["rotation"][0], Vector3d::UnitX()));
+            Matrix4d rotationx = rx.matrix();
+            Affine3d ry(AngleAxisd(it.value()["rotation"][1], Vector3d::UnitY()));
+            Matrix4d rotationy = ry.matrix();
+            Affine3d rz(AngleAxisd(it.value()["rotation"][2], Vector3d::UnitZ()));
+            Matrix4d rotationz = rz.matrix();
+
+            //seems redundent, TODO: opt
+            MatrixXd V_tmp = translation * rotationx * rotationy * rotationz * scale * X.transpose();
+            X = V_tmp.transpose();
+            MatrixXd _X(X.rows(), 3);
+            _X.col(0) = X.col(0);
+            _X.col(1) = X.col(1);
+            _X.col(2) = X.col(2);
+            string path_p = targetpath + "0000" + "/" + it.key() + "_s.msh";
+            igl::writeMSH(path_p, _X, Tri, Tet, TriTag, TetTag, XFields, XF, EFields, TriF, TetF);
+            json jtmp;
+            jtmp["position_path"] = path_p;
+            jtmp["type"] = "static";
+            jout["Objects"][it.key()] = jtmp;
+
+        }
+    }
+
+
+    string path_scene = targetpath + "0000" + "/" + "Scene.json";
+    std::ofstream o(path_scene);
+    o << std::setw(4) << jout << std::endl;
+}
+
+void StressFEM::load_scene(int pre_seq)
+{
+    string scene_in = tpath + padseq(pre_seq) + "/Scene.json";
+    std::ifstream ifs(scene_in);
+    json j;
+
+    try
+    {
+        j = json::parse(ifs);
+    }
+    catch (json::parse_error& ex)
+    {
+        std::cerr << "parse error at byte " << ex.byte << std::endl;
+    }
+
+    for (auto it = j["Objects"].begin(); it != j["Objects"].end(); ++it) {
+        if (it.value()["type"] == "dynamic") {
+            Eigen::MatrixXd P;
+            Eigen::MatrixXi Tri, Tet;
+            Eigen::VectorXi TriTag, TetTag;
+            std::vector<std::string> XFields, EFields;
+            std::vector<Eigen::MatrixXd> XF, TriF, TetF;
+            igl::readMSH(it.value()["position_path"], P, Tri, Tet, TriTag, TetTag, XFields, XF, EFields, TriF, TetF);
+
+            DynamicObj dtmp(
+                it.key(),
+                P, Tet, Tri, TriTag, TetTag, XFields, EFields,
+                XF, TriF, TetF,
+                Eigen::Vector3d(),
+                Eigen::Vector3d(it.value()["angular_velocity"][0], it.value()["angular_velocity"][1], it.value()["angular_velocity"][2]),
+                it.value()["mass"]
+            );
+            DynamicVec.push_back(dtmp);
+            MatrixXd vl = XfFromcsv(string(it.value()["last_velocity"]).c_str());
+            lastVec.push_back(vl); // stable(same order as DynamicVec)
+            MatrixXd vc = XfFromcsv(string(it.value()["current_velocity"]).c_str());
+            currentVec.push_back(vc); // stable(same order as DynamicVec)
+            MatrixXd x = XfFromcsv(string(it.value()["rigid_position_path"]).c_str());
+            RigidPosVec.push_back(x);
+            double damp = 2 * sqrt(it.value()["mass"] / P.rows())*zeta; // *w
+            DampVec.push_back(damp);
+
+        }
+        else if (it.value()["type"] == "static") {
+            Eigen::MatrixXd X;
+            Eigen::MatrixXi Tri, Tet;
+            Eigen::VectorXi TriTag, TetTag;
+            std::vector<std::string> XFields, EFields;
+            std::vector<Eigen::MatrixXd> XF, TriF, TetF;
+
+            igl::readMSH(it.value()["position_path"], X, Tri, Tet, TriTag, TetTag, XFields, XF, EFields, TriF, TetF);
+            StaticObj stmp(
+                it.key(),
+                X, Tet, Tri, TriTag, TetTag, XFields, EFields,
+                XF, TriF, TetF, it.value()["position_path"]
+            );
+            StaticVec.push_back(stmp);
+        }
+    }
+}
+
+void StressFEM::save_scene(int seq)
+{
+    json jout;
+
+    for (auto i = 0; i < DynamicVec.size(); i++) {
+        string path_p = tpath + padseq(seq) + "/" + DynamicVec[i].name + "_p.msh";
+        DynamicVec[i].writemsh(path_p);
+        string path_vl = tpath + padseq(seq) + "/" + DynamicVec[i].name + "_vl.csv";
+        Xf2csv(path_vl.c_str(), lastVec[i]);
+        string path_vc = tpath + padseq(seq) + "/" + DynamicVec[i].name + "_vc.csv";
+        Xf2csv(path_vc.c_str(), currentVec[i]);
+        string path_x = tpath + padseq(seq) + "/" + DynamicVec[i].name + "_x.csv";
+        Xf2csv(path_x.c_str(), RigidPosVec[i]);
+        //debug only
+        string path_pp = tpath + padseq(seq) + "/" + DynamicVec[i].name + "_p.csv";
+        Xf2csv(path_pp.c_str(), DynamicVec[i].get_position());
+
+        //Eigen::Vector3d lv = DynamicVec[i].get_linear_velocity();
+        //Eigen::Vector3d av = DynamicVec[i].get_angular_velocity();
+
+        json jtmp;
+        jtmp["rigid_position_path"] = path_x;
+        jtmp["position_path"] = path_p;
+        jtmp["last_velocity"] = path_vl;
+        jtmp["current_velocity"] = path_vc;
+        jtmp["angular_velocity"] = { 0.0,0.0,0.0};
+        jtmp["mass"] = DynamicVec[i].get_mass();
+        jtmp["type"] = "dynamic";
+        jout["Objects"][DynamicVec[i].name] = jtmp;
+    }
+    for (auto i = 0; i < StaticVec.size(); i++) {
+        json jtmp;
+        jtmp["position_path"] = StaticVec[i].get_loadingpath();
+        jtmp["type"] = "static";
+        jout["Objects"][StaticVec[i].name] = jtmp;
+    }
+
+    string path_scene = tpath + padseq(seq) + "/" + "Scene.json";
+    std::ofstream o(path_scene);
+    o << std::setw(4) << jout << std::endl;
+}
+
+void StressFEM::reset()
+{
+    StaticVec.clear();
+    DynamicVec.clear();
+    currentVec.clear();
+    lastVec.clear();
+    RigidPosVec.clear();
+    DampVec.clear();
+
+}
+
+void StressFEM::set_physics_params(double zeta, double restitution, double collision_t, double friction, double young, double poisson)
+{
+    zeta = zeta;
+    e = restitution;
+    tc = collision_t;
+    u = friction;
+    Young = young;
+    Poisson = poisson;
+
+    YModulus = MatrixXd(6, 6);
+    YModulus << 1 - Poisson, Poisson, Poisson, 0, 0, 0,
+        Poisson, 1 - Poisson, Poisson, 0, 0, 0,
+        Poisson, Poisson, 1 - Poisson, 0, 0, 0,
+        0, 0, 0, (1 - 2 * Poisson) / 2, 0, 0,
+        0, 0, 0, 0, (1 - 2 * Poisson) / 2, 0,
+        0, 0, 0, 0, 0, (1 - 2 * Poisson) / 2;
+
+    YModulus *= Young / (1 + Poisson) / (1 - 2 * Poisson);
+}
+
+MatrixXd HookeLaw( MatrixXd epsilon, Matrix<double, 6, 6 > modulus) {
+    Matrix<double, 6, 1> tmp;
+    tmp << epsilon(0, 0), epsilon(1, 1), epsilon(2, 2),
+           epsilon(0, 1), epsilon(1, 2), epsilon(0, 2);
+    tmp = modulus * tmp;
+    MatrixXd sigma(3, 3);
+    sigma << tmp(0), tmp(3), tmp(5),
+             tmp(3), tmp(1), tmp(4),
+             tmp(5), tmp(4), tmp(2);
+    return sigma;
+}
+
+MatrixXd apply_poisson(MatrixXd d, double p) {
+    MatrixXd x = d.col(0);
+    MatrixXd y = d.col(1);
+    MatrixXd z = d.col(2);
+    d.col(0) += -(y + z) * p;
+    d.col(1) += -(x + z) * p;
+    d.col(2) += -(x + y) * p;
+    return d;
+}
+
+bool point_in_triangle(Matrix<double, 1, 3> p, Matrix<double, 1, 3> V0, Matrix<double, 1, 3> V1, Matrix<double, 1, 3> V2) {
+    cout << "contact: " << endl << p << endl;
+    double S = 0.5 * ((V0 - V1).cross(V0 - V2)).norm();
+    double s1 = 0.5 * ((V0 - p).cross(V2 - p)).norm();
+    double s2 = 0.5 * ((V1 - p).cross(V2 - p)).norm();
+    double s3 = 0.5 * ((V1 - p).cross(V0 - p)).norm();
+    double a = s1 / S;
+    double b = s2 / S;
+    double c = s3 / S;
+    if (abs(a + b + c - 1) < 1.0e-05 && a > 0 && b > 0 && c > 0 && a < 1 && b < 1 && c < 1)
+        return true;
+    else
+        return false;
+
+}
+
+tuple<bool, double> LinePlaneIntersection(
+    Matrix<double, 1, 3> p,
+    Matrix<double, 1, 3> V,
+    Matrix<double, 1, 3> V1,
+    Matrix<double, 1, 3> V2,
+    Matrix<double, 1, 3> V3
+) {
+    //cout<<"p: "<<endl<<p<<endl;
+    //cout<<"V: "<<endl<<V<<endl;
+    //cout<<"V1: "<<endl<<V1<<endl;
+    //cout<<"V2: "<<endl<<V2<<endl;
+    //cout<<"V3: "<<endl<<V3<<endl;
+    Matrix<double, 1, 3> line = p.row(0) - V;
+    Matrix<double, 1, 3> x2 = V2 - V1;
+    Matrix<double, 1, 3> x3 = V3 - V1;
+    Matrix<double, 1, 3> normal = (x2.cross(x3)).normalized();
+
+    //cout<<"normal: "<<endl<<normal<<endl;
+    //cout<<"line: "<<endl<<line<<endl;
+    if (normal.dot(line) == 0.0) {
+        return { false,0.0 };
+    }
+
+    double d = normal.dot(V1);
+    double x = (d - normal.dot(V)) / normal.dot(line);
+    //cout<<"x: "<< x <<endl;
+    Matrix<double, 1, 3> contact = V + line * x;
+    double max_d = (contact - V).norm();
+    if (max_d - line.norm() < 1.0e-05)
+        if (point_in_triangle(contact, V1, V2, V3))
+            // p = p0 + (p1 - p0) * s + (p2 - p0) * t
+            return { true,max_d };
+        else
+            return { false,0.0 };
+    else
+        return { false,0.0 };
+}
+
+tuple<bool, double, int> self_collision_tet(Matrix<double, 4, 3> X, Matrix<double, 4, 3> P) {
+    //cout<<"X: "<<endl<<X<<endl;
+    //cout<<"P: "<<endl<<P<<endl;
+
+    int index = -1;
+    bool flag = false;
+    double max_d = -1;
+    auto [collide0, max_d0] = LinePlaneIntersection(P.row(0), X.row(0), X.row(1), X.row(2), X.row(3));
+    //cout<<"collide0: "<<collide0<<endl;
+    //cout<<"max_d0: "<<max_d0<<endl;
+    if (collide0 && max_d0 > max_d) {
+        flag = true;
+        index = 0;
+        max_d = max_d0;
+    }
+    auto [collide1, max_d1] = LinePlaneIntersection(P.row(1), X.row(1), X.row(0), X.row(2), X.row(3));
+    //cout<<"collide1: "<<collide1<<endl;
+    //cout<<"max_d1: "<<max_d1<<endl;
+    if (collide1 && max_d1 > max_d) {
+        flag = true;
+        index = 0;
+        max_d = max_d1;
+    }
+    auto [collide2, max_d2] = LinePlaneIntersection(P.row(2), X.row(2), X.row(1), X.row(0), X.row(3));
+    //cout<<"collide2: "<<collide2<<endl;
+    //cout<<"max_d2: "<<max_d2<<endl;
+    if (collide2 && max_d2 > max_d) {
+        flag = true;
+        index = 0;
+        max_d = max_d2;
+    }
+    auto [collide3, max_d3] = LinePlaneIntersection(P.row(3), X.row(3), X.row(1), X.row(2), X.row(0));
+    //cout<<"collide3: "<<collide3<<endl;
+    //cout<<"max_d3: "<<max_d3<<endl;
+    if (collide3 && max_d3 > max_d) {
+        flag = true;
+        index = 0;
+        max_d = max_d3;
+    }
+
+    return { flag,max_d,index };
+
+}
 
 void StressFEM::run(float delta_t, int seq)
 {
@@ -855,179 +977,80 @@ void StressFEM::run(float delta_t, int seq)
     // assume no friction yet
     for (auto i = 0; i < DynamicVec.size(); i++) {
         MatrixXd pl = DynamicVec[i].get_position();
+        cout << "pl:" << endl << pl << endl;
         MatrixXi tet = DynamicVec[i].get_tetrahedrons();
         MatrixXd vl = lastVec[i];
-        MatrixXd vc = currentVec[i];
+        //MatrixXd vc = currentVec[i];
         double m = DynamicVec[i].get_mass();// not change data structure, test today
         Vector3d cm = DynamicVec[i].get_cm();
         MatrixXd x = RigidPosVec[i];
         
-
-        //cout << "vl: " << endl << vl << endl;
-        //cout << "vc: " << endl << vc << endl;
-        //======================= new logic: ==========================
-        MatrixXd pc = pl + (vl + vc) * 0.5 * delta_t;
-        //+++++++++++++++++++++++++
-        // TODO: self_collision check:
-        //
-        //+++++++++++++++++++++++++
-
-        //cout << "pc: " << endl << pc << endl;
+        MatrixXd G = m / x.rows() * gravity.transpose().replicate(x.rows(), 1);
         vector<MatrixXd> _x;
         vector<MatrixXd> X0;
+
         for (auto j = 0; j < tet.rows(); j++) {
             MatrixXd x0 = x.row(tet(j, 0));
             MatrixXd tmp(3, 3);
             tmp << x.row(tet(j, 1)) - x0, x.row(tet(j, 2)) - x0, x.row(tet(j, 3)) - x0;
             _x.push_back(tmp.inverse());
             X0.push_back(tmp);
-            //cout << "_x: " << endl << tmp.inverse() << endl;
-            //cout << "X0: " << endl << tmp << endl;
-        }
-        
-        MatrixXd fi = MatrixXd::Zero(x.rows(), x.cols());
-        Matrix<double, 1, 3> ff1;
-        Matrix<double, 1, 3> ff2;
-        Matrix<double, 1, 3> ff3;
-        Matrix<double, 1, 3> ff4;
-        for (auto j = 0; j < tet.rows(); j++) {
-
-            Matrix<double, 1, 3> p0 = pc.row(tet(j, 1)) - pc.row(tet(j, 0));
-            Matrix<double, 1, 3> p1 = pc.row(tet(j, 2)) - pc.row(tet(j, 0));
-            Matrix<double, 1, 3> p2 = pc.row(tet(j, 3)) - pc.row(tet(j, 0));
-            Matrix<double, 1, 3> p3 = pc.row(tet(j, 2)) - pc.row(tet(j, 1));
-            Matrix<double, 1, 3> p4 = pc.row(tet(j, 3)) - pc.row(tet(j, 1));
-
-            MatrixXd p_c(3, 3);
-            p_c << p0, p1, p2; 
-            MatrixXd delta_u = (p_c - X0[j]) * _x[j];
-            MatrixXd strain = 0.5 * (delta_u + delta_u.transpose() + delta_u.transpose() * delta_u);
-            //cout << "strain: " << endl << strain << endl;
-            //cout << "strain: " << endl << strain << endl;
-            //cout << strain << endl;
-            MatrixXd stress = HookeLaw(strain, YModulus);
-            //cout << "stress: " << endl << stress << endl;
-            
-            ff1 = p0.cross(p1) * stress * 0.5;
-            ff1 *= signbit(p0.cross(p1).dot(p4)) == 1 ? -1 : 1;
-            ff2 = p0.cross(p2) * stress * 0.5;
-            ff2 *= signbit(p0.cross(p2).dot(p3)) == 1 ? -1 : 1;
-            ff3 = p1.cross(p2) * stress * 0.5;
-            ff3 *= signbit(p1.cross(p2).dot(p0)) == 1 ? -1 : 1;
-            ff4 = p3.cross(p4) * stress * 0.5;
-            ff4 *= signbit(p3.cross(p4).dot(-p0)) == 1 ? -1 : 1;
-
-            fi.row(tet(j, 0)) += (ff1 + ff2 + ff3) / 3;
-            fi.row(tet(j, 1)) += (ff1 + ff2 + ff4) / 3;
-            fi.row(tet(j, 2)) += (ff1 + ff4 + ff3) / 3;
-            fi.row(tet(j, 3)) += (ff4 + ff2 + ff3) / 3;
-        }
-        //cout << "fi: " << endl << fi << endl;
-        MatrixXd G = m / x.rows() * gravity.transpose().replicate(x.rows(), 1);
-
-        
-        // return the 
-        //float maxnorm = fi.rowwise().norm().maxCoeff();
-        //cout << "fi: " << endl << fi << endl;
-        if (fi.rowwise().norm().maxCoeff() > 2 * G.rowwise().norm().maxCoeff()) {
-            //cout << "FLAG!!!FLAG!!!FLAG!!!FLAG!!!FLAG!!!FLAG!!!FLAG!!!FLAG!!!" << endl;
-            fi = fi.normalized() * 1.6 * G.norm();
-            MatrixXd fe;
-            MatrixXd v_y = MatrixXd::Zero(vl.rows(), vl.cols());
-            v_y.col(1) = vl.col(1);
-            auto [collide, contact_points] = CD_table_FEM(pl);
-            if (!collide) {
-                //f_total = G + f_internal; //+f_damping;
-                //cout << "not collide" << endl;
-                fe = G;
-            }
-            else {
-                //cout << "collide" << endl;
-                MatrixXd v_stress = MatrixXd::Zero(fi.rows(), fi.cols());
-                v_stress.col(1) = fi.col(1);
-                MatrixXd f_collide = -(1 + e) * v_y * m / x.rows() / tc - G - v_stress;
-                MatrixXd zero_buff = MatrixXd::Zero(f_collide.rows(), f_collide.cols());
-
-                for (auto i = 0; i < contact_points.size(); i++) {
-                    zero_buff.row(contact_points[i]) = f_collide.row(contact_points[i]);
-                }
-                //f_total = G + zero_buff + f_internal +f_damping;
-                fe = G + zero_buff;
-                //cout << f_total << endl;
-            }
-
-            MatrixXd f_total = fi + fe;
-            vc = vl + f_total * delta_t / m * x.rows();
-            //cout << "vc: " << endl << vc << endl;
-            pc = pl + (vl + vc) * 0.5 * delta_t;
-            //cout << "pc: " << endl << pc << endl;
-            vc = -0.8*vc;
-            //vc = -vc;
         }
 
-        MatrixXd f_total;
-        //cout << "pc: " << endl << pc << endl;
-        MatrixXd fe;
-
-        // update fi, pc, vc
-        MatrixXd v_y = MatrixXd::Zero(vc.rows(), vc.cols());
-        v_y.col(1) = vc.col(1);
-        auto [collide, contact_points] = CD_table_FEM(pc);
-        
-        if (!collide) {
-            //f_total = G + f_internal; //+f_damping;
-            //cout << "not collide" << endl;
-            fe = G;
+        MatrixXd K;
+        int n = pl.rows();// number of vertices
+        K.resize(3 * n, 3 * n);
+        K.setZero();
+        //cout << "tet" << endl << tet << endl;
+        for (auto i = 0; i < tet.rows(); i++) {
+            Matrix<double, 4, 3> teti;
+            teti << pl.row(tet(i, 0)), pl.row(tet(i, 1)), pl.row(tet(i, 2)), pl.row(tet(i, 3));
+            //cout << "teti" << endl << teti << endl;
+            MatrixXd ki = TetrahedronElementStiffness(YModulus, teti);
+            //cout << "ki" << endl << ki << endl;
+            TetrahedronAssemble(K, ki, tet.row(i));
         }
-        else {
-            //cout << "collide" << endl;
-            MatrixXd v_stress = MatrixXd::Zero(fi.rows(), fi.cols());
-            v_stress.col(1) = fi.col(1);
-            MatrixXd f_collide = -(1 + e) * v_y * m / x.rows() / tc - G - v_stress;
-            MatrixXd zero_buff = MatrixXd::Zero(f_collide.rows(), f_collide.cols());
+        //cout << "K:" << endl << K << endl;
+        MatrixXd U = pl - x;
+        U.resize(U.rows() * 3, 1);
+        MatrixXd F = K * U;
+        F.resize(F.rows() / 3, 3);
+ /*       MatrixXd f_total;
 
-            for (auto i = 0; i < contact_points.size(); i++) {
-                zero_buff.row(contact_points[i]) = f_collide.row(contact_points[i]);
-            }
-            //f_total = G + zero_buff + f_internal +f_damping;
-            fe = G + zero_buff;
-            //cout << f_total << endl;
-        }
-        f_total = fi + fe;
-       
-        //cout << "fi: " << endl << fi << endl;
-        //cout << "fe: " << endl << fe << endl;
-        //cout << "fi.norm: " << endl << fi.norm() << endl;
-        //cout << "fe.norm: " << endl << fe.norm() << endl;
-        //cout << "f_total: " << endl << f_total << endl;
-        //cout << "f_total.norm: " << endl << f_total.norm() << endl;
-        //===================== end of new logic ======================
-
-        //================ debugging ==========================
-        string path_f_internal = tpath + padseq(seq) + "/" + DynamicVec[i].name + "_internal.csv";
-        Xf2csv(path_f_internal.c_str(), fi);
-        string path_f_total = tpath + padseq(seq) + "/" + DynamicVec[i].name + "_total.csv";
-        Xf2csv(path_f_total.c_str(), f_total);
+        for (auto i = 0; i < tet.rows(); i++) {
+            MatrixXd f1 = F.row(tet(i, 0));
+            MatrixXd f2 = F.row(tet(i, 1));
+            MatrixXd f3 = F.row(tet(i, 2));
+            MatrixXd f4 = F.row(tet(i, 3));
+            MatrixXd v1 = f1 / m * delta_t;
+            MatrixXd v2 = f2 / m * delta_t;
+            MatrixXd v3 = f3 / m * delta_t;
+            MatrixXd v4 = f4 / m * delta_t;
+            vc.row(tet(i, 0)) += v1;
+            vc.row(tet(i, 1)) += v2;
+            vc.row(tet(i, 2)) += v3;
+            vc.row(tet(i, 3)) += v4;
+        }*/
 
 
-        //string path_ff1 = tpath + padseq(seq) + "/" + DynamicVec[i].name + "_ff1.csv";
-        //Xf2csv(path_ff1.c_str(), ff1);
-        //string path_ff2 = tpath + padseq(seq) + "/" + DynamicVec[i].name + "_ff2.csv";
-        //Xf2csv(path_ff2.c_str(), ff2);
-        //string path_ff3 = tpath + padseq(seq) + "/" + DynamicVec[i].name + "_ff3.csv";
-        //Xf2csv(path_ff3.c_str(), ff3);
-        //string path_ff4 = tpath + padseq(seq) + "/" + DynamicVec[i].name + "_ff4.csv";
-        //Xf2csv(path_ff4.c_str(), ff4);
-  
-        ////================ debugging ==========================
-
-        //MatrixXd vf = v + f_total * delta_t / m * x.rows();
+        MatrixXd vc = vl + F * delta_t / m * x.rows();
         ////MatrixXd delta_x = delta_t * (v + vf) / 2;
         //MatrixXd delta_x = delta_t * vf / 2;
-        //p_s += delta_x;
+        pl += (vc+vl)/2 * delta_t;
+
+        auto [collide, contact_points] = CD_table_FEM(pl);
+
+        if (collide){
+            //pl,vc
+            for (auto i = 0; i < contact_points.size(); i++) {
+                vc.row(contact_points[i]) *= -e;
+            }
+            
+        }
+
         //p_s += apply_poisson(delta_x,Poisson);
-        DynamicVec[i].update_state(pc, Vector3d(), Vector3d()); // no w 
-        currentVec[i] = vc + f_total / m / x.rows() * delta_t;
+        DynamicVec[i].update_state(pl, Vector3d(), Vector3d()); // no w 
+        //currentVec[i] = vc + F / m / x.rows() * delta_t;
         lastVec[i] = vc;
         RigidPosVec[i] = x;
     }

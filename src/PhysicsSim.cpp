@@ -56,8 +56,8 @@ int main(int argc, char* argv[])
 
     delete wrld;
 
-    GraphicsEngine GraphicsRenderer;
-    GraphicsRenderer.run(project_folder);
+    //GraphicsEngine GraphicsRenderer;
+    //GraphicsRenderer.run(project_folder);
 
 
     //============ dynamic method ====================

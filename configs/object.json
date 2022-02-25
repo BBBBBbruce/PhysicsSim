@@ -5,15 +5,15 @@
       "restitution": 0.8,
       "collision_time": 0.002,
       "friction": 0.04,
-      "Young_s_modulus": 0.000000001e+9,
-      "Poisson_Ratio": 0.47,
+      "Young_s_modulus": 0.1e+9,
+      "Poisson_Ratio": 0.3,
       "damping_coef": 2.0
 
     },
 
     "cube": {
       "type": "dynamic",
-      "path": "D:\\Bruce_Projects\\BBBBBbruce\\PhysicsSim\\assets\\uvsphere.msh",
+      "path": "D:\\Bruce_Projects\\BBBBBbruce\\PhysicsSim\\assets\\8tets.msh",
       "position": [ 0.0, 0.0, 0.0 ],
       "scale": [ 1.0, 1.0, 1.0 ],
       "linear_velocity": [ 0.0, 0.0, 0.0 ],
