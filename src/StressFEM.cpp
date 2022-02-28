@@ -162,162 +162,163 @@ void TetrahedronAssemble(MatrixXd& K, MatrixXd k, MatrixXi indices) {
     int j = indices(0, 1);
     int m = indices(0, 2);
     int n = indices(0, 3);
+    //cout << i << j << m << n << endl;
+    //cout << k.diagonal() << endl;
+    K(3 * i, 3 * i) += k(0, 0);
+    K(3 * i, 3 * i + 1) +=  k(0, 1);
+    K(3 * i, 3 * i + 2) +=  k(0, 2);
+    K(3 * i, 3 * j) +=  k(0, 3);
+    K(3 * i, 3 * j + 1) += k(0, 4);
+    K(3 * i, 3 * j + 2) +=  k(0, 5);
+    K(3 * i, 3 * m) +=  k(0, 6);
+    K(3 * i, 3 * m + 1) +=  k(0, 7);
+    K(3 * i, 3 * m + 2) +=  k(0, 8);
+    K(3 * i, 3 * n) +=  k(0, 9);
+    K(3 * i, 3 * n + 1) +=  k(0, 10);
+    K(3 * i, 3 * n + 2) +=  k(0, 11);
 
-    K(3 * i, 3 * i) = K(3 * i, 3 * i) + k(0, 0);
-    K(3 * i, 3 * i + 1) = K(3 * i, 3 * i + 1) + k(0, 1);
-    K(3 * i, 3 * i + 2) = K(3 * i, 3 * i + 2) + k(0, 2);
-    K(3 * i, 3 * j) = K(3 * i, 3 * j) + k(0, 3);
-    K(3 * i, 3 * j + 1) = K(3 * i, 3 * j + 1) + k(0, 4);
-    K(3 * i, 3 * j + 2) = K(3 * i, 3 * j + 2) + k(0, 5);
-    K(3 * i, 3 * m) = K(3 * i, 3 * m) + k(0, 6);
-    K(3 * i, 3 * m + 1) = K(3 * i, 3 * m + 1) + k(0, 7);
-    K(3 * i, 3 * m + 2) = K(3 * i, 3 * m + 2) + k(0, 8);
-    K(3 * i, 3 * n) = K(3 * i, 3 * n) + k(0, 9);
-    K(3 * i, 3 * n + 1) = K(3 * i, 3 * n + 1) + k(0, 10);
-    K(3 * i, 3 * n + 2) = K(3 * i, 3 * n + 2) + k(0, 11);
+    K(3 * i + 1, 3 * i) +=  k(1, 0);
+    K(3 * i + 1, 3 * i + 1) +=  k(1, 1);
+    K(3 * i + 1, 3 * i + 2) +=  k(1, 2);
+    K(3 * i + 1, 3 * j) +=  k(1, 3);
+    K(3 * i + 1, 3 * j + 1) += k(1, 4);
+    K(3 * i + 1, 3 * j + 2) +=  k(1, 5);
+    K(3 * i + 1, 3 * m) +=  k(1, 6);
+    K(3 * i + 1, 3 * m + 1) +=  k(1, 7);
+    K(3 * i + 1, 3 * m + 2) +=  k(1, 8);
+    K(3 * i + 1, 3 * n) +=  k(1, 9);
+    K(3 * i + 1, 3 * n + 1) += k(1, 10);
+    K(3 * i + 1, 3 * n + 2) +=  k(1, 11);
 
-    K(3 * i + 1, 3 * i) = K(3 * i + 1, 3 * i) + k(1, 0);
-    K(3 * i + 1, 3 * i + 1) = K(3 * i + 1, 3 * i + 1) + k(1, 1);
-    K(3 * i + 1, 3 * i + 2) = K(3 * i + 1, 3 * i + 2) + k(1, 2);
-    K(3 * i + 1, 3 * j) = K(3 * i + 1, 3 * j) + k(1, 3);
-    K(3 * i + 1, 3 * j + 1) = K(3 * i + 1, 3 * j + 1) + k(1, 4);
-    K(3 * i + 1, 3 * j + 2) = K(3 * i + 1, 3 * j + 2) + k(1, 5);
-    K(3 * i + 1, 3 * m) = K(3 * i + 1, 3 * m) + k(1, 6);
-    K(3 * i + 1, 3 * m + 1) = K(3 * i + 1, 3 * m + 1) + k(1, 7);
-    K(3 * i + 1, 3 * m + 2) = K(3 * i + 1, 3 * m + 2) + k(1, 8);
-    K(3 * i + 1, 3 * n) = K(3 * i + 1, 3 * n) + k(1, 9);
-    K(3 * i + 1, 3 * n + 1) = K(3 * i + 1, 3 * n + 1) + k(1, 10);
-    K(3 * i + 1, 3 * n + 2) = K(3 * i + 1, 3 * n + 2) + k(1, 11);
+    K(3 * i + 2, 3 * i) +=  k(2, 0);
+    K(3 * i + 2, 3 * i + 1) +=  k(2, 1);
+    K(3 * i + 2, 3 * i + 2) +=  k(2, 2);
+    K(3 * i + 2, 3 * j) +=  k(2, 3);
+    K(3 * i + 2, 3 * j + 1) +=  k(2, 4);
+    K(3 * i + 2, 3 * j + 2) += k(2, 5);
+    K(3 * i + 2, 3 * m) += k(2, 6);
+    K(3 * i + 2, 3 * m + 1) += k(2, 7);
+    K(3 * i + 2, 3 * m + 2) += k(2, 8);
+    K(3 * i + 2, 3 * n) += k(2, 9);
+    K(3 * i + 2, 3 * n + 1) += k(2, 10);
+    K(3 * i + 2, 3 * n + 2) += k(2, 11);
 
-    K(3 * i + 2, 3 * i) = K(3 * i + 2, 3 * i) + k(2, 0);
-    K(3 * i + 2, 3 * i + 1) = K(3 * i + 2, 3 * i + 1) + k(2, 1);
-    K(3 * i + 2, 3 * i + 2) = K(3 * i + 2, 3 * i + 2) + k(2, 2);
-    K(3 * i + 2, 3 * j) = K(3 * i + 2, 3 * j) + k(2, 3);
-    K(3 * i + 2, 3 * j + 1) = K(3 * i + 2, 3 * j + 1) + k(2, 4);
-    K(3 * i + 2, 3 * j + 2) = K(3 * i + 2, 3 * j + 2) + k(2, 5);
-    K(3 * i + 2, 3 * m) = K(3 * i + 2, 3 * m) + k(2, 6);
-    K(3 * i + 2, 3 * m + 1) = K(3 * i + 2, 3 * m + 1) + k(2, 7);
-    K(3 * i + 2, 3 * m + 2) = K(3 * i + 2, 3 * m + 2) + k(2, 8);
-    K(3 * i + 2, 3 * n) = K(3 * i + 2, 3 * n) + k(2, 9);
-    K(3 * i + 2, 3 * n + 1) = K(3 * i + 2, 3 * n + 1) + k(2, 10);
-    K(3 * i + 2, 3 * n + 2) = K(3 * i + 2, 3 * n + 2) + k(2, 11);
+    K(3 * j, 3 * i) += k(3, 0);
+    K(3 * j, 3 * i + 1) += k(3, 1);
+    K(3 * j, 3 * i + 2) += k(3, 2);
+    K(3 * j, 3 * j) += k(3, 3);
+    K(3 * j, 3 * j + 1) += k(3, 4);
+    K(3 * j, 3 * j + 2) += k(3, 5);
+    K(3 * j, 3 * m) += k(3, 6);
+    K(3 * j, 3 * m + 1) += k(3, 7);
+    K(3 * j, 3 * m + 2) += k(3, 8);
+    K(3 * j, 3 * n) += k(3, 9);
+    K(3 * j, 3 * n + 1) += k(3, 10);
+    K(3 * j, 3 * n + 2) += k(3, 11);
 
-    K(3 * j, 3 * i) = K(3 * j, 3 * i) + k(3, 0);
-    K(3 * j, 3 * i + 1) = K(3 * j, 3 * i + 1) + k(3, 1);
-    K(3 * j, 3 * i + 2) = K(3 * j, 3 * i + 2) + k(3, 2);
-    K(3 * j, 3 * j) = K(3 * j, 3 * j) + k(3, 3);
-    K(3 * j, 3 * j + 1) = K(3 * j, 3 * j + 1) + k(3, 4);
-    K(3 * j, 3 * j + 2) = K(3 * j, 3 * j + 2) + k(3, 5);
-    K(3 * j, 3 * m) = K(3 * j, 3 * m) + k(3, 6);
-    K(3 * j, 3 * m + 1) = K(3 * j, 3 * m + 1) + k(3, 7);
-    K(3 * j, 3 * m + 2) = K(3 * j, 3 * m + 2) + k(3, 8);
-    K(3 * j, 3 * n) = K(3 * j, 3 * n) + k(3, 9);
-    K(3 * j, 3 * n + 1) = K(3 * j, 3 * n + 1) + k(3, 10);
-    K(3 * j, 3 * n + 2) = K(3 * j, 3 * n + 2) + k(3, 11);
-
-    K(3 * j + 1, 3 * i) = K(3 * j + 1, 3 * i) + k(4, 0);
-    K(3 * j + 1, 3 * i + 1) = K(3 * j + 1, 3 * i + 1) + k(4, 1);
-    K(3 * j + 1, 3 * i + 2) = K(3 * j + 1, 3 * i + 2) + k(4, 2);
-    K(3 * j + 1, 3 * j) = K(3 * j + 1, 3 * j) + k(4, 3);
-    K(3 * j + 1, 3 * j + 1) = K(3 * j + 1, 3 * j + 1) + k(4, 4);
-    K(3 * j + 1, 3 * j + 2) = K(3 * j + 1, 3 * j + 2) + k(4, 5);
-    K(3 * j + 1, 3 * m) = K(3 * j + 1, 3 * m) + k(4, 6);
-    K(3 * j + 1, 3 * m + 1) = K(3 * j + 1, 3 * m + 1) + k(4, 7);
-    K(3 * j + 1, 3 * m + 2) = K(3 * j + 1, 3 * m + 2) + k(4, 8);
-    K(3 * j + 1, 3 * n) = K(3 * j + 1, 3 * n) + k(4, 9);
-    K(3 * j + 1, 3 * n + 1) = K(3 * j + 1, 3 * n + 1) + k(4, 10);
-    K(3 * j + 1, 3 * n + 2) = K(3 * j + 1, 3 * n + 2) + k(4, 11);
+    K(3 * j + 1, 3 * i) += k(4, 0);
+    K(3 * j + 1, 3 * i + 1) += k(4, 1);
+    K(3 * j + 1, 3 * i + 2) += k(4, 2);
+    K(3 * j + 1, 3 * j) += k(4, 3);
+    K(3 * j + 1, 3 * j + 1) += k(4, 4);
+    K(3 * j + 1, 3 * j + 2) += k(4, 5);
+    K(3 * j + 1, 3 * m) += k(4, 6);
+    K(3 * j + 1, 3 * m + 1) +=  k(4, 7);
+    K(3 * j + 1, 3 * m + 2) +=  k(4, 8);
+    K(3 * j + 1, 3 * n) +=  k(4, 9);
+    K(3 * j + 1, 3 * n + 1) +=  k(4, 10);
+    K(3 * j + 1, 3 * n + 2) += k(4, 11);
     //
-    K(3 * j + 2, 3 * i) = K(3 * j + 2, 3 * i) + k(5, 0);
-    K(3 * j + 2, 3 * i + 1) = K(3 * j + 2, 3 * i + 1) + k(5, 1);
-    K(3 * j + 2, 3 * i + 2) = K(3 * j + 2, 3 * i + 2) + k(5, 2);
-    K(3 * j + 2, 3 * j) = K(3 * j + 2, 3 * j) + k(5, 3);
-    K(3 * j + 2, 3 * j + 1) = K(3 * j + 2, 3 * j + 1) + k(5, 4);
-    K(3 * j + 2, 3 * j + 2) = K(3 * j + 2, 3 * j + 2) + k(5, 5);
-    K(3 * j + 2, 3 * m) = K(3 * j + 2, 3 * m) + k(5, 6);
-    K(3 * j + 2, 3 * m + 1) = K(3 * j + 2, 3 * m + 1) + k(5, 7);
-    K(3 * j + 2, 3 * m + 2) = K(3 * j + 2, 3 * m + 2) + k(5, 8);
-    K(3 * j + 2, 3 * n) = K(3 * j + 2, 3 * n) + k(5, 9);
-    K(3 * j + 2, 3 * n + 1) = K(3 * j + 2, 3 * n + 1) + k(5, 10);
-    K(3 * j + 2, 3 * n + 2) = K(3 * j + 2, 3 * n + 2) + k(5, 11);
+    K(3 * j + 2, 3 * i) +=  k(5, 0);
+    K(3 * j + 2, 3 * i + 1) +=  k(5, 1);
+    K(3 * j + 2, 3 * i + 2) +=  k(5, 2);
+    K(3 * j + 2, 3 * j) +=  k(5, 3);
+    K(3 * j + 2, 3 * j + 1) +=  k(5, 4);
+    K(3 * j + 2, 3 * j + 2) +=  k(5, 5);
+    K(3 * j + 2, 3 * m) +=  k(5, 6);
+    K(3 * j + 2, 3 * m + 1) +=  k(5, 7);
+    K(3 * j + 2, 3 * m + 2) +=  k(5, 8);
+    K(3 * j + 2, 3 * n) +=  k(5, 9);
+    K(3 * j + 2, 3 * n + 1) +=  k(5, 10);
+    K(3 * j + 2, 3 * n + 2) +=  k(5, 11);
 
-    K(3 * m, 3 * i) = K(3 * m, 3 * i) + k(6, 0);
-    K(3 * m, 3 * i + 1) = K(3 * m, 3 * i + 1) + k(6, 1);
-    K(3 * m, 3 * i + 2) = K(3 * m, 3 * i + 2) + k(6, 2);
-    K(3 * m, 3 * j) = K(3 * m, 3 * j) + k(6, 3);
-    K(3 * m, 3 * j + 1) = K(3 * m, 3 * j + 1) + k(6, 4);
-    K(3 * m, 3 * j + 2) = K(3 * m, 3 * j + 2) + k(6, 5);
-    K(3 * m, 3 * m) = K(3 * m, 3 * m) + k(6, 6);
-    K(3 * m, 3 * m + 1) = K(3 * m, 3 * m + 1) + k(6, 7);
-    K(3 * m, 3 * m + 2) = K(3 * m, 3 * m + 2) + k(6, 8);
-    K(3 * m, 3 * n) = K(3 * m, 3 * n) + k(6, 9);
-    K(3 * m, 3 * n + 1) = K(3 * m, 3 * n + 1) + k(6, 10);
-    K(3 * m, 3 * n + 2) = K(3 * m, 3 * n + 2) + k(6, 11);
+    K(3 * m, 3 * i) +=  k(6, 0);
+    K(3 * m, 3 * i + 1) +=  k(6, 1);
+    K(3 * m, 3 * i + 2) +=  k(6, 2);
+    K(3 * m, 3 * j) +=  k(6, 3);
+    K(3 * m, 3 * j + 1) +=  k(6, 4);
+    K(3 * m, 3 * j + 2) +=  k(6, 5);
+    K(3 * m, 3 * m) += k(6, 6);
+    K(3 * m, 3 * m + 1) +=  k(6, 7);
+    K(3 * m, 3 * m + 2) +=  k(6, 8);
+    K(3 * m, 3 * n) +=  k(6, 9);
+    K(3 * m, 3 * n + 1) += k(6, 10);
+    K(3 * m, 3 * n + 2) +=  k(6, 11);
 
-    K(3 * m + 1, 3 * i) = K(3 * m + 1, 3 * i) + k(7, 0);
-    K(3 * m + 1, 3 * i + 1) = K(3 * m + 1, 3 * i + 1) + k(7, 1);
-    K(3 * m + 1, 3 * i + 2) = K(3 * m + 1, 3 * i + 2) + k(7, 2);
-    K(3 * m + 1, 3 * j) = K(3 * m + 1, 3 * j) + k(7, 3);
-    K(3 * m + 1, 3 * j + 1) = K(3 * m + 1, 3 * j + 1) + k(7, 4);
-    K(3 * m + 1, 3 * j + 2) = K(3 * m + 1, 3 * j + 2) + k(7, 5);
-    K(3 * m + 1, 3 * m) = K(3 * m + 1, 3 * m) + k(7, 6);
-    K(3 * m + 1, 3 * m + 1) = K(3 * m + 1, 3 * m + 1) + k(7, 7);
-    K(3 * m + 1, 3 * m + 2) = K(3 * m + 1, 3 * m + 2) + k(7, 8);
-    K(3 * m + 1, 3 * n) = K(3 * m + 1, 3 * n) + k(7, 9);
-    K(3 * m + 1, 3 * n + 1) = K(3 * m + 1, 3 * n + 1) + k(7, 10);
-    K(3 * m + 1, 3 * n + 2) = K(3 * m + 1, 3 * n + 2) + k(7, 11);
+    K(3 * m + 1, 3 * i) +=  k(7, 0);
+    K(3 * m + 1, 3 * i + 1) +=  k(7, 1);
+    K(3 * m + 1, 3 * i + 2) +=  k(7, 2);
+    K(3 * m + 1, 3 * j) += k(7, 3);
+    K(3 * m + 1, 3 * j + 1) +=  k(7, 4);
+    K(3 * m + 1, 3 * j + 2) =  k(7, 5);
+    K(3 * m + 1, 3 * m) +=  k(7, 6);
+    K(3 * m + 1, 3 * m + 1) +=  k(7, 7);
+    K(3 * m + 1, 3 * m + 2) +=  k(7, 8);
+    K(3 * m + 1, 3 * n) +=  k(7, 9);
+    K(3 * m + 1, 3 * n + 1) +=  k(7, 10);
+    K(3 * m + 1, 3 * n + 2) +=  k(7, 11);
 
-    K(3 * m + 2, 3 * i) = K(3 * m + 2, 3 * i) + k(8, 0);
-    K(3 * m + 2, 3 * i + 1) = K(3 * m + 2, 3 * i + 1) + k(8, 1);
-    K(3 * m + 2, 3 * i + 2) = K(3 * m + 2, 3 * i + 2) + k(8, 2);
-    K(3 * m + 2, 3 * j) = K(3 * m + 2, 3 * j) + k(8, 3);
-    K(3 * m + 2, 3 * j + 1) = K(3 * m + 2, 3 * j + 1) + k(8, 4);
-    K(3 * m + 2, 3 * j + 2) = K(3 * m + 2, 3 * j + 2) + k(8, 5);
-    K(3 * m + 2, 3 * m) = K(3 * m + 2, 3 * m) + k(8, 6);
-    K(3 * m + 2, 3 * m + 1) = K(3 * m + 2, 3 * m + 1) + k(8, 7);
-    K(3 * m + 2, 3 * m + 2) = K(3 * m + 2, 3 * m + 2) + k(8, 8);
-    K(3 * m + 2, 3 * n) = K(3 * m + 2, 3 * n) + k(8, 9);
-    K(3 * m + 2, 3 * n + 1) = K(3 * m + 2, 3 * n + 1) + k(8, 10);
-    K(3 * m + 2, 3 * n + 2) = K(3 * m + 2, 3 * n + 2) + k(8, 11);
+    K(3 * m + 2, 3 * i) += k(8, 0);
+    K(3 * m + 2, 3 * i + 1) += k(8, 1);
+    K(3 * m + 2, 3 * i + 2) +=  k(8, 2);
+    K(3 * m + 2, 3 * j) += k(8, 3);
+    K(3 * m + 2, 3 * j + 1) += k(8, 4);
+    K(3 * m + 2, 3 * j + 2) +=  k(8, 5);
+    K(3 * m + 2, 3 * m) +=  k(8, 6);
+    K(3 * m + 2, 3 * m + 1) += k(8, 7);
+    K(3 * m + 2, 3 * m + 2) += k(8, 8);
+    K(3 * m + 2, 3 * n) += k(8, 9);
+    K(3 * m + 2, 3 * n + 1) += k(8, 10);
+    K(3 * m + 2, 3 * n + 2) += k(8, 11);
 
-    K(3 * n, 3 * i) = K(3 * n, 3 * i) + k(9, 0);
-    K(3 * n, 3 * i + 1) = K(3 * n, 3 * i + 1) + k(9, 1);
-    K(3 * n, 3 * i + 2) = K(3 * n, 3 * i + 2) + k(9, 2);
-    K(3 * n, 3 * j) = K(3 * n, 3 * j) + k(9, 3);
-    K(3 * n, 3 * j + 1) = K(3 * n, 3 * j + 1) + k(9, 4);
-    K(3 * n, 3 * j + 2) = K(3 * n, 3 * j + 2) + k(9, 5);
-    K(3 * n, 3 * m) = K(3 * n, 3 * m) + k(9, 6);
-    K(3 * n, 3 * m + 1) = K(3 * n, 3 * m + 1) + k(9, 7);
-    K(3 * n, 3 * m + 2) = K(3 * n, 3 * m + 2) + k(9, 8);
-    K(3 * n, 3 * n) = K(3 * n, 3 * n) + k(9, 9);
-    K(3 * n, 3 * n + 1) = K(3 * n, 3 * n + 1) + k(9, 10);
-    K(3 * n, 3 * n + 2) = K(3 * n, 3 * n + 2) + k(9, 11);
+    K(3 * n, 3 * i) += k(9, 0);
+    K(3 * n, 3 * i + 1) += k(9, 1);
+    K(3 * n, 3 * i + 2) += k(9, 2);
+    K(3 * n, 3 * j) += k(9, 3);
+    K(3 * n, 3 * j + 1) += k(9, 4);
+    K(3 * n, 3 * j + 2) += k(9, 5);
+    K(3 * n, 3 * m) += k(9, 6);
+    K(3 * n, 3 * m + 1) += k(9, 7);
+    K(3 * n, 3 * m + 2) +=  k(9, 8);
+    K(3 * n, 3 * n) += k(9, 9);
+    K(3 * n, 3 * n + 1) += k(9, 10);
+    K(3 * n, 3 * n + 2) += k(9, 11);
 
-    K(3 * n + 1, 3 * i) = K(3 * n + 1, 3 * i) + k(10, 0);
-    K(3 * n + 1, 3 * i + 1) = K(3 * n + 1, 3 * i + 1) + k(10, 1);
-    K(3 * n + 1, 3 * i + 2) = K(3 * n + 1, 3 * i + 2) + k(10, 2);
-    K(3 * n + 1, 3 * j) = K(3 * n + 1, 3 * j) + k(10, 3);
-    K(3 * n + 1, 3 * j + 1) = K(3 * n + 1, 3 * j + 1) + k(10, 4);
-    K(3 * n + 1, 3 * j + 2) = K(3 * n + 1, 3 * j + 2) + k(10, 5);
-    K(3 * n + 1, 3 * m) = K(3 * n + 1, 3 * m) + k(10, 6);
-    K(3 * n + 1, 3 * m + 1) = K(3 * n + 1, 3 * m + 1) + k(10, 7);
-    K(3 * n + 1, 3 * m + 2) = K(3 * n + 1, 3 * m + 2) + k(10, 8);
-    K(3 * n + 1, 3 * n) = K(3 * n + 1, 3 * n) + k(10, 9);
-    K(3 * n + 1, 3 * n + 1) = K(3 * n + 1, 3 * n + 1) + k(10, 10);
-    K(3 * n + 1, 3 * n + 2) = K(3 * n + 1, 3 * n + 2) + k(10, 11);
+    K(3 * n + 1, 3 * i) += k(10, 0);
+    K(3 * n + 1, 3 * i + 1) += k(10, 1);
+    K(3 * n + 1, 3 * i + 2) += k(10, 2);
+    K(3 * n + 1, 3 * j) +=  k(10, 3);
+    K(3 * n + 1, 3 * j + 1) +=  k(10, 4);
+    K(3 * n + 1, 3 * j + 2) +=  k(10, 5);
+    K(3 * n + 1, 3 * m) +=k(10, 6);
+    K(3 * n + 1, 3 * m + 1) += k(10, 7);
+    K(3 * n + 1, 3 * m + 2) +=  k(10, 8);
+    K(3 * n + 1, 3 * n) +=  k(10, 9);
+    K(3 * n + 1, 3 * n + 1) +=  k(10, 10);
+    K(3 * n + 1, 3 * n + 2) += k(10, 11);
 
-    K(3 * n + 2, 3 * i) = K(3 * n + 2, 3 * i) + k(11, 0);
-    K(3 * n + 2, 3 * i + 1) = K(3 * n + 2, 3 * i + 1) + k(11, 1);
-    K(3 * n + 2, 3 * i + 2) = K(3 * n + 2, 3 * i + 2) + k(11, 2);
-    K(3 * n + 2, 3 * j) = K(3 * n + 2, 3 * j) + k(11, 3);
-    K(3 * n + 2, 3 * j + 1) = K(3 * n + 2, 3 * j + 1) + k(11, 4);
-    K(3 * n + 2, 3 * j + 2) = K(3 * n + 2, 3 * j + 2) + k(11, 5);
-    K(3 * n + 2, 3 * m) = K(3 * n + 2, 3 * m) + k(11, 6);
-    K(3 * n + 2, 3 * m + 1) = K(3 * n + 2, 3 * m + 1) + k(11, 7);
-    K(3 * n + 2, 3 * m + 2) = K(3 * n + 2, 3 * m + 2) + k(11, 8);
-    K(3 * n + 2, 3 * n) = K(3 * n + 2, 3 * n) + k(11, 9);
-    K(3 * n + 2, 3 * n + 1) = K(3 * n + 2, 3 * n + 1) + k(11, 10);
-    K(3 * n + 2, 3 * n + 2) = K(3 * n + 2, 3 * n + 2) + k(11, 11);
+    K(3 * n + 2, 3 * i) += k(11, 0);
+    K(3 * n + 2, 3 * i + 1) +=  k(11, 1);
+    K(3 * n + 2, 3 * i + 2) += k(11, 2);
+    K(3 * n + 2, 3 * j) += k(11, 3);
+    K(3 * n + 2, 3 * j + 1) += k(11, 4);
+    K(3 * n + 2, 3 * j + 2) += k(11, 5);
+    K(3 * n + 2, 3 * m) += k(11, 6);
+    K(3 * n + 2, 3 * m + 1) += k(11, 7);
+    K(3 * n + 2, 3 * m + 2) += k(11, 8);
+    K(3 * n + 2, 3 * n) += k(11, 9);
+    K(3 * n + 2, 3 * n + 1) +=  k(11, 10);
+    K(3 * n + 2, 3 * n + 2) += k(11, 11);
 }
 
 MatrixXd TetrahedronElementStresses(MatrixXd YModulus, MatrixXd vertices, MatrixXd u) {
@@ -581,73 +582,80 @@ void StressFEM::InitConfigs(string targetpath, json currentconfig, float tc)
             igl::volume(_X, Tet, vol);
             double volum = abs(vol.sum());
             double m = volum * rho;
-            MatrixXd G = m * gravity.transpose().replicate(X.rows(), 1);
-            MatrixXd f_external;
+            //MatrixXd G = m * gravity.transpose().replicate(X.rows(), 1);
+            //MatrixXd f_external;
 
-            auto [collide, contact_points] = CD_table_FEM(X);
-            if (!collide)
-                //f_total = G + f_internal; //+f_damping;
-                f_external = G;
-            else {
-                MatrixXd f_collide = -(1 + e) * last_vel * m / tc - G;
-                //cout << "f_collide:" << endl << f_collide << endl;
-                MatrixXd zero_buff = MatrixXd::Zero(f_collide.rows(), f_collide.cols());
+            //auto [collide, contact_points] = CD_table_FEM(X);
+            //if (!collide)
+            //    //f_total = G + f_internal; //+f_damping;
+            //    f_external = G;
+            //else {
+            //    MatrixXd f_collide = -(1 + e) * last_vel * m / tc - G;
+            //    //cout << "f_collide:" << endl << f_collide << endl;
+            //    MatrixXd zero_buff = MatrixXd::Zero(f_collide.rows(), f_collide.cols());
 
-                for (auto i = 0; i < contact_points.size(); i++) {
-                    zero_buff.row(contact_points[i]) = f_collide.row(contact_points[i]);
-                }
-                //f_total = G + zero_buff + f_internal +f_damping;
-                f_external = G + zero_buff;
-                //cout << f_total << endl;
-            }
-            MatrixXd K;
-            int n = _X.rows();// number of vertices
-            K.resize(3 * n, 3 * n);
-            K.setZero();
-            //cout << "_X:" << endl << _X << endl;
+            //    for (auto i = 0; i < contact_points.size(); i++) {
+            //        zero_buff.row(contact_points[i]) = f_collide.row(contact_points[i]);
+            //    }
+            //    //f_total = G + zero_buff + f_internal +f_damping;
+            //    f_external = G + zero_buff;
+            //    //cout << f_total << endl;
+            //}
+            //cout << "position" << endl << _X << endl;
+            //MatrixXd K;
+            //int n = _X.rows();// number of vertices
+            //K.resize(3 * n, 3 * n);
+            //K.setIdentity();
+            ////cout << "_X:" << endl << _X << endl;
             for (auto i = 0; i < Tet.rows(); i++) {
-       
                 MatrixXi tet_i = tet_re_order(Tet.row(i), _X.row(Tet(i, 0)), _X.row(Tet(i, 1)), _X.row(Tet(i, 2)), _X.row(Tet(i, 3)));
                 Tet.row(i) = tet_i;
-                Matrix<double, 4, 3> tet1;
-                tet1 << _X.row(Tet(i, 0)), _X.row(Tet(i, 1)), _X.row(Tet(i, 2)), _X.row(Tet(i, 3));
-                //cout << "tet1" << endl << tet1 << endl;
-                //cout <<"YModulus: " << YModulus << endl;
-                MatrixXd ki = TetrahedronElementStiffness(YModulus, tet1);
-                TetrahedronAssemble(K, ki, Tet.row(i));
             }
-            f_external.resize(f_external.rows() * 3, 1);
-            // =================== apply boundry condition =====================
-            // apply BC to K and fe
-            MatrixXd fe = f_external;
-            MatrixXd k = K;
-            for (auto i = 0; i < contact_points.size(); i++) {
-                removeRow(k, contact_points[i]);
-                removeColumn(k, contact_points[i]);
-                removeRow(fe, contact_points[i]);
-            }
+            //    Matrix<double, 4, 3> tet1;
+            //    tet1 << _X.row(Tet(i, 0)), _X.row(Tet(i, 1)), _X.row(Tet(i, 2)), _X.row(Tet(i, 3));
+            //    //cout << "tet1" << endl << tet1 << endl;
+            //    //cout <<"YModulus: " << YModulus << endl;
+            //    MatrixXd ki = TetrahedronElementStiffness(YModulus, tet1);
+            //    cout << "k"<<i<<": \n" << ki.diagonal().transpose() << endl;
+            //    cout << tet_i << endl;
+            //    //cout << "ki_sigularity:" << endl << ki.inverse()*ki << endl;
+            //    TetrahedronAssemble(K, ki, Tet.row(i));
+            //    //cout << K << endl;
+            //}
+            //f_external.resize(f_external.rows() * 3, 1);
+            //// =================== apply boundry condition =====================
+            //// apply BC to K and fe
+            //MatrixXd fe = f_external;
+            ////cout << "fe" << fe << endl;
+
+            ////MatrixXd k = K;
+            //for (auto i = 0; i < contact_points.size(); i++) {
+            //    removeRow(K, contact_points[i]*3+1);
+            //    removeColumn(K, contact_points[i] * 3 + 1);//
+            //    removeRow(fe, contact_points[i]*3+1);
+            //}
 
 
-            // ================= finish apply boundry conditions ===============
-            
-            //cout << "shape: "  << "(" << fe.rows() << ", " << fe.cols() << ")" << endl;
-            //cout << "shape: " << "(" << k.rows() << ", " << k.cols() << ")" << endl;
-            cout << "K:" << endl << k*k.inverse() << endl;
-            //cout << "K.inverse():" << endl << K.inverse() << endl;
-            //out << "K-K.transpose()" << endl << K - K.transpose() << endl;
-            //cout << "f_external:" << endl << f_external << endl;
-            
-            MatrixXd U = k.inverse() * fe;
-            cout << "U:" << endl << U << endl;
-            for (auto i = 0; i < contact_points.size(); i++) {
-                U = insertRow(U, contact_points[i], Matrix<double, 1, 1>(0));
-            }
+            //// ================= finish apply boundry conditions ===============
+            //
+            ////cout << "shape: "  << "(" << fe.rows() << ", " << fe.cols() << ")" << endl;
+            ////cout << "shape: " << "(" << k.rows() << ", " << k.cols() << ")" << endl;
+            //cout << "K:" << endl << K.diagonal() << endl;
+            ////cout << "K.inverse():" << endl << K.inverse() << endl;
+            ////out << "K-K.transpose()" << endl << K - K.transpose() << endl;
+            ////cout << "f_external:" << endl << f_external << endl;
+            //
+            //MatrixXd U = K.inverse() * fe;
+            ////cout << "U:" << endl << U << endl;
+            //for (auto i = 0; i < contact_points.size(); i++) {
+            //    U = insertRow(U, contact_points[i]*3+1, Matrix<double, 1, 1>(0));
+            //}
 
-            //cout << "K.inverse():" << endl << K.inverse() << endl;
-            U.resize(U.rows() / 3, 3);
-            cout << "U:" << endl << U << endl;
+            ////cout << "K.inverse():" << endl << K.inverse() << endl;
+            //U.resize(U.rows() / 3, 3);
+            //cout << "U:" << endl << U << endl;
 
-            _X += U;
+            //_X += U;
             string path_p = targetpath + "0000" + "/" + it.key() + "_p.msh";
             igl::writeMSH(path_p, _X, Tri, Tet, TriTag, TetTag, XFields, XF, EFields, TriF, TetF);
             
@@ -972,35 +980,33 @@ tuple<bool, double, int> self_collision_tet(Matrix<double, 4, 3> X, Matrix<doubl
 
 void StressFEM::run(float delta_t, int seq)
 {
-    // Implement the physics
-    // linearly iterate through all tetrahedrons
-    // assume no friction yet
+
     for (auto i = 0; i < DynamicVec.size(); i++) {
         MatrixXd pl = DynamicVec[i].get_position();
-        cout << "pl:" << endl << pl << endl;
+        //cout << "pl:" << endl << pl << endl;
         MatrixXi tet = DynamicVec[i].get_tetrahedrons();
         MatrixXd vl = lastVec[i];
-        //MatrixXd vc = currentVec[i];
-        double m = DynamicVec[i].get_mass();// not change data structure, test today
-        Vector3d cm = DynamicVec[i].get_cm();
         MatrixXd x = RigidPosVec[i];
-        
-        MatrixXd G = m / x.rows() * gravity.transpose().replicate(x.rows(), 1);
-        vector<MatrixXd> _x;
-        vector<MatrixXd> X0;
+        double m = DynamicVec[i].get_mass() / x.rows();
+        MatrixXd G = m * gravity.transpose().replicate(x.rows(), 1);
 
-        for (auto j = 0; j < tet.rows(); j++) {
-            MatrixXd x0 = x.row(tet(j, 0));
-            MatrixXd tmp(3, 3);
-            tmp << x.row(tet(j, 1)) - x0, x.row(tet(j, 2)) - x0, x.row(tet(j, 3)) - x0;
-            _x.push_back(tmp.inverse());
-            X0.push_back(tmp);
-        }
+        /* 
+        init with:
+            pl : deformed position
+            tet: tetrahedron indices
+            vl : previous velocity
+            x  : undeformed position for rigid motion
+            m  : mass per tet(uniformly)
+            G  : gravitational force vector(uniformly)
+        */
+
+        // ============ assemble global stiffness matrix =============
 
         MatrixXd K;
         int n = pl.rows();// number of vertices
         K.resize(3 * n, 3 * n);
         K.setZero();
+        //K.setIdentity();
         //cout << "tet" << endl << tet << endl;
         for (auto i = 0; i < tet.rows(); i++) {
             Matrix<double, 4, 3> teti;
@@ -1010,45 +1016,99 @@ void StressFEM::run(float delta_t, int seq)
             //cout << "ki" << endl << ki << endl;
             TetrahedronAssemble(K, ki, tet.row(i));
         }
-        //cout << "K:" << endl << K << endl;
+
+        // ============== get global stiffness matrix =================
         MatrixXd U = pl - x;
         U.resize(U.rows() * 3, 1);
-        MatrixXd F = K * U;
-        F.resize(F.rows() / 3, 3);
- /*       MatrixXd f_total;
-
-        for (auto i = 0; i < tet.rows(); i++) {
-            MatrixXd f1 = F.row(tet(i, 0));
-            MatrixXd f2 = F.row(tet(i, 1));
-            MatrixXd f3 = F.row(tet(i, 2));
-            MatrixXd f4 = F.row(tet(i, 3));
-            MatrixXd v1 = f1 / m * delta_t;
-            MatrixXd v2 = f2 / m * delta_t;
-            MatrixXd v3 = f3 / m * delta_t;
-            MatrixXd v4 = f4 / m * delta_t;
-            vc.row(tet(i, 0)) += v1;
-            vc.row(tet(i, 1)) += v2;
-            vc.row(tet(i, 2)) += v3;
-            vc.row(tet(i, 3)) += v4;
-        }*/
-
-
-        MatrixXd vc = vl + F * delta_t / m * x.rows();
-        ////MatrixXd delta_x = delta_t * (v + vf) / 2;
-        //MatrixXd delta_x = delta_t * vf / 2;
-        pl += (vc+vl)/2 * delta_t;
+        //cout << U << endl;
+        MatrixXd fi = K * U;
+        
+        //=============== apply boundary conditions =============
 
         auto [collide, contact_points] = CD_table_FEM(pl);
 
+        MatrixXd f_impact;
+        MatrixXd vc = vl;
         if (collide){
-            //pl,vc
+
             for (auto i = 0; i < contact_points.size(); i++) {
                 vc.row(contact_points[i]) *= -e;
             }
+
+            MatrixXd v_y = MatrixXd::Zero(vl.rows(), vl.cols());
+            v_y.col(1) = (vc - vl).col(1);
+            MatrixXd fi_tmp = fi;
+            fi_tmp.resize(fi.rows() / 3, 3);
+            MatrixXd fi_y =  MatrixXd::Zero(fi_tmp.rows(), fi_tmp.cols());
+            fi_y.col(1) = fi_tmp.col(1);
+
+
+            MatrixXd f_collide = v_y * m / tc - G - fi_y;
+            //cout << "f_collide:" << endl << f_collide << endl;
+            MatrixXd zero_buff = MatrixXd::Zero(f_collide.rows(), f_collide.cols());
+
+            for (auto i = 0; i < contact_points.size(); i++) {
+                zero_buff.row(contact_points[i]) = f_collide.row(contact_points[i]);
+            }
+            f_impact = zero_buff;
+        }
+        f_impact.resize(f_impact.rows() * 3, 1);
+        MatrixXd f_deformation = fi + f_impact;
+        
+        MatrixXd fd = f_deformation;
+        MatrixXd k = K;
+        //cout << x.rows() << endl;
+
+        int index = 0;
+        int fd_len = fd.rows();
+        while(index<fd_len){
             
+            if (abs(fd(index, 0)) < 1.0e-8) {
+                removeRow(k, index);
+                removeColumn(k, index);
+                removeRow(fd, index);
+                fd_len--;
+            }
+            else {
+                index++;
+            }
+        }
+        
+        //cout << "f_deform: " << endl << f_deformation << endl;
+        //cout << "fd: " << endl << fd << endl;
+        //cout << "shape K: " << "(" << K.rows() << ", " << K.cols() << ")" << endl;
+        //cout << "shape k: " << "(" << k.rows() << ", " << k.cols() << ")" << endl;
+        MatrixXd u = k.inverse() * fd;
+        //cout << "u:" << endl << u << endl;
+        MatrixXd u_zero;
+        u_zero.resize(U.rows(), U.cols());
+        u_zero.setZero();
+        index = 0;
+
+        for (auto i = 0; i < f_deformation.rows(); i++) {
+            if (abs(f_deformation(i, 0)) > 1e-8) {
+                u_zero(i) = u(index);
+                index++;
+                if (index = u.rows())
+                    break;
+            }
         }
 
-        //p_s += apply_poisson(delta_x,Poisson);
+        //cout << "u_zero:" << endl << u_zero << endl;
+        U += u_zero;// confusing
+
+
+        //====================== applied BC =====================
+
+
+        MatrixXd F = K * U;
+        // F.insert(MatrixXd somerows)
+        F.resize(F.rows() / 3, 3);
+        MatrixXd f_nodal = F + G;
+        vc = vl + f_nodal * delta_t / m;
+        pl += (vc+vl)/2 * delta_t;
+
+
         DynamicVec[i].update_state(pl, Vector3d(), Vector3d()); // no w 
         //currentVec[i] = vc + F / m / x.rows() * delta_t;
         lastVec[i] = vc;
