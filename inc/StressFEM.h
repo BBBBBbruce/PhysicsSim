@@ -15,6 +15,7 @@ private:
     vector<Eigen::MatrixXd>lastVec;
     vector<Eigen::MatrixXd>RigidPosVec;
     vector<double> DampVec;
+    VectorXd mass;
     double Young;
     double Poisson;
     MatrixXd YModulus;

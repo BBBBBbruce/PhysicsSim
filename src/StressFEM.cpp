@@ -576,12 +576,6 @@ void StressFEM::InitConfigs(string targetpath, json currentconfig, float tc)
             Eigen::MatrixXd current_vel=last_vel;
             // ================== init rendering ======================
 
-            
-            double rho = it.value()["mass"];
-            Eigen::VectorXd vol;
-            igl::volume(_X, Tet, vol);
-            double volum = abs(vol.sum());
-            double m = volum * rho;
             //MatrixXd G = m * gravity.transpose().replicate(X.rows(), 1);
             //MatrixXd f_external;
 
@@ -611,6 +605,13 @@ void StressFEM::InitConfigs(string targetpath, json currentconfig, float tc)
                 MatrixXi tet_i = tet_re_order(Tet.row(i), _X.row(Tet(i, 0)), _X.row(Tet(i, 1)), _X.row(Tet(i, 2)), _X.row(Tet(i, 3)));
                 Tet.row(i) = tet_i;
             }
+
+            double rho = it.value()["mass"];
+            Eigen::VectorXd vol;
+            igl::volume(_X, Tet, vol);
+            mass = vol * rho;
+            double volum = abs(vol.sum());
+            double m = volum * rho;
             //    Matrix<double, 4, 3> tet1;
             //    tet1 << _X.row(Tet(i, 0)), _X.row(Tet(i, 1)), _X.row(Tet(i, 2)), _X.row(Tet(i, 3));
             //    //cout << "tet1" << endl << tet1 << endl;
@@ -1003,6 +1004,7 @@ void StressFEM::run(float delta_t, int seq)
         MatrixXd vi = lastVec[i];
         MatrixXd x = RigidPosVec[i];
         double m = DynamicVec[i].get_mass() / x.rows();
+
         MatrixXd G = m * gravity.transpose().replicate(x.rows(), 1);
 
         /* 

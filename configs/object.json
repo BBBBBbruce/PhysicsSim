@@ -13,7 +13,7 @@
 
     "cube": {
       "type": "dynamic",
-      "path": "D:\\Bruce_Projects\\BBBBBbruce\\PhysicsSim\\assets\\equal_triangle.msh",
+      "path": "D:\\Bruce_Projects\\BBBBBbruce\\PhysicsSim\\assets\\8tets.msh",
       "position": [ 0.0, 0.0, 0.0 ],
       "scale": [ 1.0, 1.0, 1.0 ],
       "linear_velocity": [ 0.0, 0.0, 0.0 ],

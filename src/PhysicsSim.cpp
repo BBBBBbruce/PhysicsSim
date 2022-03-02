@@ -25,13 +25,14 @@ int main(int argc, char* argv[])
     std::cout << "Simulation Starting\n";
     std::cout << "===================\n";
     std::cout << "\n";
-    //PhysicsSim.exe input.json -t 0.1 -n 50 -o bin/output.json
+    //-i configs/object.json -t 0.01 -n 200 -o bin\out\Project  -m FEM -r 0
     string InputScene = argv[2];
     float runningtime = atof(argv[4]);
     int step = atoi(argv[6]);
     string project_folder = argv[8];
     string sim_mode = argv[10];
-
+    int render = atoi(argv[12]);
+    
 
 
     //time_t start_time = 1639740809;
@@ -55,10 +56,10 @@ int main(int argc, char* argv[])
     wrld->Physics_run();
 
     delete wrld;
-
-    //GraphicsEngine GraphicsRenderer;
-    //GraphicsRenderer.run(project_folder);
-
+    if (render) {
+        GraphicsEngine GraphicsRenderer;
+        GraphicsRenderer.run(project_folder);
+    }
 
     //============ dynamic method ====================
 
