@@ -978,6 +978,21 @@ tuple<bool, double, int> self_collision_tet(Matrix<double, 4, 3> X, Matrix<doubl
 
 }
 
+MatrixXd mat2vec(MatrixXd mat,int row, int col) {
+    //cout << "0" << endl << mat << endl;
+    MatrixXd tmp = mat.transpose();
+    //cout << "1" << endl << mat << endl;
+    tmp.resize(row, col);
+    //cout << "2" << endl << mat << endl;
+    return tmp;
+}
+
+MatrixXd vec2mat(MatrixXd mat, int row, int col) {
+    //cout << "0" << endl << mat << endl;
+    mat.resize(col, row);
+    return mat.transpose();
+}
+
 void StressFEM::run(float delta_t, int seq)
 {
 
@@ -985,7 +1000,7 @@ void StressFEM::run(float delta_t, int seq)
         MatrixXd pl = DynamicVec[i].get_position();
         //cout << "pl:" << endl << pl << endl;
         MatrixXi tet = DynamicVec[i].get_tetrahedrons();
-        MatrixXd vl = lastVec[i];
+        MatrixXd vi = lastVec[i];
         MatrixXd x = RigidPosVec[i];
         double m = DynamicVec[i].get_mass() / x.rows();
         MatrixXd G = m * gravity.transpose().replicate(x.rows(), 1);
@@ -1010,7 +1025,7 @@ void StressFEM::run(float delta_t, int seq)
         //cout << "tet" << endl << tet << endl;
         for (auto i = 0; i < tet.rows(); i++) {
             Matrix<double, 4, 3> teti;
-            teti << pl.row(tet(i, 0)), pl.row(tet(i, 1)), pl.row(tet(i, 2)), pl.row(tet(i, 3));
+            teti << x.row(tet(i, 0)), x.row(tet(i, 1)), x.row(tet(i, 2)), x.row(tet(i, 3));
             //cout << "teti" << endl << teti << endl;
             MatrixXd ki = TetrahedronElementStiffness(YModulus, teti);
             //cout << "ki" << endl << ki << endl;
@@ -1019,31 +1034,44 @@ void StressFEM::run(float delta_t, int seq)
 
         // ============== get global stiffness matrix =================
         MatrixXd U = pl - x;
-        U.resize(U.rows() * 3, 1);
-        //cout << U << endl;
-        MatrixXd fi = K * U;
+        cout << "U: " << endl << U << endl;
+        cout << "U_norm(): " << endl << U.norm() << endl;
+        U = mat2vec(U, U.rows()*3,1);
         
+        MatrixXd fi = - K * U;
+
+        //cout << "fi: " << endl << vec2mat(fi, x.rows(), 3) << endl;
         //=============== apply boundary conditions =============
 
         auto [collide, contact_points] = CD_table_FEM(pl);
 
         MatrixXd f_impact;
-        MatrixXd vc = vl;
+        MatrixXd vc = vi;
+ /*       cout << "vi: " << endl << vi << endl;*/
+        cout << "=============" << endl;
+        cout << "seq: " << seq << endl;
+        cout << "=============" << endl;
+        //cout<<pl.row(0)
+        //cout <<"collide? " << collide << endl;
         if (collide){
 
             for (auto i = 0; i < contact_points.size(); i++) {
                 vc.row(contact_points[i]) *= -e;
             }
-
-            MatrixXd v_y = MatrixXd::Zero(vl.rows(), vl.cols());
-            v_y.col(1) = (vc - vl).col(1);
-            MatrixXd fi_tmp = fi;
-            fi_tmp.resize(fi.rows() / 3, 3);
+    /*        cout << "vc: " << endl << vc << endl;*/
+            MatrixXd v_y = MatrixXd::Zero(vi.rows(), vi.cols());
+            v_y.col(1) = (vc - vi).col(1);
+            //MatrixXd fi_tmp = fi;
+            MatrixXd fi_tmp = vec2mat(fi, fi.rows() / 3, 3);
             MatrixXd fi_y =  MatrixXd::Zero(fi_tmp.rows(), fi_tmp.cols());
             fi_y.col(1) = fi_tmp.col(1);
 
+         /*   cout << "v_y: " << endl << v_y * m / tc << endl;
+            cout << "G: " << endl << G << endl;
+            cout << "fi_y: " << endl << fi_y << endl;*/
 
             MatrixXd f_collide = v_y * m / tc - G - fi_y;
+
             //cout << "f_collide:" << endl << f_collide << endl;
             MatrixXd zero_buff = MatrixXd::Zero(f_collide.rows(), f_collide.cols());
 
@@ -1051,67 +1079,139 @@ void StressFEM::run(float delta_t, int seq)
                 zero_buff.row(contact_points[i]) = f_collide.row(contact_points[i]);
             }
             f_impact = zero_buff;
+            //cout << "f_impact:" << endl << f_impact << endl;
         }
-        f_impact.resize(f_impact.rows() * 3, 1);
-        MatrixXd f_deformation = fi + f_impact;
+        //cout << "f_impact(has to be positive): " << endl << f_impact << endl;
+        f_impact = mat2vec(f_impact,f_impact.rows() * 3, 1);
+
+        //cout << "fi: " << endl << fi << endl;
         
-        MatrixXd fd = f_deformation;
+        MatrixXd G_i = mat2vec(G, G.rows() * 3, 1);
+
+        //cout << "fi: " << endl << vec2mat(fi, x.rows(), 3) << endl;
+        //cout << "f_impact: " << endl << vec2mat(f_impact, x.rows(), 3) << endl;
+        //cout << "G_i: " << endl << vec2mat(G_i, x.rows(), 3) << endl;
+        MatrixXd f_nodal = fi + f_impact + G_i;
+
+        //cout << "f_nodal: " << endl << vec2mat(f_nodal, x.rows(), 3) << endl;
+        
+        MatrixXd fn = f_nodal;
         MatrixXd k = K;
+
         //cout << x.rows() << endl;
 
         int index = 0;
-        int fd_len = fd.rows();
+        int fd_len = fn.rows();
         while(index<fd_len){
             
-            if (abs(fd(index, 0)) < 1.0e-8) {
+            if (abs(fn(index, 0)) < 1.0e-8) {
                 removeRow(k, index);
                 removeColumn(k, index);
-                removeRow(fd, index);
+                removeRow(fn, index);
                 fd_len--;
             }
             else {
                 index++;
             }
         }
-        
-        //cout << "f_deform: " << endl << f_deformation << endl;
-        //cout << "fd: " << endl << fd << endl;
-        //cout << "shape K: " << "(" << K.rows() << ", " << K.cols() << ")" << endl;
-        //cout << "shape k: " << "(" << k.rows() << ", " << k.cols() << ")" << endl;
-        MatrixXd u = k.inverse() * fd;
-        //cout << "u:" << endl << u << endl;
-        MatrixXd u_zero;
-        u_zero.resize(U.rows(), U.cols());
-        u_zero.setZero();
-        index = 0;
+        //cout << fn.rows() << endl;
+        //
+        ////cout << "f_deform: " << endl << f_deformation << endl;
+        ////cout << "fd: " << endl << fd << endl;
+        ////cout << "shape K: " << "(" << K.rows() << ", " << K.cols() << ")" << endl;
+        ////cout << "shape k: " << "(" << k.rows() << ", " << k.cols() << ")" << endl;
+        //cout << "k" << endl << k << endl;
+        //cout << "k.inv" << k.inverse() << endl;
+        //cout << "fn" << endl << fn << endl;
+        cout << "check_singular " << (k.determinant() < 1e-8) << endl;
+        MatrixXd vf = x;
+        vf.setZero();
+        if (k.determinant() > 1e-8) {
+            HouseholderQR<MatrixXd> qr(k);
+            MatrixXd u = qr.solve(fn);
+            //cout << "u:" << endl << u << endl;
+            MatrixXd u_zero;
+            u_zero.resize(U.rows(), U.cols());
+            u_zero.setZero();
 
-        for (auto i = 0; i < f_deformation.rows(); i++) {
-            if (abs(f_deformation(i, 0)) > 1e-8) {
-                u_zero(i) = u(index);
-                index++;
-                if (index = u.rows())
-                    break;
+            index = 0;
+            for (auto i = 0; i < f_nodal.rows(); i++) {
+                //cout <<"fnodal: " << abs(f_nodal(i, 0)) << endl;
+                if (abs(f_nodal(i, 0)) > 1e-8) {
+                    //cout << u(index) << endl;
+                    u_zero(i) = u(index);
+                    index++;
+                    if (index == u.rows())
+                        break;
+                }
             }
+            //cout << "u_zero:" << endl << vec2mat(u_zero, x.rows(), 3) << endl;
+            //====================== applied BC =====================
+            /*
+            what I have:
+            u_zero(padded u);
+            compare with d
+            */
+
+            vf = vi + vec2mat(f_nodal, x.rows(), 3) / m * delta_t;
+            //cout << "f_nodal:" << endl << vec2mat(f_nodal, x.rows(), 3) << endl;
+            MatrixXd d = (vi + vf) / 2 * delta_t;
+            //cout << "d:" << endl << d << endl;
+            //cout << "u_zero:" << endl << vec2mat(u_zero, x.rows(), 3) << endl;
+            d = mat2vec(d, d.rows() * 3, 1);
+            //cout << d.norm() - u_zero.norm() << endl;
+            if (d.norm() - u_zero.norm() > 1e-8) {
+                //cout << "hello" << endl;
+                d = u_zero;
+                //vf = vi + vec2mat(K * u_zero, x.rows(), 3) / m * delta_t;
+                // vf = vi + f_nodal/m*t
+                // ======= find f_impact ==========
+                fi = -K * u_zero;
+                fi = vec2mat(fi, x.rows(), 3);
+                //MatrixXd fi_tmp = fi
+                //cout << "vc: " << endl << vc << endl;
+                MatrixXd v_y = MatrixXd::Zero(vi.rows(), vi.cols());
+                v_y.col(1) = (vc - vi).col(1);
+                //MatrixXd fi_tmp = fi;
+                //MatrixXd fi_tmp = vec2mat(fi, fi.rows() / 3, 3);
+                MatrixXd fi_y = MatrixXd::Zero(fi.rows(), fi.cols());
+                fi_y.col(1) = fi.col(1);
+
+                MatrixXd f_collide = v_y * m / tc - G - fi_y;
+                //cout << "f_collide:" << endl << f_collide << endl;
+                //cout << "f_collide:" << endl << f_collide << endl;
+                MatrixXd zero_buff = MatrixXd::Zero(f_collide.rows(), f_collide.cols());
+
+                for (auto i = 0; i < contact_points.size(); i++) {
+                    zero_buff.row(contact_points[i]) = f_collide.row(contact_points[i]);
+                }
+                f_impact = zero_buff;
+                //cout << "f_impact:" << endl << f_impact << endl;
+
+                f_nodal = f_impact + G + fi;
+                /*  cout << "f_impact:" << endl << f_impact << endl;
+                  cout << "G:" << endl << G << endl;
+                  cout << "fi:" << endl << fi << endl;*/
+                  //cout << "f_nodal:" << endl << f_nodal << endl;
+                  //=== find f_imapct =========
+                vf = vi + (f_impact + G + fi) / m * delta_t;
+                //cout << "vf:" << endl << vf << endl;
+                //vf *= 0.4;
+            }
+            //cout << "f_nodal:" << endl << vec2mat(f_nodal,x.rows(),3) << endl;
+            //cout << "===============" << endl;
+            //cout << "f_nodal.norm(): " << f_nodal.norm() << endl;
+            //cout << "===============" << endl;
+            /*cout << "vf:" << endl << vf << endl;*/
+            d = vec2mat(d, x.rows(), 3);
+
+            //cout << "d:" << endl << d << endl;
+            pl += d;
         }
-
-        //cout << "u_zero:" << endl << u_zero << endl;
-        U += u_zero;// confusing
-
-
-        //====================== applied BC =====================
-
-
-        MatrixXd F = K * U;
-        // F.insert(MatrixXd somerows)
-        F.resize(F.rows() / 3, 3);
-        MatrixXd f_nodal = F + G;
-        vc = vl + f_nodal * delta_t / m;
-        pl += (vc+vl)/2 * delta_t;
-
-
+      /*  cout << "d:" << endl << d << endl;*/
         DynamicVec[i].update_state(pl, Vector3d(), Vector3d()); // no w 
         //currentVec[i] = vc + F / m / x.rows() * delta_t;
-        lastVec[i] = vc;
+        lastVec[i] = vf; // doesnot matter
         RigidPosVec[i] = x;
     }
 }
