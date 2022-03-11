@@ -33,7 +33,7 @@ public:
     void save_scene(int seq);
     void InitConfigs(string targetpath, json currentconfig, float tc);
     void reset();
-    void set_physics_params(double d, double restitution, double collision_t, double friction, double young, double poisson);
+    void set_physics_params(double restitution, double collision_t, double friction);
     void rigid(float delta_t, int seq);
     void fem(float delta_t, int seq);
 };//

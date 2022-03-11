@@ -44,8 +44,7 @@ void StressFEM::InitConfigs(string targetpath, json currentconfig, float tc)
     for (auto it = currentconfig.begin(); it != currentconfig.end(); ++it)
     {
         if (it.key() == "physics") {
-
-            set_physics_params(it.value()["damping_coef"], it.value()["restitution"], it.value()["collision_time"], it.value()["friction"], it.value()["Young_s_modulus"], it.value()["Poisson_Ratio"]);
+            set_physics_params( it.value()["restitution"], it.value()["collision_time"], it.value()["friction"]);
         }
     }
 
@@ -273,17 +272,6 @@ void StressFEM::load_scene(int pre_seq)
             std::vector<Eigen::MatrixXd> XF, TriF, TetF;
             igl::readMSH(it.value()["position_path"], P, Tri, Tet, TriTag, TetTag, XFields, XF, EFields, TriF, TetF);
 
-            MatrixXd vl = XfFromcsv(string(it.value()["last_velocity"]).c_str());
-            lastVec.push_back(vl); // stable(same order as DynamicVec)
-
-
-            MatrixXd vc = XfFromcsv(string(it.value()["current_velocity"]).c_str());
-            currentVec.push_back(vc); // stable(same order as DynamicVec)
-            MatrixXd x = XfFromcsv(string(it.value()["rigid_position_path"]).c_str());
-            RigidPosVec.push_back(x);
-            double damp = 2 * sqrt(it.value()["mass"] / P.rows()) * zeta; // *w
-            DampVec.push_back(damp);
-
             MatrixXd dv = XfFromcsv(string(it.value()["deform_velocity"]).c_str());
             MatrixXd rp = XfFromcsv(string(it.value()["rigid_position"]).c_str());
             VectorXd ms = XfFromcsv(string(it.value()["mass"]).c_str());
@@ -391,24 +379,11 @@ void StressFEM::reset()
 
 }
 
-void StressFEM::set_physics_params(double zeta, double restitution, double collision_t, double friction, double young, double poisson)
+void StressFEM::set_physics_params(double restitution, double collision_t, double friction)
 {
-    zeta = zeta;
     e = restitution;
     tc = collision_t;
     u = friction;
-    Young = young;
-    Poisson = poisson;
-
-    YModulus = MatrixXd(6, 6);
-    YModulus << 1 - Poisson, Poisson, Poisson, 0, 0, 0,
-        Poisson, 1 - Poisson, Poisson, 0, 0, 0,
-        Poisson, Poisson, 1 - Poisson, 0, 0, 0,
-        0, 0, 0, (1 - 2 * Poisson) / 2, 0, 0,
-        0, 0, 0, 0, (1 - 2 * Poisson) / 2, 0,
-        0, 0, 0, 0, 0, (1 - 2 * Poisson) / 2;
-
-    YModulus *= Young / (1 + Poisson) / (1 - 2 * Poisson);
 }
 
 void StressFEM::run(float delta_t, int seq)
