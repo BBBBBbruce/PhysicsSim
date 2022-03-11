@@ -3,7 +3,8 @@
 #include <fstream>
 #include <ctime>
 #include <direct.h>
-#include <ctime>
+
+#include"utiles.h"
 #pragma warning (disable : 4996)
 
 using namespace std;

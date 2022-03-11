@@ -24,7 +24,7 @@ DynamicObj::DynamicObj(string n,
 {
 	name = n;
 	position = pos;
-	tetrahedral = tet;
+	tetrahedrons = tet;
 	Tri = tri;
 	TriTag = tritag;
 	TetTag = tettag;
@@ -50,7 +50,7 @@ Eigen::Vector3d DynamicObj::get_linear_velocity()
 
 Eigen::MatrixXi DynamicObj::get_tetrahedrons()
 {
-	return tetrahedral;
+	return tetrahedrons;
 }
 
 Eigen::Vector3d DynamicObj::get_angular_velocity()
@@ -83,14 +83,13 @@ void DynamicObj::writemsh(string p)
 	//trif = cast2double(TriF);
 	//tetf = cast2double(TetF);
 	//igl::writeMSH(p, float2double(position), Tri, tetrahedral, TriTag, TetTag, XFields, xf, EFields, trif, tetf);
-	igl::writeMSH(p, position, Tri, tetrahedral, TriTag, TetTag, XFields, XF, EFields, TriF, TetF);
+	igl::writeMSH(p, position, Tri, tetrahedrons, TriTag, TetTag, XFields, XF, EFields, TriF, TetF);
 }
-
 
 void DynamicObj::ToViewer(Eigen::MatrixXd& vertices, Eigen::MatrixXi& faces)
 {
 	using namespace Eigen;
-	int row = tetrahedral.rows();
+	int row = tetrahedrons.rows();
 
 	MatrixXd V(row * 4, 3);
 	MatrixXi F(row * 4, 3);
@@ -99,10 +98,10 @@ void DynamicObj::ToViewer(Eigen::MatrixXd& vertices, Eigen::MatrixXi& faces)
 
 	for (unsigned i = 0; i < row; ++i)
 	{
-		V.row(i * 4 + 0) = position.row(tetrahedral(i, 0));
-		V.row(i * 4 + 1) = position.row(tetrahedral(i, 1));
-		V.row(i * 4 + 2) = position.row(tetrahedral(i, 2));
-		V.row(i * 4 + 3) = position.row(tetrahedral(i, 3));
+		V.row(i * 4 + 0) = position.row(tetrahedrons(i, 0));
+		V.row(i * 4 + 1) = position.row(tetrahedrons(i, 1));
+		V.row(i * 4 + 2) = position.row(tetrahedrons(i, 2));
+		V.row(i * 4 + 3) = position.row(tetrahedrons(i, 3));
 
 		F.row(i * 4 + 0) << (i * 4) + 0, (i * 4) + 1, (i * 4) + 3;
 		F.row(i * 4 + 1) << (i * 4) + 0, (i * 4) + 2, (i * 4) + 1;
@@ -118,7 +117,7 @@ void DynamicObj::ToViewer(Eigen::MatrixXd& vertices, Eigen::MatrixXi& faces)
 tuple<Eigen::MatrixXd, Eigen::MatrixXi> DynamicObj::Get_ViewMatrix()
 {
 	using namespace Eigen;
-	int row = tetrahedral.rows();
+	int row = tetrahedrons.rows();
 
 	MatrixXd V(row * 4, 3);
 	MatrixXi F(row * 4, 3);
@@ -127,10 +126,10 @@ tuple<Eigen::MatrixXd, Eigen::MatrixXi> DynamicObj::Get_ViewMatrix()
 
 	for (unsigned i = 0; i < row; ++i)
 	{
-		V.row(i * 4 + 0) = position.row(tetrahedral(i, 0));
-		V.row(i * 4 + 1) = position.row(tetrahedral(i, 1));
-		V.row(i * 4 + 2) = position.row(tetrahedral(i, 2));
-		V.row(i * 4 + 3) = position.row(tetrahedral(i, 3));
+		V.row(i * 4 + 0) = position.row(tetrahedrons(i, 0));
+		V.row(i * 4 + 1) = position.row(tetrahedrons(i, 1));
+		V.row(i * 4 + 2) = position.row(tetrahedrons(i, 2));
+		V.row(i * 4 + 3) = position.row(tetrahedrons(i, 3));
 
 		F.row(i * 4 + 0) << (i * 4) + 0, (i * 4) + 1, (i * 4) + 3;
 		F.row(i * 4 + 1) << (i * 4) + 0, (i * 4) + 2, (i * 4) + 1;

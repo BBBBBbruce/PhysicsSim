@@ -1,14 +1,11 @@
-#include <iostream>
-#include <fstream>
-#include <ostream>
 
+#include"utiles.h"
 #include"Engine.h"
 
 #include"World.h"
 #include"test.h"
 #include"NewtonRigid.h"
 
-#include <direct.h>
 #include "GraphicsEngine.h"
 
 #include"json.hpp"

@@ -20,7 +20,7 @@ StaticObj::StaticObj(string n,
 {
 	name = n;
 	position = pos;
-	tetrahedral = tet;
+	tetrahedrons = tet;
 	Tri = tri;
 	TriTag = tritag;
 	TetTag = tettag;
@@ -42,7 +42,7 @@ string StaticObj::get_loadingpath()
 void StaticObj::ToViewer(Eigen::MatrixXd& vertices, Eigen::MatrixXi& faces)
 {
 	using namespace Eigen;
-	int row = tetrahedral.rows();
+	int row = tetrahedrons.rows();
 
 	MatrixXd V(row * 4, 3);
 	MatrixXi F(row * 4, 3);
@@ -51,10 +51,10 @@ void StaticObj::ToViewer(Eigen::MatrixXd& vertices, Eigen::MatrixXi& faces)
 
 	for (unsigned i = 0; i < row; ++i)
 	{
-		V.row(i * 4 + 0) = position.row(tetrahedral(i, 0));
-		V.row(i * 4 + 1) = position.row(tetrahedral(i, 1));
-		V.row(i * 4 + 2) = position.row(tetrahedral(i, 2));
-		V.row(i * 4 + 3) = position.row(tetrahedral(i, 3));
+		V.row(i * 4 + 0) = position.row(tetrahedrons(i, 0));
+		V.row(i * 4 + 1) = position.row(tetrahedrons(i, 1));
+		V.row(i * 4 + 2) = position.row(tetrahedrons(i, 2));
+		V.row(i * 4 + 3) = position.row(tetrahedrons(i, 3));
 
 		F.row(i * 4 + 0) << (i * 4) + 0, (i * 4) + 1, (i * 4) + 3;
 		F.row(i * 4 + 1) << (i * 4) + 0, (i * 4) + 2, (i * 4) + 1;
@@ -70,17 +70,17 @@ void StaticObj::ToViewer(Eigen::MatrixXd& vertices, Eigen::MatrixXi& faces)
 tuple<Eigen::MatrixXd, Eigen::MatrixXi> StaticObj::Get_ViewMatrix()
 {
 	using namespace Eigen;
-	int row = tetrahedral.rows();
+	int row = tetrahedrons.rows();
 
 	MatrixXd V(row * 4, 3);
 	MatrixXi F(row * 4, 3);
 
 	for (unsigned i = 0; i < row; ++i)
 	{
-		V.row(i * 4 + 0) = position.row(tetrahedral(i, 0));
-		V.row(i * 4 + 1) = position.row(tetrahedral(i, 1));
-		V.row(i * 4 + 2) = position.row(tetrahedral(i, 2));
-		V.row(i * 4 + 3) = position.row(tetrahedral(i, 3));
+		V.row(i * 4 + 0) = position.row(tetrahedrons(i, 0));
+		V.row(i * 4 + 1) = position.row(tetrahedrons(i, 1));
+		V.row(i * 4 + 2) = position.row(tetrahedrons(i, 2));
+		V.row(i * 4 + 3) = position.row(tetrahedrons(i, 3));
 
 		F.row(i * 4 + 0) << (i * 4) + 0, (i * 4) + 1, (i * 4) + 3;
 		F.row(i * 4 + 1) << (i * 4) + 0, (i * 4) + 2, (i * 4) + 1;

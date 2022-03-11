@@ -1,5 +1,13 @@
 #include "Engine.h"
 
+Engine::~Engine()
+{
+	for (auto i = 0; i < DynamicVec.size(); i++)
+		delete DynamicVec[i];
+	for (auto i = 0; i < StaticVec.size(); i++)
+		delete StaticVec[i];
+}
+
 Engine::Engine()
 {
 	//this dont do anything
@@ -32,7 +40,11 @@ void Engine::InitConfigs(string targetpath, json currentconfig, float tc)
 }
 
 void Engine::reset()
-{
+{	
+	for (auto i = 0; i < DynamicVec.size(); i++)
+		delete DynamicVec[i];
+	for (auto i = 0; i < StaticVec.size(); i++)
+		delete StaticVec[i];
 	DynamicVec.clear();
 	StaticVec.clear();
 }

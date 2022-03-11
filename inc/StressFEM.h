@@ -5,6 +5,7 @@
 
 #include "Engine.h"
 #include "Collision.h"
+#include "DynamicObj_fem.h"
 
 class StressFEM :
     public Engine
@@ -26,14 +27,15 @@ public:
     StressFEM();
     StressFEM(string t_path);
     void run(float delta_t, int seq);// in seconds
-    vector<StaticObj> getStaticObjs();
-    vector<DynamicObj> getDynamicObjs();
+    vector<StaticObj*> getStaticObjs();
+    vector<DynamicObj*> getDynamicObjs();
     void load_scene(int pre_seq);
     void save_scene(int seq);
     void InitConfigs(string targetpath, json currentconfig, float tc);
     void reset();
     void set_physics_params(double d, double restitution, double collision_t, double friction, double young, double poisson);
-
+    void rigid(float delta_t, int seq);
+    void fem(float delta_t, int seq);
 };//
 
 #endif // !STRESSFEM

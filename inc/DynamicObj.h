@@ -8,7 +8,7 @@
 class DynamicObj :
     public Objects
 {
-private:
+protected:
     Eigen::Vector3d linear_velocity;
     Eigen::Vector3d angular_velocity;
     Eigen::Vector3d mass_centre;

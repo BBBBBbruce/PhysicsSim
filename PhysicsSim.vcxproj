@@ -156,6 +156,7 @@
     <ClCompile Include="ExternalLib\glad\src\glad.c" />
     <ClCompile Include="src\Collision.cpp" />
     <ClCompile Include="src\DynamicObj.cpp" />
+    <ClCompile Include="src\DynamicObj_fem.cpp" />
     <ClCompile Include="src\Engine.cpp" />
     <ClCompile Include="src\GraphicsEngine.cpp" />
     <ClCompile Include="src\NewtonRigid.cpp" />
@@ -163,6 +164,7 @@
     <ClCompile Include="src\PhysicsSim.cpp" />
     <ClCompile Include="src\StaticObj.cpp" />
     <ClCompile Include="src\StressFEM.cpp" />
+    <ClCompile Include="src\utiles.cpp" />
     <ClCompile Include="src\visualisation.cpp" />
     <ClCompile Include="src\World.cpp" />
   </ItemGroup>
@@ -180,6 +182,7 @@
     <ClInclude Include="inc\Collision.h" />
     <ClInclude Include="inc\Coords.h" />
     <ClInclude Include="inc\DynamicObj.h" />
+    <ClInclude Include="inc\DynamicObj_fem.h" />
     <ClInclude Include="inc\Engine.h" />
     <ClInclude Include="inc\GraphicsEngine.h" />
     <ClInclude Include="inc\json.hpp" />
@@ -188,6 +191,7 @@
     <ClInclude Include="inc\StaticObj.h" />
     <ClInclude Include="inc\StressFEM.h" />
     <ClInclude Include="inc\test.h" />
+    <ClInclude Include="inc\utiles.h" />
     <ClInclude Include="inc\visualisation.h" />
     <ClInclude Include="inc\World.h" />
   </ItemGroup>

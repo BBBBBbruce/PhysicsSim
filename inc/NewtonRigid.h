@@ -12,15 +12,12 @@ class NewtonRigid :
 public:
     NewtonRigid();
     NewtonRigid(string t_path);
-    void run(float time, int seq);// in seconds
-    bool collision_detection();
-    //void ParseWorld(json objectlist);
-    vector<StaticObj> getStaticObjs();
-    vector<DynamicObj> getDynamicObjs();
+    vector<StaticObj*> getStaticObjs();
+    vector<DynamicObj*> getDynamicObjs();
+    void InitConfigs(string targetpath, json currentconfig, float tc);
     void load_scene(int pre_seq);
     void save_scene(int seq);
-    void create_aabb_tree();
-    void InitConfigs(string targetpath, json currentconfig, float tc);
+    void run(float time, int seq);// in seconds
 
 };
 

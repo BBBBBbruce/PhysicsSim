@@ -11,8 +11,8 @@ using namespace std;
 class Engine
 {
 protected: 
-	vector<StaticObj>StaticVec;
-	vector<DynamicObj>DynamicVec;
+	vector<StaticObj*>StaticVec;
+	vector<DynamicObj*>DynamicVec;
 	string tpath;
 	double e; // restitution coefficient
 	double tc; // collision time
@@ -20,6 +20,7 @@ protected:
 	
 
 public:
+	~Engine();
 	Engine();
 	Engine(string filepath);
 	virtual void load_scene(int pre_seq);
