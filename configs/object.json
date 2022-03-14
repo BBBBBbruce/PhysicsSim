@@ -4,11 +4,7 @@
     "physics": {
       "restitution": 0.8,
       "collision_time": 0.002,
-      "friction": 0.04,
-      "Young_s_modulus": 0.1e+7,
-      "Poisson_Ratio": 0.3,
-      "damping_coef": 2.0
-
+      "friction": 0.04
     },
 
     "cube": {
@@ -17,12 +13,12 @@
       "position": [ 0.0, 0.0, 0.0 ],
       "scale": [ 1.0, 1.0, 1.0 ],
       "linear_velocity": [ 0.0, 0.0, 0.0 ],
-      "translation_velocity": [ 0.0, 0.0, 0.0 ],
       "angular_velocity": [ 0.0, 0.0, 0.0 ],
       "rotation": [ 0.0, 0.0, 0.0 ],
-      "mass_centre": [ 0.0, 0.0, 0.0 ],
       "mass": 1100.0,
-      "density": 1100.0
+      "density": 1100.0,
+      "Young_s_modulus": 0.1e+7,
+      "Poisson_Ratio": 0.3
     }
   }
 

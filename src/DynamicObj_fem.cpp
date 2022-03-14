@@ -19,10 +19,9 @@ DynamicObj_fem::DynamicObj_fem(string n,
 	Eigen::Vector3d angular_vel,
 	Eigen::MatrixXd Deform_vel,
 	Eigen::MatrixXd rigid_pos,
-	VectorXd m,
-	double y,
-	double po,
-	MatrixXd ym = MatrixXd::Identity(6, 6)
+	MatrixXd m_vec,
+	double m_sum,
+	MatrixXd ym
 ){
 	name = n;
 	position = pos;
@@ -40,24 +39,10 @@ DynamicObj_fem::DynamicObj_fem(string n,
 	deform_velocity = Deform_vel;
 	RigidPos = rigid_pos;
 	mass_centre = find_cm();
-	mass = m;
-	if (y < 0 || po < 0) {
-		YModulus = ym;
-	}
-	else {
-		Young = y;
-		Poisson = po;
+	mass_vec = m_vec;
+	mass_sum = m_sum;
+	YModulus = ym;
 
-		YModulus = MatrixXd(6, 6);
-		YModulus << 1 - Poisson, Poisson, Poisson, 0, 0, 0,
-			Poisson, 1 - Poisson, Poisson, 0, 0, 0,
-			Poisson, Poisson, 1 - Poisson, 0, 0, 0,
-			0, 0, 0, (1 - 2 * Poisson) / 2, 0, 0,
-			0, 0, 0, 0, (1 - 2 * Poisson) / 2, 0,
-			0, 0, 0, 0, 0, (1 - 2 * Poisson) / 2;
-
-		YModulus *= Young / (1 + Poisson) / (1 - 2 * Poisson);
-	}
 }
 
 Eigen::Vector3d DynamicObj_fem::get_linear_velocity()
@@ -90,9 +75,14 @@ double DynamicObj_fem::get_youngs_modulus()
 	return Young;
 }
 
-VectorXd DynamicObj_fem::get_mass()
+MatrixXd DynamicObj_fem::get_mass_vec()
 {
-	return mass;
+	return mass_vec;
+}
+
+double DynamicObj_fem::get_mass_sum()
+{
+	return mass_sum;
 }
 
 double DynamicObj_fem::get_poisson_ratio()

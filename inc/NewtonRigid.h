@@ -8,7 +8,8 @@ using json = nlohmann::json;
 class NewtonRigid :
    public Engine
 {
-
+private:
+    vector<DynamicObj*>DynamicVec;
 public:
     NewtonRigid();
     NewtonRigid(string t_path);

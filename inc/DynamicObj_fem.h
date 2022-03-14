@@ -13,9 +13,10 @@ class DynamicObj_fem :
 {
 protected:
 
-    Eigen::MatrixXd deform_velocity;
-    Eigen::MatrixXd RigidPos;
-    VectorXd mass;
+    MatrixXd deform_velocity;
+    MatrixXd RigidPos;
+    MatrixXd mass_vec;
+    double mass_sum;
     double Young;
     double Poisson;
     MatrixXd YModulus;
@@ -37,9 +38,8 @@ public:
         Eigen::Vector3d angular_vel,
         Eigen::MatrixXd Deform_vel,
         Eigen::MatrixXd rigid_pos,
-        VectorXd m,
-        double y,
-        double po,
+        MatrixXd m_vec,
+        double m_sum,
         MatrixXd ym
     );
 
@@ -49,7 +49,8 @@ public:
     Eigen::MatrixXd get_deformation_velocity();
     Eigen::MatrixXd get_rigid_position();
     double get_youngs_modulus();
-    VectorXd get_mass();
+    MatrixXd get_mass_vec();
+    double get_mass_sum();
     double get_poisson_ratio();
     MatrixXd get_YModulus();
     Eigen::Vector3d get_cm();

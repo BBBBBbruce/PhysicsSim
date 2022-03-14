@@ -59,7 +59,7 @@ void GraphicsEngine::load_scene(string folder)
                 XF, TriF, TetF,
                 Eigen::Vector3d(),
                 Eigen::Vector3d(),
-                it.value()["mass"]
+                0.0
             );
             DynamicVec.push_back(dtmp);
         }

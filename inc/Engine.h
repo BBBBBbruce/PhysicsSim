@@ -10,9 +10,10 @@
 using namespace std;
 class Engine
 {
+private:
+	vector<DynamicObj*>DynamicVec;
 protected: 
 	vector<StaticObj*>StaticVec;
-	vector<DynamicObj*>DynamicVec;
 	string tpath;
 	double e; // restitution coefficient
 	double tc; // collision time

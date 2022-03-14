@@ -1,13 +1,14 @@
 {
   "Objects": {
     "cube": {
-      "mass": 5.0,
+      "type": "dynamic",
       "position_path": "bin\\out\\Project1642610568\\0001/cube_p.msh",
+      "deform_velocity": "bin\\out\\Project1642610568\\0001/cube_dv.csv",
+      "rigid_position": "bin\\out\\Project1642610568\\0001/cube_rp.csv",
+      "mass": "bin\\out\\Project1642610568\\0001/cube_m.csv",
+      "Young_s_modulus": "bin\\out\\Project1642610568\\0001/cube_ym.csv",
       "linear_velocity": [ 0.0, 0.0, 0.0 ],
-      "angular_velocity": [ 0.0, 0.0, 0.0 ],
-      "mass_centre": [ 0.0, 0.0, 0.0 ],
-      "type": "dynamic"
-
+      "angular_velocity": [ 0.0, 0.0, 0.0 ]
     },
     "table": {
       "position_path": "bin\\out\\Project1642610568\\0000/table_s.msh",

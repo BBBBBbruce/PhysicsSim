@@ -12,23 +12,14 @@ class StressFEM :
 {
 
 private:
-    vector<Eigen::MatrixXd>currentVec;
-    vector<Eigen::MatrixXd>lastVec;
-    vector<Eigen::MatrixXd>RigidPosVec;
-    vector<double> DampVec;
-    VectorXd mass;
-    double Young;
-    double Poisson;
-    MatrixXd YModulus;
-    double zeta;
-    //float damp;
+    std::vector<DynamicObj_fem*> DynamicVec;
 
 public:
     StressFEM();
     StressFEM(string t_path);
     void run(float delta_t, int seq);// in seconds
     vector<StaticObj*> getStaticObjs();
-    vector<DynamicObj*> getDynamicObjs();
+    vector<DynamicObj_fem*> getDynamicObjs();
     void load_scene(int pre_seq);
     void save_scene(int seq);
     void InitConfigs(string targetpath, json currentconfig, float tc);
