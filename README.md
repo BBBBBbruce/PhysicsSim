@@ -1,4 +1,6 @@
 
+This is a learning project, large portion of algorithms are hand coded without any optimisation. check the lastest branch for more features. But stop working on this... maybe I would in the future, but no gurantee. 
+
 # Environment Setup
 C++ 17\
 libigl 2.3.0\
